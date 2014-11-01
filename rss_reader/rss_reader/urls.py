@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from main import views as MainViews
 
+
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'rss_reader.views.home', name='home'),
