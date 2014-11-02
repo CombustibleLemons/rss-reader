@@ -1,4 +1,5 @@
 from django.db import models
+# Create your models here.
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
@@ -29,37 +30,6 @@ class ListField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
-class Post(models.Model):
-    # - ackDate : int
-    ackData = models.IntegerField()
-    # - author : string
-    author = models.TextField()
-    # - category : string [*]
-    category = ListField()
-    # - feedURL : string
-    category = models.TextField()
-    # - rights : string
-    rights = models.TextField()
-    # - subtitle : string
-    subtitle = models.TextField()
-    # - content : string
-    content = models.TextField()
-    # - generator : string
-    generator = models.TextField()
-    # - guid : string
-    guid = models.TextField()
-    # - title : string
-    title = models.TextField()
-    # - url : string
-    url = models.TextField()
-    # - pubDate : date
-    pubDate = models.DateField()
-    # - contributor : string
-    contributor = models.TextField()
-    # - updated : date
-    updated = models.DateField()
-
-# Create your models here.
 class Feed(models.Model):
     # Attributes
     # - URL : string
@@ -86,13 +56,13 @@ class Feed(models.Model):
     # - docURL : string
     docURL = models.TextField()
     # - ttl : int
-    ttl = models.IntegerField()
+    ttl = models.IntegerField(null=True)
     # - logo : string
     logo = models.TextField()
     # - skipDays : int
-    skipDays = models.IntegerField()
+    skipDays = models.IntegerField(null=True)
     # - skipHours : int
-    skipHours = models.IntegerField()
+    skipHours = models.IntegerField(null=True)
     # - author : string
     author = models.TextField()
     # - contributor : string
@@ -109,3 +79,39 @@ class Feed(models.Model):
 
     def getSize(self):
         pass
+
+class Post(models.Model):
+    # Attributes
+    # - ackDate : int
+    ackData = models.IntegerField(null=True)
+    # - author : string
+    author = models.TextField()
+    # - category : string [*]
+    category = ListField()
+    # - feedURL : string
+    category = models.TextField()
+    # - rights : string
+    rights = models.TextField()
+    # - subtitle : string
+    subtitle = models.TextField()
+    # - content : string
+    content = models.TextField()
+    # - generator : string
+    generator = models.TextField()
+    # - guid : string
+    guid = models.TextField()
+    # - title : string
+    title = models.TextField()
+    # - url : string
+    url = models.TextField()
+    # - pubDate : date
+    pubDate = models.DateField(null=True)
+    # - contributor : string
+    contributor = models.TextField()
+    # - updated : date
+    updated = models.DateField(null=True)
+
+    # Feed that post belongs to
+    feed = models.ForeignKey(Feed)
+
+    # Methods
