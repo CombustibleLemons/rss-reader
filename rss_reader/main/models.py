@@ -1,3 +1,6 @@
+# from main.models import *
+# f = Feed.createByUrl("http://xkcd.com/rss.xml")
+
 # Django
 from django.db import models
 from django.db.models.signals import post_init
@@ -38,47 +41,56 @@ class ListField(models.TextField):
 
 class Feed(models.Model):
     # Attributes
-    # - URL : string
-    URL = models.URLField(unique=True)
-    # - logo : (string, string, string)
-    # - title : string
-    title = models.TextField()
-    # - subtitle : string
-    subtitle = models.TextField()
-    # - description : string
-    description = models.TextField()
-    # - language : string
-    language = models.TextField()
-    # - rights : string
-    rights =  models.TextField()
-    # - editorAddr : string
-    editorAddr = models.TextField()
-    # - webmaster : string
-    webmaster = models.TextField()
-    # - pubDate : date
-    pubDate = models.TextField()
+
+    # Text
+    # - author : string
+    author = models.TextField()
     # - category : string
     category = models.TextField()
-    # - generator : string
-    generator = models.TextField()
+    # - contributor : string
+    contributor = models.TextField()
+    # - description : string
+    description = models.TextField()
     # - docURL : string
     docURL = models.TextField()
-    # - ttl : int
-    ttl = models.IntegerField(null=True)
+    # - editorAddr : string
+    editorAddr = models.TextField()
+    # - generator : string
+    generator = models.TextField()
+    # - guid : string
+    guid = models.TextField()
+    # - language : string
+    language = models.TextField()
     # - logo : string
     logo = models.TextField()
+    # - rights : string
+    rights =  models.TextField()
+    # - subtitle : string
+    subtitle = models.TextField()
+    # - title : string
+    title = models.TextField()
+    # - webmaster : string
+    webmaster = models.TextField()
+
+    # URL
+    # - URL : string
+    URL = models.URLField(unique=True)
+
+    # Integer
+    # - ttl : int
+    ttl = models.IntegerField(null=True)
     # - skipDays : int
     skipDays = models.IntegerField(null=True)
     # - skipHours : int
     skipHours = models.IntegerField(null=True)
-    # - author : string
-    author = models.TextField()
-    # - contributor : string
-    contributor = models.TextField()
-    # - guid : string
-    guid = models.TextField()
+
+    # Date
+    # - pubDate : date
+    pubDate = models.DateTimeField(null=True)
     # - updated : date
     updated = models.DateTimeField(null=True)
+
+    # - logo : (string, string, string)
 
     # Constructor (uses class method as suggested by Django docs)
     @classmethod
@@ -92,21 +104,51 @@ class Feed(models.Model):
         if res["version"] == "rss20":
             # Populate Feed fields
             feedData = res["feed"]
-            cls_dict = {"language" : feedData["language"],
-                        "title" : feedData["title"],
-                        "subtitle" : feedData["subtitle"],
-                        "updated" : time.strftime('%Y-%m-%dT%H:%M:%SZ', res["updated_parsed"]),
-                        "URL" : url
+
+            # Text fields
+            cls_dict = {
+                "author" : feedData.get("author", ""),
+                "category" : feedData.get("category", ""),
+                "contributor" : feedData.get("contributor", ""),
+                "description" : feedData.get("description", ""),
+                "docURL" : feedData.get("docURL", ""),
+                "editorAddr" : feedData.get("editorAddr", ""),
+                "generator" : feedData.get("generator", ""),
+                "guid" : feedData.get("guid", ""),
+                "language" : feedData.get("language", ""),
+                "logo" : feedData.get("logo", ""),
+                "title" : feedData.get("title", ""),
+                "subtitle" : feedData.get("subtitle", ""),
             }
+
+            # Integer field
+            cls_dict.update({
+                "ttl" : int(feedData["ttl"]) if feedData.get("ttl", None) else None,
+                "skipDays" : int(feedData["skipDays"]) if feedData.get("skipDays", None) else None,
+                "skipHours" : int(feedData["skipHours"]) if feedData.get("skipHours", None) else None
+            })
+
+            # Date fields
+            if feedData.get("published_parsed", None):
+                pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', feedData["published_parsed"])
+                cls_dict.update({"pubDate" : pubTime})
+
+            if res.get("updated_parsed", None):
+                updateTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', res["updated_parsed"])
+                cls_dict.update({"updated" : updateTime})
+
+            # URL Field
+            url = next(x["href"] for x in feedData["links"] if x["rel"] == "self")
+            if url:
+                cls_dict.update({"URL" : url})
+
             ret_feed = cls.objects.create(**cls_dict)
 
             # Create Posts
             for entry in res["entries"]:
                 Post.createByEntry(entry, url, ret_feed)
-                
+
         return ret_feed
-# from main.models import *
-# f = Feed.createByUrl("http://xkcd.com/rss.xml")
 
     # Methods
     def getPosts(self, n):
@@ -120,16 +162,17 @@ class Feed(models.Model):
 
 class Post(models.Model):
     # Attributes
-    # - ackDate : int
-    ackData = models.IntegerField(null=True)
+    # Text
+    # - feedURL : string (comes from the Feed class)
+    feedURL = models.TextField()
     # - author : string
     author = models.TextField()
     # - category : string [*]
     category = ListField()
-    # - feedURL : string
-    feedURL = models.TextField()
     # - rights : string
     rights = models.TextField()
+    # - title : string
+    title = models.TextField()
     # - subtitle : string
     subtitle = models.TextField()
     # - content : string
@@ -138,17 +181,22 @@ class Post(models.Model):
     generator = models.TextField()
     # - guid : string
     guid = models.TextField()
-    # - title : string
-    title = models.TextField()
     # - url : string
     url = models.TextField()
-    # - pubDate : date
-    pubDate = models.DateTimeField(null=True)
     # - contributor : string
     contributor = models.TextField()
+
+    # Date
+    # - pubDate : date
+    pubDate = models.DateTimeField(null=True)
     # - updated : date
     updated = models.DateTimeField(null=True)
 
+    # Internal system acknowledgement date
+    # - ackDate : float
+    ackDate = models.FloatField(null=True)
+
+    # Foreign Keys (i.e. other models)
     # Feed that post belongs to
     feed = models.ForeignKey(Feed)
 
@@ -158,12 +206,23 @@ class Post(models.Model):
         # Required information for this constructor
         post_dict = {"feed" : feed, "feedURL" : feedURL}
 
-        # Text fields (nulls are always empty strings)
+        # Categories is a set of tags for feedparser
+        categories = list()
+        for tag in entry.get("tags", []):
+            categories.append(tag["term"])
+        post_dict.update({"category" : categories})
+
+        # Text fields (nulls are always empty strings to Django)
         post_dict.update({
-            "guid" : entry.get("id", ""),
-            "content" : entry.get("summary", ""),
+            "author" : entry.get("author", ""),
+            "rights" : entry.get("rights", ""),
             "title" : entry.get("title", ""),
-            "subtitle" : entry.get("subtitle", "")
+            "subtitle" : entry.get("subtitle", ""),
+            "content" : entry.get("summary", ""),
+            "generator" : entry.get("generator", ""),
+            "guid" : entry.get("id", ""),
+            "url" : entry.get("link", ""),
+            "contributor" : entry.get("contributor", "") # TODO: Find a feed where this is enable
 
         })
 
@@ -174,4 +233,14 @@ class Post(models.Model):
                 "pubDate" : time.strftime('%Y-%m-%dT%H:%M:%SZ', pubTime)
             })
 
+        upTime = entry.get("updated_parsed", None)
+        if pubTime:
+            post_dict.update({
+                "updated" : time.strftime('%Y-%m-%dT%H:%M:%SZ', upTime)
+            })
+
+        # AckDate (DateTime that the post enters the database)
+        post_dict.update({"ackDate" : time.time()})
+
+        # Create object
         p = Post.objects.create(**post_dict)
