@@ -3,7 +3,6 @@
 
 # Django
 from django.db import models
-from django.db.models.signals import post_init
 
 # RSS Parsing
 import feedparser
@@ -116,7 +115,8 @@ class Feed(models.Model):
                 "generator" : feedData.get("generator", ""),
                 "guid" : feedData.get("guid", ""),
                 "language" : feedData.get("language", ""),
-                "logo" : feedData.get("logo", ""),
+                "logo" : feedData.get("image", "").get("href", ""),
+                "rights" : feedData.get("rights", ""),
                 "title" : feedData.get("title", ""),
                 "subtitle" : feedData.get("subtitle", ""),
             }
@@ -222,8 +222,7 @@ class Post(models.Model):
             "generator" : entry.get("generator", ""),
             "guid" : entry.get("id", ""),
             "url" : entry.get("link", ""),
-            "contributor" : entry.get("contributor", "") # TODO: Find a feed where this is enable
-
+            "contributor" : entry.get("contributor", "") # TODO: Find a feed where this is enabled
         })
 
         # Dates
