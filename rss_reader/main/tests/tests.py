@@ -34,6 +34,9 @@ class FeedTestCase(TestCase):
         self.assertEqual(post.url, u"http://rss.nytimes.com/c/34625/f/642562/s/4014157b/sc/36/l/0L0Snytimes0N0Cinteractive0C20A140C110C0A30Chealth0Cbracing0Efor0Ethe0Efalls0Eof0Ean0Eaging0Enation0Bhtml0Dpartner0Frss0Gemc0Frss/story01.htm")
         self.assertEqual(post.pubDate, datetime.datetime(2014, 11, 2, 13, 43, 10, tzinfo=pytz.UTC))
 
+        post = posts[1]
+        self.assertEqual(post.title. u"Midterm Calculus: The Economy Elects Presidents. Presidents Elect Congress.")
+
 class PostTestCase(TestCase):
     def setUp(self):
         pass
