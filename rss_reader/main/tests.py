@@ -37,3 +37,65 @@ class FeedTestCase(TestCase):
 class PostTestCase(TestCase):
     def setUp(self):
         pass
+
+#User tests
+class UserTestCase(TestCase):
+    def setUp(self):
+        u1 = User.objects.create_user('Devon','BAMF@uchicago.edu','login')
+
+    def test_addTopic(self):
+        """addTopic(self) adds a Topic if it does not already exist"""
+        b1 = u1.addTopic("t1")
+
+        self.assertEqual(b1, True)
+        self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
+        
+        b2 = u1.addTopic("t1")
+        self.assertEqual(b2, False)
+        self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
+        
+        b3 = u1.addTopic("t2")
+        self.assertEqual(b3,True)
+        self.assertEqual(u1.topic_set.all(), "[<Topic: t1>, <Topic: t2>]")
+
+        # TEST FOR WEIRDO TOPIC NAMES?!
+
+#Topic tests
+class TopicTestCase(TestCase):
+    def setUp(self):
+        u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        u1.addTopic("t1")
+        t1 = u1.topic_set.get(name="t1")
+        u1.addTopic("t2")
+        t2 = u1.topic_set.get(name="t2")
+        f1 = "PRETEND THIS IS A FEED FOR NOW"
+        f2 = "AND ANOTHER"
+    
+    def test_editTopicName(self):
+        b1 = t1.editTopicName("space")
+        self.assertEqual(b1, True)
+        self.assertEqual(t1.name, "space")
+        # test for dealing with weird topic names
+
+    def test_addFeed(self):
+        b1 = t1.addFeed(f1)
+        self.assertEqual(b1, True)
+        # adding feed to topic its already in should silently fail
+        b1 = t1.addFeed(f1)
+        self.assertEqual(b1, True)
+        b1 = t2.addFeed(f1)
+        self.assertEqual(b1, False)
+
+    def test_deleteFeed(self):
+        t1.addFeed(f1)
+        t1.addFeed(f2)
+        
+        b1 = t2.deleteFeed(f1)
+        self.assertEqual(b1, False)
+        b1 = t1.deleteFeed(f1)
+        self.assertEqual(b1, True)
+        self.assertEqual(t1.feed_set.all(), "[<Feed: FEEDIDENTIFIER?>]"
+        b1 = t2.deleteFeed(f1)
+        self.assertEqual(b1,False)
+        
+
