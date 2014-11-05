@@ -32,7 +32,7 @@ TEMPLATE_DIRS = (
 
 # Application definition
 
-DEFAULT_APPS = (    
+DEFAULT_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,7 +42,8 @@ DEFAULT_APPS = (
 )
 
 THIRD_PARTY_APPS = (
-
+    'djangular',
+    'rest_framework',
 )
 
 LOCAL_APPS = (
