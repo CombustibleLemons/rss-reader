@@ -42,16 +42,16 @@ class PostTestCase(TestCase):
 #User tests
 class UserTestCase(TestCase):
     def setUp(self):
-        u1 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
+        RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
 
-    def test_addTopic(self):
+    def test_add_topic(self):
         """addTopic(self) adds a Topic if it does not already exist"""
+        u1 = RSSUser.objects.get(username='Devon')
         b1 = u1.addTopic("t1")
-        tname1 = "
 
         #topic added to user
         self.assertEqual(b1, True)
-        self.assertEqual(t1.RSSUser,u1)
+        self.assertEqual(t1.RSSUser.username,'Devon')
         
         # topicname already exists for user
         b2 = u1.addTopic("t1")
@@ -66,20 +66,21 @@ class TopicTestCase(TestCase):
         t1 = u1.topic_set.get(name="t1")
         u1.addTopic("t2")
         t2 = u1.topic_set.get(name="t2")
-        f1 = Feed.createbyUrl("http://home.uchicago.edu/~jharriman/example-rss.xml")
-        f2 = Feed.createbyUrl("http://xkcd.com/atom.xml")
+        f1 = Feed.createByUrl("http://home.uchicago.edu/~jharriman/example-rss.xml")
+        f2 = Feed.createByUrl("http://xkcd.com/rss.xml")
     
-    def test_editTopicName(self):
+    def test_edit_topic_name(self):
+        """editTopicName renames the topic"""
         b1 = t1.editTopicName("space")
         self.assertEqual(b1, True)
         self.assertEqual(t1.name, "space")
-        # test for dealing with weird topic names (length? weird chars?)
 
-    def test_addFeed(self):
+    def test_add_feed(self):
+        """addFeed adds a Feed to a Topic"""
         b1 = t1.addFeed(f1)
         self.assertEqual(b1, True)
         
-        # adding feed to topic its already in should silently fail
+        # adding Feed to topic it's already in should silently fail
         b1 = t1.addFeed(f1)
         self.assertEqual(b1, True)
         
@@ -87,7 +88,8 @@ class TopicTestCase(TestCase):
         b1 = t2.addFeed(f1)
         self.assertEqual(b1, False)
 
-    def test_deleteFeed(self):
+    def test_delete_feed(self):
+        """deleteFeed deletes a Feed from a Topic"""
         t1.addFeed(f1)
         t2.addFeed(f2)
         
@@ -98,6 +100,6 @@ class TopicTestCase(TestCase):
         #feed is in topic
         b1 = t1.deleteFeed(f1)
         self.assertEqual(b1, True)
-        self.assertEqual(t1.feed_set.all().exists(), False) #queryset returned by feed_set.all is empty
+        self.assertEqual(t1.feed_set.all().exists(), False) #f1 deleted, queryset returned by feed_set.all is empty
 
 

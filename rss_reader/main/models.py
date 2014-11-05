@@ -54,7 +54,7 @@ class RSSUser(User):
     # What are the topic name parameters? need to be checked
     def addTopic(self, topicName):
         self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
-        # returns bool
+        return True
 
 # Do we need to write new getters and setters?
 class Topic(models.Model):
@@ -66,6 +66,7 @@ class Topic(models.Model):
 
     class Meta:
         ordering = ('name',)
+        unique_together = (("name","user"),)
 
     # - editTopicName(name : string)
     # - this is a setter. Shouldn't it just be "setname"?
