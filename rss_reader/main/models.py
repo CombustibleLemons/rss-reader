@@ -1,5 +1,6 @@
 # from main.models import *
 # f = Feed.createByUrl("http://xkcd.com/rss.xml")
+from django.contrib.auth.models import User, UserManager
 
 # Django
 from django.db import models
@@ -37,6 +38,51 @@ class ListField(models.TextField):
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
+
+# User class exists in Django, with email, username attributes;
+# check_password(raw pwd),login(),logout(), authenticate() (auth class)
+# The login page, and handling still needs to be implemented in view.py
+# used http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
+class RSSUser(User):
+
+    # Use UserManager to get the create_user method, etc.
+    objects = UserManager()
+    # - addTopic(topic : string)
+    # What are the topic name parameters?
+    def addTopic(topic):
+        self.Topic_set.create(name=topic) #ManytoOne relationship creates topic with user ForeignKey
+        return True
+
+# Do we need to test getters and setters?
+# Do we need to write new getters and setters?
+class Topic(models.Model):
+    name = models.TextField(unique=True)
+    user = models.ForeignKey(RSSUser,null=True)
+    
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('name',)
+
+    # - editTopicName(name : string)
+    # - this is a setter. Shouldn't it just be "setname"?
+    def editTopicName(name):
+        self.name = name
+        return True
+
+    # - deleteTopic(topic : topic)
+    # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
+
+    # - addFeed (feed : Feed)
+    # - will take advantage of ManytoMany relationships
+    # - must check that Feed is not already owned in Topic or in User
+    def addFeed(feed):
+        pass
+    # - deleteFeed (feed : Feed)
+    # - will take advantage of ManytoMany relationship (feed will dissociate)
+    def deleteFeed(feed):
+        pass
 
 class Feed(models.Model):
     # Attributes
