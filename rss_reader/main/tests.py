@@ -1,5 +1,6 @@
 from django.test import TestCase
-from main.models import Feed, Post
+from main.models import Feed, Post, RSSUser, Topic
+from django.contrib.auth.models import User, UserManager
 import time
 import datetime
 import pytz
@@ -41,61 +42,62 @@ class PostTestCase(TestCase):
 #User tests
 class UserTestCase(TestCase):
     def setUp(self):
-        u1 = User.objects.create_user('Devon','BAMF@uchicago.edu','login')
+        u1 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
 
     def test_addTopic(self):
         """addTopic(self) adds a Topic if it does not already exist"""
         b1 = u1.addTopic("t1")
+        tname1 = "
 
+        #topic added to user
         self.assertEqual(b1, True)
-        self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
+        self.assertEqual(t1.RSSUser,u1)
         
+        # topicname already exists for user
         b2 = u1.addTopic("t1")
         self.assertEqual(b2, False)
-        self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
-        
-        b3 = u1.addTopic("t2")
-        self.assertEqual(b3,True)
-        self.assertEqual(u1.topic_set.all(), "[<Topic: t1>, <Topic: t2>]")
 
-        # TEST FOR WEIRDO TOPIC NAMES?!
 
 #Topic tests
 class TopicTestCase(TestCase):
     def setUp(self):
-        u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        u1 = RSSUser.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
         u1.addTopic("t1")
         t1 = u1.topic_set.get(name="t1")
         u1.addTopic("t2")
         t2 = u1.topic_set.get(name="t2")
-        f1 = "PRETEND THIS IS A FEED FOR NOW"
-        f2 = "AND ANOTHER"
+        f1 = Feed.createbyUrl("http://home.uchicago.edu/~jharriman/example-rss.xml")
+        f2 = Feed.createbyUrl("http://xkcd.com/atom.xml")
     
     def test_editTopicName(self):
         b1 = t1.editTopicName("space")
         self.assertEqual(b1, True)
         self.assertEqual(t1.name, "space")
-        # test for dealing with weird topic names
+        # test for dealing with weird topic names (length? weird chars?)
 
     def test_addFeed(self):
         b1 = t1.addFeed(f1)
         self.assertEqual(b1, True)
+        
         # adding feed to topic its already in should silently fail
         b1 = t1.addFeed(f1)
         self.assertEqual(b1, True)
+        
+        # cannot add Feed to two topics (f1 in t1 already)
         b1 = t2.addFeed(f1)
         self.assertEqual(b1, False)
 
     def test_deleteFeed(self):
         t1.addFeed(f1)
-        t1.addFeed(f2)
+        t2.addFeed(f2)
         
+        #feed not in topic
         b1 = t2.deleteFeed(f1)
         self.assertEqual(b1, False)
+        
+        #feed is in topic
         b1 = t1.deleteFeed(f1)
         self.assertEqual(b1, True)
-        self.assertEqual(t1.feed_set.all(), "[<Feed: FEEDIDENTIFIER?>]"
-        b1 = t2.deleteFeed(f1)
-        self.assertEqual(b1,False)
-        
+        self.assertEqual(t1.feed_set.all().exists(), False) #queryset returned by feed_set.all is empty
+
 

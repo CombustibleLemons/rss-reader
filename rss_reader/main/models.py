@@ -39,25 +39,27 @@ class ListField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
-# User class exists in Django, with email, username attributes;
-# check_password(raw pwd),login(),logout(), authenticate() (auth class)
-# The login page, and handling still needs to be implemented in view.py
-# used http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
-class RSSUser(User):
+# User class exists in Django, with email, username attributes; and
+# User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
+# The login / register page/handling still needs to be implemented in view.py via controllers, I believe
 
+class RSSUser(User):
+    # referenced from http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
+    """User with app settings."""
+    
     # Use UserManager to get the create_user method, etc.
     objects = UserManager()
+    
     # - addTopic(topic : string)
-    # What are the topic name parameters?
-    def addTopic(topic):
-        self.Topic_set.create(name=topic) #ManytoOne relationship creates topic with user ForeignKey
-        return True
+    # What are the topic name parameters? need to be checked
+    def addTopic(self, topicName):
+        self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
+        # returns bool
 
-# Do we need to test getters and setters?
 # Do we need to write new getters and setters?
 class Topic(models.Model):
     name = models.TextField(unique=True)
-    user = models.ForeignKey(RSSUser,null=True)
+    user = models.ForeignKey(RSSUser, null=True)
     
     def __unicode__(self):
         return self.name
@@ -68,8 +70,9 @@ class Topic(models.Model):
     # - editTopicName(name : string)
     # - this is a setter. Shouldn't it just be "setname"?
     def editTopicName(name):
+        # check to make sure name does not already exist
         self.name = name
-        return True
+        # returns true or false
 
     # - deleteTopic(topic : topic)
     # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
