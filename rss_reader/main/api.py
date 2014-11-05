@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 
-from .serializers import FeedSerializer, PostSerializer
-from .models import Feed, Post
+from .serializers import FeedSerializer, PostSerializer, TopicSerializer
+from .models import Feed, Post, Topic
 
 class TopicList(generics.ListCreateAPIView):
     model = Topic
