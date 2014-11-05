@@ -49,11 +49,11 @@ class UserTestCase(TestCase):
 
         self.assertEqual(b1, True)
         self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
-        
+
         b2 = u1.addTopic("t1")
         self.assertEqual(b2, False)
         self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
-        
+
         b3 = u1.addTopic("t2")
         self.assertEqual(b3,True)
         self.assertEqual(u1.topic_set.all(), "[<Topic: t1>, <Topic: t2>]")
@@ -70,7 +70,7 @@ class TopicTestCase(TestCase):
         t2 = u1.topic_set.get(name="t2")
         f1 = "PRETEND THIS IS A FEED FOR NOW"
         f2 = "AND ANOTHER"
-    
+
     def test_editTopicName(self):
         b1 = t1.editTopicName("space")
         self.assertEqual(b1, True)
@@ -89,7 +89,7 @@ class TopicTestCase(TestCase):
     def test_deleteFeed(self):
         t1.addFeed(f1)
         t1.addFeed(f2)
-        
+
         b1 = t2.deleteFeed(f1)
         self.assertEqual(b1, False)
         b1 = t1.deleteFeed(f1)
@@ -97,5 +97,3 @@ class TopicTestCase(TestCase):
         self.assertEqual(t1.feed_set.all(), "[<Feed: FEEDIDENTIFIER?>]"
         b1 = t2.deleteFeed(f1)
         self.assertEqual(b1,False)
-        
-
