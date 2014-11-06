@@ -600,18 +600,27 @@ describe('main controllers', function(){
 
     /* feedController */
 
-
-
     /* test fecthPosts()
        a = self.fetchPosts(validFeed)
        expectTrue(a)
        self.view.div.list.count = 0 */
 
+    it("fetch a post", function() {
+      var posts = self.fetchPosts(validFeed)
+      expect(posts).toBe(true)
+      expect(self.view.div.list.count).toBe(0) //these names might still be wrong 
+    });
 
     /* test fecthPosts()
        a = self.fetchPosts(invalidFeed)
        expectFalse(a)
        self.view.div.list.count = 0 */
+
+    it("fetch not a post", function() {
+       var notPost = self.fetchPosts(invalidFeed)
+       expect(notPost).toBe(false)
+       expect(self.view.div.list.count).toBe(0)
+    });
 
     /* test unsubscribe()
        a = self.getTopicModel()
@@ -620,6 +629,15 @@ describe('main controllers', function(){
        expectTrue(b)
        expectZero(len(a.feedList) + originalCount)
        checkList */
+
+    it("unsubscribe via feed", function() {
+      var oldModel = self.getTopicModel()
+      var originalCount = length(oldModel.feedList)
+      var newModel = self.unsubscribe(oldModel)
+      expect(b).toBe(true)
+      expect(length(oldModel.feedList)).toBe(0)
+      //checkList?
+    });
 
     /* postController */
 
@@ -631,4 +649,44 @@ describe('main controllers', function(){
        viewsrc = self.view.dir.a.viewsrc_link()
        self.expanded == True */
 
+    it("expand post", function() {
+      var height = self.view.div.attr('height') //syntax is almost certainly wrong
+      var expanded = self.expand()
+      expect(expanded).toBe(true)
+      expect(self.view.div.height).toBeGreaterThan(height)
+    });
+
+    it("expand already expanded", function() {
+      var height = self.view.div.attr('height') //syntax is almost certainly wrong
+      var expanded = self.expand()
+      expect(expanded).toBe(false)
+      expect(self.view.div.height).toBe(height)
+    });
+
+    it("collapse post" {
+      var height = self.view.div.attr('height') //syntax is almost certainly wrong
+      var collapsed = self.collapse()
+      expect(collapsed).toBe(true)
+      expect(self.view.div.height).toBeLessThan(height)
+    });
+
+    /* topicController */
+
+    it("change name", function(), {
+      var originalName = self.Topic.name
+      var changedName = self.Topic.changeName("foo")
+      expect(changedName).toBe(true)
+      expect(self.Topic.name).toBe("foo")
+    });
+
+    it("name change fail", function() {
+      var changedName = self.Topic.changeName("")
+      expect(changedName).toBe(false)
+    });
+
+    /* feedController */
+
+    it("add a feed", function() {
+      var originalFeedlist = self.Topic.
+    });
 });
