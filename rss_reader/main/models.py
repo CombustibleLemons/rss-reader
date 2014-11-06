@@ -39,37 +39,41 @@ class ListField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
-# User class exists in Django, with email, username attributes;
-# check_password(raw pwd),login(),logout(), authenticate() (auth class)
-# The login page, and handling still needs to be implemented in view.py
-# used http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
+# User class exists in Django, with email, username attributes; and
+# User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
+# The login / register page/handling still needs to be implemented in view.py via controllers, I believe
+
 class RSSUser(User):
+    # referenced from http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
+    """User with app settings."""
 
     # Use UserManager to get the create_user method, etc.
     objects = UserManager()
+
     # - addTopic(topic : string)
-    # What are the topic name parameters?
-    def addTopic(topic):
-        self.Topic_set.create(name=topic) #ManytoOne relationship creates topic with user ForeignKey
+    # What are the topic name parameters? need to be checked
+    def addTopic(self, topicName):
+        self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
         return True
 
-# Do we need to test getters and setters?
 # Do we need to write new getters and setters?
 class Topic(models.Model):
     name = models.TextField(unique=True)
-    user = models.ForeignKey(RSSUser,null=True)
+    user = models.ForeignKey(RSSUser, null=True)
 
     def __unicode__(self):
         return self.name
 
     class Meta:
         ordering = ('name',)
+        unique_together = (("name","user"),)
 
     # - editTopicName(name : string)
     # - this is a setter. Shouldn't it just be "setname"?
-    def editTopicName(name):
+    def editTopicName(self,name):
+        # check to make sure name does not already exist
         self.name = name
-        return True
+        # returns true or false
 
     # - deleteTopic(topic : topic)
     # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
@@ -77,12 +81,15 @@ class Topic(models.Model):
     # - addFeed (feed : Feed)
     # - will take advantage of ManytoMany relationships
     # - must check that Feed is not already owned in Topic or in User
-    def addFeed(feed):
+    def addFeed(self, feed):
         pass
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(feed):
+    def deleteFeed(self, feed):
         pass
+
+class FeedURLInvalid(Exception):
+    pass
 
 class Feed(models.Model):
     # Attributes
@@ -142,9 +149,8 @@ class Feed(models.Model):
     def createByUrl(cls, url):
         res = feedparser.parse(url)
         # Check if bozo_exception was raised
-        if res.get("bozo_exception", None):
-            pass
-            # TODO: Raise invalid URL exception
+        if res["version"] == "":
+            raise FeedURLInvalid
 
         if res["version"] == "rss20":
             # Populate Feed fields
@@ -278,20 +284,16 @@ class Post(models.Model):
         })
 
         # Dates
-        pubTime = entry.get("published_parsed", None)
-        if pubTime:
-            post_dict.update({
-                "pubDate" : time.strftime('%Y-%m-%dT%H:%M:%SZ', pubTime)
-            })
+        if entry.get("published_parsed", None):
+            pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry["published_parsed"])
+            post_dict.update({"pubDate" : pubTime})
 
-        upTime = entry.get("updated_parsed", None)
-        if pubTime:
-            post_dict.update({
-                "updated" : time.strftime('%Y-%m-%dT%H:%M:%SZ', upTime)
-            })
+        if entry.get("updated_parsed", None):
+            updateTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry["updated_parsed"])
+            post_dict.update({"updated" : updateTime})
 
         # AckDate (DateTime that the post enters the database)
         post_dict.update({"ackDate" : time.time()})
 
         # Create object
-        p = Post.objects.create(**post_dict)
+        return Post.objects.create(**post_dict)
