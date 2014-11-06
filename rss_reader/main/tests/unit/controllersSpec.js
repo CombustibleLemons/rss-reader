@@ -597,4 +597,28 @@ describe('main controllers', function(){
     it('contains 10 posts', function() {
       expect(scope.posts.length).toBe(25);
     });
+
+    /* feedController */
+
+    /* test fecthPosts()
+       a = self.fetchPosts(validFeed)
+       expectTrue(a)
+       self.view.div.list.count = 0 */
+
+
+    /* test fecthPosts()
+       a = self.fetchPosts(invalidFeed)
+       expectFalse(a)
+       self.view.div.list.count = 0 */
+
+    /* test unsubscribe()
+       a = self.getTopicModel()
+       originalCount = len(a.Feedlist)
+       b = self.unsubscribe(a)
+       expectTrue(b)
+       expectZero(len(a.feedList) + originalCount)
+       checkList */
+
+    /* postController */
+
 });
