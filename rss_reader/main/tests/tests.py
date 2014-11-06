@@ -34,6 +34,9 @@ class FeedTestCase(TestCase):
         self.assertEqual(post.url, u"http://rss.nytimes.com/c/34625/f/642562/s/4014157b/sc/36/l/0L0Snytimes0N0Cinteractive0C20A140C110C0A30Chealth0Cbracing0Efor0Ethe0Efalls0Eof0Ean0Eaging0Enation0Bhtml0Dpartner0Frss0Gemc0Frss/story01.htm")
         self.assertEqual(post.pubDate, datetime.datetime(2014, 11, 2, 13, 43, 10, tzinfo=pytz.UTC))
 
+        post = posts[1]
+        self.assertEqual(post.title. u"Midterm Calculus: The Economy Elects Presidents. Presidents Elect Congress.")
+
 class PostTestCase(TestCase):
     def setUp(self):
         pass
@@ -49,11 +52,11 @@ class UserTestCase(TestCase):
 
         self.assertEqual(b1, True)
         self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
-        
+
         b2 = u1.addTopic("t1")
         self.assertEqual(b2, False)
         self.assertEqual(u1.topic_set.all(), "[<Topic: t1>]")
-        
+
         b3 = u1.addTopic("t2")
         self.assertEqual(b3,True)
         self.assertEqual(u1.topic_set.all(), "[<Topic: t1>, <Topic: t2>]")
@@ -70,7 +73,7 @@ class TopicTestCase(TestCase):
         t2 = u1.topic_set.get(name="t2")
         f1 = "PRETEND THIS IS A FEED FOR NOW"
         f2 = "AND ANOTHER"
-    
+
     def test_editTopicName(self):
         b1 = t1.editTopicName("space")
         self.assertEqual(b1, True)
@@ -89,7 +92,7 @@ class TopicTestCase(TestCase):
     def test_deleteFeed(self):
         t1.addFeed(f1)
         t1.addFeed(f2)
-        
+
         b1 = t2.deleteFeed(f1)
         self.assertEqual(b1, False)
         b1 = t1.deleteFeed(f1)
@@ -97,5 +100,3 @@ class TopicTestCase(TestCase):
         self.assertEqual(t1.feed_set.all(), "[<Feed: FEEDIDENTIFIER?>]"
         b1 = t2.deleteFeed(f1)
         self.assertEqual(b1,False)
-        
-

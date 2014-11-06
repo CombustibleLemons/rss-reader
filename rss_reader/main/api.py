@@ -4,13 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-<<<<<<< HEAD
 from .serializers import FeedSerializer, PostSerializer, TopicSerializer
 from .models import Feed, Post, Topic
-=======
-from .serializers import TopicSerializer, FeedSerializer, PostSerializer
-from .models import Topic, Feed, Post
-
 # class FeedList(APIView):
 #     """
 #     List all feeds, or create a new feed.
@@ -57,6 +52,8 @@ from .models import Topic, Feed, Post
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 >>>>>>> angular-framework
 
+=======
+>>>>>>> angular-framework
 class TopicList(generics.ListCreateAPIView):
     model = Topic
     serializer_class = TopicSerializer
