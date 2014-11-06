@@ -3,7 +3,7 @@
 /* jasmine specs for controllers go here */
 
 describe('main controllers', function(){
-  beforeEach(module('main.controllers'));
+    beforeEach(module('main.controllers'));
     var scope, scope2, ctrl, ctrl2, $httpBackend, response;
     beforeEach(inject(function(_$httpBackend_, $controller, $rootScope) {
       response = [
