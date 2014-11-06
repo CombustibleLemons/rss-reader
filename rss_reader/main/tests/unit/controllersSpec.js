@@ -600,6 +600,8 @@ describe('main controllers', function(){
 
     /* feedController */
 
+
+
     /* test fecthPosts()
        a = self.fetchPosts(validFeed)
        expectTrue(a)
@@ -620,5 +622,13 @@ describe('main controllers', function(){
        checkList */
 
     /* postController */
+
+    /* test expand()
+       height = self.view.div.attr('height')
+       b = self.expand()
+       expectTrue(b)
+       expectGreater(self.view.div.height, height)
+       viewsrc = self.view.dir.a.viewsrc_link()
+       self.expanded == True */
 
 });
