@@ -58,7 +58,7 @@ class RSSUser(User):
 class Topic(models.Model):
     name = models.TextField(unique=True)
     user = models.ForeignKey(RSSUser,null=True)
-    
+
     def __unicode__(self):
         return self.name
 
@@ -161,11 +161,14 @@ class Feed(models.Model):
                 "generator" : feedData.get("generator", ""),
                 "guid" : feedData.get("guid", ""),
                 "language" : feedData.get("language", ""),
-                "logo" : feedData.get("image", "").get("href", ""),
                 "rights" : feedData.get("rights", ""),
                 "title" : feedData.get("title", ""),
                 "subtitle" : feedData.get("subtitle", ""),
             }
+            if feedData.get("image",None):
+                cls_dict.update({"logo" : feedData["image"].get("href", "")})
+            else:
+                cls_dict.update({"logo" : ""})
 
             # Integer field
             cls_dict.update({
@@ -184,7 +187,10 @@ class Feed(models.Model):
                 cls_dict.update({"updated" : updateTime})
 
             # URL Field
-            url = next(x["href"] for x in feedData["links"] if x["rel"] == "self")
+            try:
+                url = next(x["href"] for x in feedData["links"] if x["rel"] == "self")
+            except StopIteration:
+                url = ""
             if url:
                 cls_dict.update({"URL" : url})
 
