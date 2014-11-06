@@ -50,10 +50,7 @@ from .models import Feed, Post, Topic
 #         feed = self.get_object(pk)
 #         feed.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
->>>>>>> angular-framework
 
-=======
->>>>>>> angular-framework
 class TopicList(generics.ListCreateAPIView):
     model = Topic
     serializer_class = TopicSerializer

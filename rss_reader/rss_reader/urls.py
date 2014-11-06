@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     # url(r'^$', 'rss_reader.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
+    url(r'^$', MainViews.index),
     url(r'^djangular/', include('djangular.urls')),
 
     url(r'^feeds', include(feed_urls)),
