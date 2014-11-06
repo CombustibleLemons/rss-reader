@@ -1,7 +1,11 @@
 from rest_framework import generics, permissions
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
-from .serializers import FeedSerializer, PostSerializer
-from .models import Feed, Post
+from .serializers import TopicSerializer, FeedSerializer, PostSerializer
+from .models import Topic, Feed, Post
 
 class TopicList(generics.ListCreateAPIView):
     model = Topic
@@ -45,6 +49,14 @@ class FeedPostList(generics.ListAPIView):
         feed_id = self.kwargs.get("pk")
         queryset = super(FeedPostList, self).get_queryset()
         return queryset.filter(feed__pk=feed_id)
+
+@api_view(['GET','POST'])
+def feed_create(request):
+    if request.method == "POST":
+        # Create feed using input URL
+        print request.DATA["url"]
+        return Response(status=status.HTTP_200_OK)
+        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PostList(generics.ListCreateAPIView):
     model = Post
