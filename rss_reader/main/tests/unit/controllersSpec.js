@@ -2,21 +2,41 @@
 
 /* jasmine specs for controllers go here */
 
+describe("User controllers", function() {
+    beforeEach(module("main.controllers"));
+    var scope, userController;
+    scope = $rootScope.$new();
+    userController = $controller('UserController', {$scope: scope});
+
+    it("should add topics", function() {
+        var origTopicSet = scope.user.topic_set;
+        expect(scope.addTopic('foo')).toBe(true);
+        var newTopicSet = scope.user.topic_set;
+        expect(origTopicSet.length + 1).toEqual(newTopicSet.length);
+        // expect topic to be in topic set, uncertain of syntax at this time
+    })
+})
+
+    scope = $rootScope.$new();
+    scope2 = $rootScope.$new();
+    ctrl = $controller('FeedCtrl', {$scope: scope});
+    ctrl2 = $controller('PostController', {$scope: scope2})
+
 describe('main controllers', function(){
   beforeEach(module('main.controllers'));
-    var scope, scope2, ctrl, ctrl2, $httpBackend, response;
-    beforeEach(inject(function(_$httpBackend_, $controller, $rootScope) {
+  var scope, scope2, ctrl, ctrl2, $httpBackend, response;
+  beforeEach(inject(function(_$httpBackend_, $controller, $rootScope) {
       response = [
-    {
+      {
         "id": 50,
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By EVAN J. MANDERY",
         "category": [
-            "Oil (Petroleum) and Gasoline",
-            "Global Warming",
-            "Energy and Power",
-            "Colleges and Universities",
-            "Endowments"
+        "Oil (Petroleum) and Gasoline",
+        "Global Warming",
+        "Energy and Power",
+        "Colleges and Universities",
+        "Endowments"
         ],
         "rights": "",
         "title": "Opinion: The Missing Campus Climate Debate",
@@ -36,10 +56,10 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By NATE COHN",
         "category": [
-            "Presidential Election of 2016",
-            "Democratic Party",
-            "Midterm Elections (2014)",
-            "Republican Party"
+        "Presidential Election of 2016",
+        "Democratic Party",
+        "Midterm Elections (2014)",
+        "Republican Party"
         ],
         "rights": "",
         "title": "Midterm Calculus: Why 2014 Isn\u2019t as Good as It Seems for the Republicans",
@@ -59,11 +79,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By LOUISE ARONSON",
         "category": [
-            "Elder Care",
-            "Design",
-            "Elderly",
-            "Disabilities",
-            "Architecture"
+        "Elder Care",
+        "Design",
+        "Elderly",
+        "Disabilities",
+        "Architecture"
         ],
         "rights": "",
         "title": "Opinion: New Buildings for Older People",
@@ -83,11 +103,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By RICHARD FAUSSET",
         "category": [
-            "North Carolina",
-            "Elections, Senate",
-            "Hagan, Kay R",
-            "Midterm Elections (2014)",
-            "Tillis, Thomas R"
+        "North Carolina",
+        "Elections, Senate",
+        "Hagan, Kay R",
+        "Midterm Elections (2014)",
+        "Tillis, Thomas R"
         ],
         "rights": "",
         "title": "North Carolina: In North Carolina, Campaigns for Senate Play to Dislikes in an Effort to Stoke Interest",
@@ -107,12 +127,12 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By JENNIFER STEINHAUER",
         "category": [
-            "Elections, Senate",
-            "Facebook Inc|FB|NASDAQ",
-            "Iowa",
-            "Grassley, Charles E",
-            "Braley, Bruce",
-            "Midterm Elections (2014)"
+        "Elections, Senate",
+        "Facebook Inc|FB|NASDAQ",
+        "Iowa",
+        "Grassley, Charles E",
+        "Braley, Bruce",
+        "Midterm Elections (2014)"
         ],
         "rights": "",
         "title": "Iowa: Endurance Test of a Race, for Candidates and Voters in Iowa",
@@ -132,14 +152,14 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By JACK HEALY",
         "category": [
-            "Gardner, Cory S",
-            "Colorado",
-            "Hickenlooper, John W",
-            "Democratic Party",
-            "Midterm Elections (2014)",
-            "Udall, Mark",
-            "Endorsements",
-            "Republican Party"
+        "Gardner, Cory S",
+        "Colorado",
+        "Hickenlooper, John W",
+        "Democratic Party",
+        "Midterm Elections (2014)",
+        "Udall, Mark",
+        "Endorsements",
+        "Republican Party"
         ],
         "rights": "",
         "title": "Colorado: Republicans Setting the Early Pace in Colorado With 104,000 More Ballots",
@@ -159,12 +179,12 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By TAMAR LEWIN",
         "category": [
-            "Yale University",
-            "Annarita Di Lorenzo",
-            "Sexual Harassment",
-            "New Haven (Conn)",
-            "Dr. Michael Simons",
-            "Yale School of Medicine"
+        "Yale University",
+        "Annarita Di Lorenzo",
+        "Sexual Harassment",
+        "New Haven (Conn)",
+        "Dr. Michael Simons",
+        "Yale School of Medicine"
         ],
         "rights": "",
         "title": "Handling of Sexual Harassment Case Poses Larger Questions at Yale",
@@ -184,14 +204,14 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By JONATHAN MARTIN",
         "category": [
-            "States (US)",
-            "CBS Corporation|CBS|NYSE",
-            "Elections, State Legislature",
-            "Elections, House of Representatives",
-            "Democratic Party",
-            "Campaign Finance",
-            "Midterm Elections (2014)",
-            "Republican Party"
+        "States (US)",
+        "CBS Corporation|CBS|NYSE",
+        "Elections, State Legislature",
+        "Elections, House of Representatives",
+        "Democratic Party",
+        "Campaign Finance",
+        "Midterm Elections (2014)",
+        "Republican Party"
         ],
         "rights": "",
         "title": "Both Parties See Campaign Tilting to Republicans",
@@ -211,11 +231,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By REUTERS",
         "category": [
-            "Customs and Border Protection (US)",
-            "Post-Traumatic Stress Disorder",
-            "Mexico",
-            "United States International Relations",
-            "Tahmooressi, Andrew"
+        "Customs and Border Protection (US)",
+        "Post-Traumatic Stress Disorder",
+        "Mexico",
+        "United States International Relations",
+        "Tahmooressi, Andrew"
         ],
         "rights": "",
         "title": "U.S. Marine Veteran Back Home After Months in Mexican Jail",
@@ -253,10 +273,10 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By WILLIAM YARDLEY",
         "category": [
-            "National Public Radio",
-            "Deaths (Obituaries)",
-            "Mayes, Bernard",
-            "Suicides and Suicide Attempts"
+        "National Public Radio",
+        "Deaths (Obituaries)",
+        "Mayes, Bernard",
+        "Suicides and Suicide Attempts"
         ],
         "rights": "",
         "title": "Bernard Mayes, 85, Dies; Started First U.S. Suicide Hotline",
@@ -276,10 +296,10 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By PETER BAKER and MICHAEL D. SHEAR",
         "category": [
-            "Obama, Barack",
-            "United States Politics and Government",
-            "Democratic Party",
-            "Midterm Elections (2014)"
+        "Obama, Barack",
+        "United States Politics and Government",
+        "Democratic Party",
+        "Midterm Elections (2014)"
         ],
         "rights": "",
         "title": "Braced for a Shift in Congress, Obama Is Setting a New Agenda",
@@ -299,9 +319,9 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By ROBERT PEAR",
         "category": [
-            "Small Business",
-            "Patient Protection and Affordable Care Act (2010)",
-            "Health Insurance and Managed Care"
+        "Small Business",
+        "Patient Protection and Affordable Care Act (2010)",
+        "Health Insurance and Managed Care"
         ],
         "rights": "",
         "title": "Defects Found Before Debut of Health Insurance Site for Small Businesses",
@@ -321,9 +341,9 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By ASHLEY SOUTHALL",
         "category": [
-            "Fires and Firefighters",
-            "Portland (Me)",
-            "Halloween"
+        "Fires and Firefighters",
+        "Portland (Me)",
+        "Halloween"
         ],
         "rights": "",
         "title": "Fire Kills 5 in Building Near College in Maine",
@@ -343,11 +363,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By KATHARINE Q. SEELYE",
         "category": [
-            "Rhode Island",
-            "Raimondo, Gina M",
-            "Pensions and Retirement Plans",
-            "Elections, Governors",
-            "Midterm Elections (2014)"
+        "Rhode Island",
+        "Raimondo, Gina M",
+        "Pensions and Retirement Plans",
+        "Elections, Governors",
+        "Midterm Elections (2014)"
         ],
         "rights": "",
         "title": "In Rhode Island Governor\u2019s Race, Pension Issue Could Hurt Raimondo",
@@ -367,11 +387,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By JULIE HIRSCHFELD DAVIS",
         "category": [
-            "Obama, Barack",
-            "Speeches and Statements",
-            "Milwaukee (Wis)",
-            "Portland (Me)",
-            "Midterm Elections (2014)"
+        "Obama, Barack",
+        "Speeches and Statements",
+        "Milwaukee (Wis)",
+        "Portland (Me)",
+        "Midterm Elections (2014)"
         ],
         "rights": "",
         "title": "Wistful but Having Fun, Obama Gives Last Push",
@@ -409,12 +429,12 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By KENNETH CHANG",
         "category": [
-            "Michael Alsbury",
-            "Aviation Accidents, Safety and Disasters",
-            "Mojave Air and Space Port",
-            "Private Spaceflight",
-            "Virgin Galactic",
-            "Branson, Richard"
+        "Michael Alsbury",
+        "Aviation Accidents, Safety and Disasters",
+        "Mojave Air and Space Port",
+        "Private Spaceflight",
+        "Virgin Galactic",
+        "Branson, Richard"
         ],
         "rights": "",
         "title": "Virgin Galactic Is Rattled, but Undeterred, by Deadly Space Plane Crash",
@@ -434,11 +454,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By ASHLEY SOUTHALL",
         "category": [
-            "Fires and Firefighters",
-            "Deaths (Fatalities)",
-            "Halloween",
-            "Traffic Accidents and Safety",
-            "Railroad Accidents and Safety"
+        "Fires and Firefighters",
+        "Deaths (Fatalities)",
+        "Halloween",
+        "Traffic Accidents and Safety",
+        "Railroad Accidents and Safety"
         ],
         "rights": "",
         "title": "Deadly Halloween Across the Nation",
@@ -458,10 +478,10 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By JUSTIN GILLIS",
         "category": [
-            "Global Warming",
-            "Intergovernmental Panel on Climate Change",
-            "United Nations",
-            "Greenhouse Gas Emissions"
+        "Global Warming",
+        "Intergovernmental Panel on Climate Change",
+        "United Nations",
+        "Greenhouse Gas Emissions"
         ],
         "rights": "",
         "title": "U.N. Panel Warns of Dire Effects From Lack of Action Over Global Warming",
@@ -481,10 +501,10 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By NATE COHN",
         "category": [
-            "Colorado",
-            "Elections, Senate",
-            "Midterm Elections (2014)",
-            "Udall, Mark"
+        "Colorado",
+        "Elections, Senate",
+        "Midterm Elections (2014)",
+        "Udall, Mark"
         ],
         "rights": "",
         "title": "Midterm Calculus: Republicans Hold Edge in Early Voting in Colorado",
@@ -504,7 +524,7 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By KAREN E. DEMPSEY",
         "category": [
-            "Highlights"
+        "Highlights"
         ],
         "rights": "",
         "title": "Motherlode Blog: When a Teacher Is Arrested for Child Pornography, Students Will Talk",
@@ -542,11 +562,11 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By LYNN VAVRECK",
         "category": [
-            "Elections, Senate",
-            "United States Politics and Government",
-            "Elections, House of Representatives",
-            "Voting and Voters",
-            "Midterm Elections (2014)"
+        "Elections, Senate",
+        "United States Politics and Government",
+        "Elections, House of Representatives",
+        "Voting and Voters",
+        "Midterm Elections (2014)"
         ],
         "rights": "",
         "title": "Midterm Calculus: The Economy Elects Presidents. Presidents Elect Congress.",
@@ -566,10 +586,10 @@ describe('main controllers', function(){
         "feedURL": "http://www.nytimes.com/services/xml/rss/nyt/US.xml",
         "author": "By NATE COHN",
         "category": [
-            "Colorado",
-            "Democratic Party",
-            "Midterm Elections (2014)",
-            "Republican Party"
+        "Colorado",
+        "Democratic Party",
+        "Midterm Elections (2014)",
+        "Republican Party"
         ],
         "rights": "",
         "title": "Midterm Calculus: It May Be Too Late, but Colorado Early Ballots Are Shifting Toward Democrats",
@@ -585,16 +605,120 @@ describe('main controllers', function(){
         "feed": 4
     }];
 
-      $httpBackend = _$httpBackend_;
-      $httpBackend.expectGET('feeds/4/posts').respond(response);
-      scope = $rootScope.$new();
-      scope2 = $rootScope.$new();
-      ctrl = $controller('FeedCtrl', {$scope: scope});
-      $httpBackend.flush();
-      scope.$digest();
-    }));
+    $httpBackend = _$httpBackend_;
+    $httpBackend.expectGET('feeds/4/posts').respond(response);
+    scope = $rootScope.$new();
+    scope2 = $rootScope.$new();
+    ctrl = $controller('FeedCtrl', {$scope: scope});
+    ctrl2 = $controller('PostController', {$scope: scope2})
+    $httpBackend.flush();
+    scope.$digest();
+}));
 
-    it('contains 10 posts', function() {
-      expect(scope.posts.length).toBe(25);
+it('contains 10 posts', function() {
+  expect(scope.posts.length).toBe(25);
+  expect(scope.getFeedByURL("http://google.com:"), )
+});
+
+/* feedController */
+
+    /*  test fecthPosts()
+    a = self.fetchPosts(validFeed)
+    expectTrue(a)
+    self.view.div.list.count = 0 */
+
+    it("fetch a post", function() {
+        var posts = self.fetchPosts(validFeed)
+        expect(posts).toBe(true)
+        expect(self.view.div.list.count).toBe(0) //these names might still be wrong 
     });
+
+    /* test fecthPosts()
+    a = self.fetchPosts(invalidFeed)
+    expectFalse(a)
+    self.view.div.list.count = 0 */
+
+    it("fetch not a post", function() {
+        var notPost = self.fetchPosts(invalidFeed)
+        expect(notPost).toBe(false)
+        expect(self.view.div.list.count).toBe(0)
+    });
+
+    /* test unsubscribe()
+    a = self.getTopicModel()
+    originalCount = len(a.Feedlist)
+    b = self.unsubscribe(a)
+    expectTrue(b)
+    expectZero(len(a.feedList) + originalCount)
+    checkList */
+
+    it("unsubscribe via feed", function() {
+        var oldModel = self.getTopicModel()
+        var originalCount = length(oldModel.feedList)
+        var newModel = self.unsubscribe(oldModel)
+        expect(b).toBe(true)
+        expect(length(oldModel.feedList)).toBe(0)
+        //checkList?
+    });
+
+/* postController */
+
+    /* test expand()
+    height = self.view.div.attr('height')
+    b = self.expand()
+    expectTrue(b)
+    expectGreater(self.view.div.height, height)
+    viewsrc = self.view.dir.a.viewsrc_link()
+    self.expanded == True */
+
+    it("expand post", function() {
+        var height = self.view.div.attr('height') //syntax is almost certainly wrong
+        var expanded = self.expand()
+        expect(expanded).toBe(true)
+        expect(self.view.div.height).toBeGreaterThan(height)
+    });
+
+    it("expand already expanded", function() {
+        var height = self.view.div.attr('height') //syntax is almost certainly wrong
+        var expanded = self.expand()
+        expect(expanded).toBe(false)
+        expect(self.view.div.height).toBe(height)
+    });
+
+    it("collapse post" {
+        var height = self.view.div.attr('height') //syntax is almost certainly wrong
+        var collapsed = self.collapse()
+        expect(collapsed).toBe(true)
+        expect(self.view.div.height).toBeLessThan(height)
+    });
+
+/* topicController */
+
+    it("change name", function(), {
+        var originalName = self.Topic.name
+        var changedName = self.Topic.changeName("foo")
+        expect(changedName).toBe(true)
+        expect(self.Topic.name).toBe("foo")
+    });
+
+    it("name change fail", function() {
+        var changedName = self.Topic.changeName("")
+        expect(changedName).toBe(false)
+    });
+
+    it("add a feed", function() {
+       var url = "http://xkcd.com/rss.xml"
+       var addedFeed = self.Topic.addFeedtoTopic(url)
+       expect(addedFeed).toBe(true)
+       expect(self.Topic.feed_set.all()[0].URL).toBe(url)
+       expect(self.Topic.addFeedtoTopic(url)).toBe(false)
+    });
+
+    it("fetch all feeds", function() {
+        expect(self.fetchFeeds()).toBe(true)
+        // come back to me
+    });
+
+/* User Controller */
+
 });
