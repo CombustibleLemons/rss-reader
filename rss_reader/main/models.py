@@ -13,6 +13,7 @@ from datetime import datetime
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
 
+# do we still need this ?
 class ListField(models.TextField):
     __metaclass__ = models.SubfieldBase
     description = "Stores a python list"
@@ -53,8 +54,12 @@ class RSSUser(User):
     # - addTopic(topic : string)
     # What are the topic name parameters? need to be checked
     def addTopic(self, topicName):
-        self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
-        return True
+        try:
+            self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
+        except:
+            return False
+        else:
+            return True
 
 # Do we need to write new getters and setters?
 class Topic(models.Model):
