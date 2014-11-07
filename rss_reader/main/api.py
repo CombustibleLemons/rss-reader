@@ -4,9 +4,30 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import TopicSerializer, FeedSerializer, PostSerializer
-from .models import Topic, Feed, Post
+from .serializers import RSSUserSerializer, TopicSerializer, FeedSerializer, PostSerializer
+from .models import RSSUser, Topic, Feed, Post
 
+# RSSUser API
+class RSSUserList(generics.ListCreateAPIView):
+    model = RSSUser
+    serializer_class = RSSUserSerializer
+    permission_classes = [
+        permissions.AllowAny
+    ]
+
+class RSSUserDetail(generics.RetrieveAPIView):
+    model = RSSUser
+    serializer_class = RSSUserSerializer
+
+class RSSUserTopicList(generics.ListAPIView):
+    model = Topic
+    serializer_class = TopicSerializer
+    def get_queryset(self):
+        RSSUser_id = self.kwargs.get("pk")
+        queryset = super(RSSUserFeedList, self).get_queryset()
+        return queryset.filter(RSSUser__pk=RSSUser_id)
+
+# Topic API
 class TopicList(generics.ListCreateAPIView):
     model = Topic
     serializer_class = TopicSerializer
@@ -28,7 +49,7 @@ class TopicFeedList(generics.ListAPIView):
         queryset = super(TopicFeedList, self).get_queryset()
         return queryset.filter(Topic__pk=Topic_id)
 
-
+# Feed API
 class FeedList(generics.ListCreateAPIView):
     model = Feed
     serializer_class = FeedSerializer
@@ -58,6 +79,7 @@ def feed_create(request):
         return Response(status=status.HTTP_200_OK)
         #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Post API
 class PostList(generics.ListCreateAPIView):
     model = Post
     serializer_class = PostSerializer
