@@ -1,9 +1,13 @@
 from rest_framework import serializers
-from .models import User, Topic, Feed, Post
+from .models import RSSUser, Topic, Feed, Post
+
+class RSSUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Feed
+        model = Topic
 
 class FeedSerializer(serializers.ModelSerializer):
     class Meta:
