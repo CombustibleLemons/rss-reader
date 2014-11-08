@@ -44,27 +44,27 @@ class ListField(models.TextField):
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
 # The login / register page/handling still needs to be implemented in view.py via controllers, I believe
 
-class RSSUser(User):
-    # referenced from http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
-    """User with app settings."""
-
-    # Use UserManager to get the create_user method, etc.
-    objects = UserManager()
-
-    # - addTopic(topic : string)
-    # What are the topic name parameters? need to be checked
-    def addTopic(self, topicName):
-        try:
-            self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
-        except:
-            return False
-        else:
-            return True
+# class RSSUser(User):
+#     # referenced from http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
+#     """User with app settings."""
+#
+#     # Use UserManager to get the create_user method, etc.
+#     objects = UserManager()
+#
+#     # - addTopic(topic : string)
+#     # What are the topic name parameters? need to be checked
+#     def addTopic(self, topicName):
+#         try:
+#             self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
+#         except:
+#             return False
+#         else:
+#             return True
 
 # Do we need to write new getters and setters?
 class Topic(models.Model):
     name = models.TextField(unique=True)
-    user = models.ForeignKey(RSSUser, null=True)
+    user = models.ForeignKey(User, null=True, related_name="topics")
 
     def __unicode__(self):
         return self.name
@@ -261,7 +261,7 @@ class Post(models.Model):
 
     # Foreign Keys (i.e. other models)
     # Feed that post belongs to
-    feed = models.ForeignKey(Feed)
+    feed = models.ForeignKey(Feed, related_name="posts")
 
     # Methods
     @classmethod
