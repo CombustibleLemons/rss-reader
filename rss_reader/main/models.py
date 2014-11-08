@@ -44,7 +44,8 @@ class ListField(models.TextField):
 # Do we need to write new getters and setters?
 class Topic(models.Model):
     name = models.TextField(unique=True)
-    user = models.ForeignKey(User, null=True, related_name="topics")
+    user = models.ForeignKey(User, null=True)
+    feeds = models.ManyToManyField(Feed, related_name = '+')
 
     def __unicode__(self):
         return self.name
@@ -54,24 +55,36 @@ class Topic(models.Model):
         unique_together = (("name","user"),)
 
     # - editTopicName(name : string)
-    # - this is a setter. Shouldn't it just be "setname"?
-    def editTopicName(self,name):
-        # check to make sure name does not already exist
-        self.name = name
-        # returns true or false
+    def editTopicName(self, topicname):
+        u = self.user
+        if u.objects.get(username = topicname).exists():
+            return False
+        else:
+            self.name = name
+            return True
 
-    # - deleteTopic(topic : topic)
-    # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
+# - deleteTopic(topic : topic)
+# --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
 
-    # - addFeed (feed : Feed)
-    # - will take advantage of ManytoMany relationships
-    # - must check that Feed is not already owned in Topic or in User
+# - addFeed (feed : Feed)
+# - will take advantage of ManytoMany relationships
+# - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
-        pass
+        try:
+            self.feeds.add(feed)
+            return True
+        except:
+            traceback.print_exc()
+            return False
+
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(self, feed):
-        pass
+    def deleteFeed(self, feedname):
+        if self.feeds.get(feedname).empty():
+            return False
+        else:
+            self.feed.delete(feedname)
+            return True
 
 class FeedURLInvalid(Exception):
     pass
