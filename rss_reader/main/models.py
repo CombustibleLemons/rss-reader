@@ -41,51 +41,6 @@ class ListField(models.TextField):
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
 # The login / register page/handling still needs to be implemented in view.py via controllers, I believe
 
-# Do we need to write new getters and setters?
-class Topic(models.Model):
-    name = models.TextField(unique=True)
-    user = models.ForeignKey(User, null=True)
-    feeds = models.ManyToManyField(Feed, related_name = '+')
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        ordering = ('name',)
-        unique_together = (("name","user"),)
-
-    # - editTopicName(name : string)
-    def editTopicName(self, topicname):
-        u = self.user
-        if u.objects.get(username = topicname).exists():
-            return False
-        else:
-            self.name = name
-            return True
-
-# - deleteTopic(topic : topic)
-# --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
-
-# - addFeed (feed : Feed)
-# - will take advantage of ManytoMany relationships
-# - must check that Feed is not already owned in Topic or in User
-    def addFeed(self, feed):
-        try:
-            self.feeds.add(feed)
-            return True
-        except:
-            traceback.print_exc()
-            return False
-
-    # - deleteFeed (feed : Feed)
-    # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(self, feedname):
-        if self.feeds.get(feedname).empty():
-            return False
-        else:
-            self.feed.delete(feedname)
-            return True
-
 class FeedURLInvalid(Exception):
     pass
 
@@ -215,6 +170,51 @@ class Feed(models.Model):
 
     def getSize(self):
         pass
+
+# Do we need to write new getters and setters?
+class Topic(models.Model):
+    name = models.TextField(unique=True)
+    feeds = models.ManyToManyField(Feed, related_name = '+')
+    user = models.ForeignKey(User, null=True, related_name="topics")
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('name',)
+        unique_together = (("name","user"),)
+
+    # - editTopicName(name : string)
+    def editTopicName(self, topicname):
+        u = self.user
+        if u.objects.get(username = topicname).exists():
+            return False
+        else:
+            self.name = name
+            return True
+
+# - deleteTopic(topic : topic)
+# --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
+
+# - addFeed (feed : Feed)
+# - will take advantage of ManytoMany relationships
+# - must check that Feed is not already owned in Topic or in User
+    def addFeed(self, feed):
+        try:
+            self.feeds.add(feed)
+            return True
+        except:
+            traceback.print_exc()
+            return False
+
+    # - deleteFeed (feed : Feed)
+    # - will take advantage of ManytoMany relationship (feed will dissociate)
+    def deleteFeed(self, feedname):
+        if self.feeds.get(feedname).empty():
+            return False
+        else:
+            self.feed.delete(feedname)
+            return True
 
 class Post(models.Model):
     # Attributes
