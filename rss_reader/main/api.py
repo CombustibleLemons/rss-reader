@@ -1,31 +1,36 @@
+# REST Framework
 from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import RSSUserSerializer, TopicSerializer, FeedSerializer, PostSerializer
-from .models import RSSUser, Topic, Feed, Post
+# User class from django
+from django.contrib.auth.models import User, UserManager
 
-# RSSUser API
-class RSSUserList(generics.ListCreateAPIView):
-    model = RSSUser
-    serializer_class = RSSUserSerializer
+# Models and Serializers
+from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer
+from .models import Topic, Feed, Post
+
+# User API
+class UserList(generics.ListCreateAPIView):
+    model = User
+    serializer_class = UserSerializer
     permission_classes = [
         permissions.AllowAny
     ]
 
-class RSSUserDetail(generics.RetrieveAPIView):
-    model = RSSUser
-    serializer_class = RSSUserSerializer
+class UserDetail(generics.RetrieveAPIView):
+    model = User
+    serializer_class = UserSerializer
 
-class RSSUserTopicList(generics.ListAPIView):
+class UserTopicList(generics.ListAPIView):
     model = Topic
     serializer_class = TopicSerializer
     def get_queryset(self):
-        RSSUser_id = self.kwargs.get("pk")
-        queryset = super(RSSUserFeedList, self).get_queryset()
-        return queryset.filter(RSSUser__pk=RSSUser_id)
+        User_id = self.kwargs.get("pk")
+        queryset = super(UserTopicList, self).get_queryset()
+        return queryset.filter(User__pk=User_id)
 
 # Topic API
 class TopicList(generics.ListCreateAPIView):
@@ -34,8 +39,6 @@ class TopicList(generics.ListCreateAPIView):
     permission_classes = [
         permissions.AllowAny
     ]
-
-    # We can limit the fields that we display here so that it is comprehensible to the user.
 
 class TopicDetail(generics.RetrieveAPIView):
     model = Topic
