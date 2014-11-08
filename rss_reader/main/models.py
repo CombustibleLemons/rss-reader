@@ -1,9 +1,6 @@
-# from main.models import *
-# f = Feed.createByUrl("http://xkcd.com/rss.xml")
-from django.contrib.auth.models import User, UserManager
-
 # Django
 from django.db import models
+from django.contrib.auth.models import User, UserManager
 
 # RSS Parsing
 import feedparser
@@ -43,23 +40,6 @@ class ListField(models.TextField):
 # User class exists in Django, with email, username attributes; and
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
 # The login / register page/handling still needs to be implemented in view.py via controllers, I believe
-
-# class RSSUser(User):
-#     # referenced from http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
-#     """User with app settings."""
-#
-#     # Use UserManager to get the create_user method, etc.
-#     objects = UserManager()
-#
-#     # - addTopic(topic : string)
-#     # What are the topic name parameters? need to be checked
-#     def addTopic(self, topicName):
-#         try:
-#             self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
-#         except:
-#             return False
-#         else:
-#             return True
 
 # Do we need to write new getters and setters?
 class Topic(models.Model):
