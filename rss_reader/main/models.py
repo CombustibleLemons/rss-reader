@@ -1,9 +1,6 @@
-# from main.models import *
-# f = Feed.createByUrl("http://xkcd.com/rss.xml")
-from django.contrib.auth.models import User, UserManager
-
 # Django
 from django.db import models
+from django.contrib.auth.models import User, UserManager
 
 # RSS Parsing
 import feedparser
@@ -13,6 +10,7 @@ from datetime import datetime
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
 
+# do we still need this ?
 class ListField(models.TextField):
     __metaclass__ = models.SubfieldBase
     description = "Stores a python list"
@@ -42,51 +40,6 @@ class ListField(models.TextField):
 # User class exists in Django, with email, username attributes; and
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
 # The login / register page/handling still needs to be implemented in view.py via controllers, I believe
-
-class RSSUser(User):
-    # referenced from http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inheritance/
-    """User with app settings."""
-
-    # Use UserManager to get the create_user method, etc.
-    objects = UserManager()
-
-    # - addTopic(topic : string)
-    # What are the topic name parameters? need to be checked
-    def addTopic(self, topicName):
-        self.topic_set.create(name=topicName) #ManytoOne relationship creates topic with user ForeignKey
-        return True
-
-# Do we need to write new getters and setters?
-class Topic(models.Model):
-    name = models.TextField(unique=True)
-    user = models.ForeignKey(RSSUser, null=True)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        ordering = ('name',)
-        unique_together = (("name","user"),)
-
-    # - editTopicName(name : string)
-    # - this is a setter. Shouldn't it just be "setname"?
-    def editTopicName(self,name):
-        # check to make sure name does not already exist
-        self.name = name
-        # returns true or false
-
-    # - deleteTopic(topic : topic)
-    # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
-
-    # - addFeed (feed : Feed)
-    # - will take advantage of ManytoMany relationships
-    # - must check that Feed is not already owned in Topic or in User
-    def addFeed(self, feed):
-        pass
-    # - deleteFeed (feed : Feed)
-    # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(self, feed):
-        pass
 
 class FeedURLInvalid(Exception):
     pass
@@ -218,6 +171,51 @@ class Feed(models.Model):
     def getSize(self):
         pass
 
+# Do we need to write new getters and setters?
+class Topic(models.Model):
+    name = models.TextField(unique=True)
+    feeds = models.ManyToManyField(Feed, related_name = '+')
+    user = models.ForeignKey(User, null=True, related_name="topics")
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('name',)
+        unique_together = (("name","user"),)
+
+    # - editTopicName(name : string)
+    def editTopicName(self, topicname):
+        u = self.user
+        if u.objects.get(username = topicname).exists():
+            return False
+        else:
+            self.name = name
+            return True
+
+# - deleteTopic(topic : topic)
+# --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
+
+# - addFeed (feed : Feed)
+# - will take advantage of ManytoMany relationships
+# - must check that Feed is not already owned in Topic or in User
+    def addFeed(self, feed):
+        try:
+            self.feeds.add(feed)
+            return True
+        except:
+            traceback.print_exc()
+            return False
+
+    # - deleteFeed (feed : Feed)
+    # - will take advantage of ManytoMany relationship (feed will dissociate)
+    def deleteFeed(self, feedname):
+        if self.feeds.get(feedname).empty():
+            return False
+        else:
+            self.feed.delete(feedname)
+            return True
+
 class Post(models.Model):
     # Attributes
     # Text
@@ -256,7 +254,7 @@ class Post(models.Model):
 
     # Foreign Keys (i.e. other models)
     # Feed that post belongs to
-    feed = models.ForeignKey(Feed)
+    feed = models.ForeignKey(Feed, related_name="posts")
 
     # Methods
     @classmethod
