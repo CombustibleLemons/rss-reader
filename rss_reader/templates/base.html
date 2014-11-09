@@ -34,31 +34,30 @@
     </nav>
 
 		<!--Main Section -->
-    <div class="container-fluid main-container" style="border:red 1px solid;">
-		<!--Navigation Seciton -->
+    <div class="container-fluid main-container" style="border:red 1px solid;" ng-controller="UserController">
+		<!--Navigation Section -->
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
-				{% verbatim %}
-				<ul class="test" ng-repeat="topic in topics">
-					<li>{{topic.name}}</li>
-				</ul>
-				{% endverbatim %}
 				<!-- Search Section -->
 				<input type="text" placeholder="Search for a feed">
 				<!-- Topics Section -->
-				<ul class="nav nav-sidebar">
+				<div> <!--ng-controller="TopicController"-->
+				<ul class="nav nav-sidebar" ng-repeat="topic in topics">
 					<li>
-						<a class="topicButton" href="#topic1">
-	        				<div class="arrow-up">&#9658; Topic 1</div>
-	        				<div style="display: none;" class="arrow-down">&#9660; Topic 1</div>
-      					</a>
-						<ul class="feeds" id="topic1">
+						{% verbatim %}
+						<a class="topicButton" href="#{{topic.name}}">
+	        				<div class="arrow-up">&#9658; {{topic.name}}</div>
+	        				<div style="display: none;" class="arrow-down">&#9660; {{topic.name}}</div>
+      			</a>
+						<div ng-controller="TopicController">
+						<ul class="feeds" id="#{{$parent.topics[$index].name}}">
 							<li><a href="#">Feed1</a></li>
 							<li><a href="#">Feed2</a></li>
 							<li><a href="#">Feed3</a></li>
 						</ul>
+						{% endverbatim %}
 					</li>
-					<li>
+					<!--<li>
 						<a class="topicButton" href="#topic2">Topic2</a>
 						<ul class="feeds" id="topic2">
 							<li><a href="#">Feed1</a></li>
@@ -81,9 +80,10 @@
 							<li><a href="#">Feed2</a></li>
 							<li><a href="#">Feed3</a></li>
 						</ul>
-					</li>
+					</li>-->
 				</ul>
 			</div>
+		</div>
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" style="border:black 1px solid;">
 				{% block content %}{% endblock %}
