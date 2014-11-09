@@ -3,15 +3,21 @@
 /* Controllers */
 
 angular.module('main.controllers', [])
-  .controller('UserController', function($scope, $http) {
-    $http.get('user/').success(function(data) {
-      $scope.user = data;
-    });
+  .controller('UserController', function($scope, $rootScope, $http, UserService) {
+    $scope.refreshUser = function(){
+      return UserService.getUser()
+    }
+    $scope.getTopicIds = function(){
+      var promise = $scope.refreshUser().then(function(data){
+        return data["topics"];
+      });
+      return promise;
+    };
   })
   .controller('NavigationController', function($scope, $http) {
-    $http.get('user/').success(function(data) {
+    /* $http.get('user/').success(function(data) {
       $scope.user = data;
-    });
+    }); */
     $scope.addTopic = function(topicName) {
       // THIS IS WHERE A FUNCTION GOES, DOO DAH, DOO DAH
     };
@@ -19,10 +25,15 @@ angular.module('main.controllers', [])
       // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
     };
     $scope.fetchTopics = function($scope, $http) {
-      $http.get('topics/').success(function(data){
-        $scope.topics = data;
+      $scope.$parent.getTopicIds().then(function(data){
+        var topic_list = [];
+        for (var i = 0; i < data.length; i++){
+          $http.get('topics/' + data[0]).success(function(data){
+            topic_list.push(data);
+          });
+        }
+        $scope.topics = topic_list;
       });
-      // FUNCTION FUNCTION WHAT'S YOUR FUNCTION
     };
     $scope.expandTopic = function() {
       // wheeeeeee
@@ -30,6 +41,7 @@ angular.module('main.controllers', [])
     $scope.minimizeTopic = function() {
       // woahhhhhh
     };
+    $scope.fetchTopics($scope, $http);
   })
   .controller('SearchController', function($scope, $http) {
     $http.get('user/').success(function(data) {
@@ -39,11 +51,9 @@ angular.module('main.controllers', [])
       // function goes here to add to uncategorized
     };
   })
-  .controller('TopicController', function($scope, $http) {
-    $http.get('user/').success(function(data) {
-      $scope.user = data;
-    });
-    $scope.topic = 'foo'; // unsure how to tie this to specific topics, this is a placeholder
+  .controller('TopicController', function($scope, $http, $index) {
+    $scope.topic = $scope.$parent.topics[$index]; // unsure how to tie this to specific topics, this is a placeholder
+    alert($scope.topic);
     $scope.addFeedToTopic = function(url) {
       // function function function
     };
@@ -51,7 +61,7 @@ angular.module('main.controllers', [])
       // FUNCTION YEAH
     };
     $scope.fetchFeeds = function() {
-      // functionnnnnn
+      // Get the feed IDs
     };
     $scope.expandFeed = function(feedName) {
       // expand the feed (one feed per topic in iteration one)
