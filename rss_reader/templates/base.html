@@ -13,7 +13,7 @@
 	<script src="{% static 'js/controllers.js' %}"></script>
 	<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
 </head>
-<body>
+<body ng-app="main">
 	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="navbar-header">
 		  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -33,11 +33,19 @@
 		</div><!--/.nav-collapse -->
     </nav>
 
-
+		<!--Main Section -->
     <div class="container-fluid main-container" style="border:red 1px solid;">
-		<div class="row-fluid row-offcanvas row-offcanvas-left">	
+		<!--Navigation Seciton -->
+		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
+				{% verbatim %}
+				<ul class="test" ng-repeat="topic in topics">
+					<li>{{topic.name}}</li>
+				</ul>
+				{% endverbatim %}
+				<!-- Search Section -->
 				<input type="text" placeholder="Search for a feed">
+				<!-- Topics Section -->
 				<ul class="nav nav-sidebar">
 					<li>
 						<a class="topicButton" href="#topic1">
@@ -78,11 +86,11 @@
 			</div>
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" style="border:black 1px solid;">
-				{% block content %}{% endblock %}			
+				{% block content %}{% endblock %}
 			</div>
-		</div>	
+		</div>
 	</div>
-	
+
 
 	<div class="footer">
       <div class="container">

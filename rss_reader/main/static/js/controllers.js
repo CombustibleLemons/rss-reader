@@ -18,7 +18,10 @@ angular.module('main.controllers', [])
     $scope.removeTopic = function(topicName) {
       // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
     };
-    $scope.fetchTopics = function() {
+    $scope.fetchTopics = function($scope, $http) {
+      $http.get('topics/').success(function(data){
+        $scope.topics = data;
+      });
       // FUNCTION FUNCTION WHAT'S YOUR FUNCTION
     };
     $scope.expandTopic = function() {
