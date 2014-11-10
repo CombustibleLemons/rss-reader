@@ -9,6 +9,7 @@ from datetime import datetime
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
+import traceback #prints errors
 
 # do we still need this ?
 class ListField(models.TextField):
@@ -39,7 +40,7 @@ class ListField(models.TextField):
 
 # User class exists in Django, with email, username attributes; and
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
-# The login / register page/handling still needs to be implemented in view.py via controllers, I believe
+# user.topics.create(name="topicname")
 
 class FeedURLInvalid(Exception):
     pass
@@ -96,6 +97,9 @@ class Feed(models.Model):
     updated = models.DateTimeField(null=True)
 
     # - logo : (string, string, string)
+
+    def __unicode__(self):
+        return self.URL
 
     # Constructor (uses class method as suggested by Django docs)
     @classmethod
@@ -166,7 +170,7 @@ class Feed(models.Model):
         pass
 
     def getAll(self):
-        print self.post_set.all()
+        print self.posts.all()
 
     def getSize(self):
         pass
@@ -176,6 +180,7 @@ class Topic(models.Model):
     name = models.TextField(unique=True)
     feeds = models.ManyToManyField(Feed, related_name = '+')
     user = models.ForeignKey(User, null=True, related_name="topics")
+    #user = models.ForeignKey(User, null=True)
 
     def __unicode__(self):
         return self.name
@@ -186,12 +191,12 @@ class Topic(models.Model):
 
     # - editTopicName(name : string)
     def editTopicName(self, topicname):
-        u = self.user
-        if u.objects.get(username = topicname).exists():
-            return False
-        else:
-            self.name = name
+        try:
+            self.name = topicname
+            self.save()
             return True
+        except:
+            return False
 
 # - deleteTopic(topic : topic)
 # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
@@ -200,21 +205,30 @@ class Topic(models.Model):
 # - will take advantage of ManytoMany relationships
 # - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
+        for t in self.user.topics.all():
+            f = t.feeds.filter(URL = feed.URL).exists() #feed already in ANY topic?
+            if f:
+                if not(self.feeds.filter(URL=feed.URL).exists()): #feed in THIS topic?
+                    return False
         try:
             self.feeds.add(feed)
-            return True
+            self.save()
         except:
-            traceback.print_exc()
+            #traceback.print_exc()
             return False
-
+        return True
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
     def deleteFeed(self, feedname):
-        if self.feeds.get(feedname).empty():
-            return False
-        else:
-            self.feed.delete(feedname)
+        try:
+            f = self.feeds.get(URL=feedname)
+            self.feeds.remove(f)
+            self.save()
             return True
+        except:
+            #traceback.print_exc()
+            return False
+
 
 class Post(models.Model):
     # Attributes
