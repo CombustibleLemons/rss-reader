@@ -202,11 +202,11 @@ class FeedTestCase(TestCase):
         self.assertEqual(feed.getPosts(0), [])
 
         # Greater than total number of cases
-        self.assertEqual(feed.getPosts(3), list(feed.posts.all()))
+        self.assertEqual(feed.getPosts(3), list(feed.posts.all().order_by('-pubDate')))
 
         # Check posts equal
-        self.assertEqual(feed.getPosts(1), list(feed.posts.all()[0]))
-
+        self.assertEqual(feed.getPosts(1), feed.posts.all()[0])
+        
         # Empty feed
         feed = Feed()
         self.assertEqual(feed.getPosts(1), [])
