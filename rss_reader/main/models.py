@@ -167,20 +167,27 @@ class Feed(models.Model):
 
     # Methods
     def getPosts(self, n):
-        pass
+
+        #empty list, or n is 0
+        if (not(self.posts.all().exists()) or (n==0)):
+            return list(self.posts.none())
+
+        descending_posts = self.posts.all().order_by('-pubDate')
+        if (n==1):
+            return self.posts.all()[0]
+        return list(descending_posts[:(n-1)])
 
     def getAll(self):
-        print self.posts.all()
+        return list(self.posts.all())
 
     def getSize(self):
-        pass
+        return self.posts.all().count()
 
-# Do we need to write new getters and setters?
+
 class Topic(models.Model):
     name = models.TextField(unique=True)
     feeds = models.ManyToManyField(Feed, related_name = '+')
     user = models.ForeignKey(User, null=True, related_name="topics")
-    #user = models.ForeignKey(User, null=True)
 
     def __unicode__(self):
         return self.name
@@ -206,9 +213,10 @@ class Topic(models.Model):
 # - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
         for t in self.user.topics.all():
-            f = t.feeds.filter(URL = feed.URL).exists() #feed already in ANY topic?
-            if f:
-                if not(self.feeds.filter(URL=feed.URL).exists()): #feed in THIS topic?
+            if self.feeds.filter(URL=feed.URL).exists():
+                break
+            else:
+                if t.feeds.filter(URL = feed.URL).exists():
                     return False
         try:
             self.feeds.add(feed)
@@ -271,6 +279,10 @@ class Post(models.Model):
     feed = models.ForeignKey(Feed, related_name="posts")
 
     # Methods
+
+    def __unicode__(self):
+        return self.title
+
     @classmethod
     def createByEntry(cls, entry, feedURL, feed):
         # Required information for this constructor
