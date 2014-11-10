@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 # Model classes
-from main.models import Feed, Post, RSSUser, Topic
+from main.models import Feed, Post, Topic
 
 # Built in users
 from django.contrib.auth.models import User, UserManager
@@ -15,76 +15,76 @@ from django.db import IntegrityError
 import time
 import datetime
 import pytz
+import traceback
 
 #User tests
-class UserTestCase(TestCase):
-    def setUp(self):
-        self.u0 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
+# class UserTestCase(TestCase):
+#     def setUp(self):
+#         self.u0 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
+#
+#     def test_create_user(self):
+#         """ Test the user constructor is working """
+#         # Create user
+#         u1 = RSSUser.objects.create_user('Test','test@example.com','password')
+#
+#         # Make sure user exists
+#         self.assertEquals(u1, RSSUser.objects.get(username='Test'))
+#
+#     def test_missing_user(self):
+#         """create_user fails if missing username"""
+#         def bad_user_input():
+#             RSSUser.objects.create_user("","a","b")
+#         self.assertRaises(ValueError, bad_user_input)
+#
+#     def test_missing_email(self):
+#         """create_user fails if missing email"""
+#         def bad_email_input():
+#             RSSUser.objects.create_user("a","","b")
+#         self.assertRaises(ValueError, bad_email_input)
+#
+#     def test_missing_password(self):
+#         """create_user fails if missing password"""
+#         def bad_password_input():
+#             RSSUser.objects.create_user("a","b","")
+#         self.assertRaises(ValueError, bad_password_input)
+#
+#     def test_usernames_unique(self):
+#         """ Test that usernames must be unique """
+#         def badCreate():
+#             u1 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
+#         self.assertRaises(IntegrityError, badCreate)
+#
+#     def test_emails_not_unique(self):
+#         """ Test that emails don't have to be unique """
+#         u1 = RSSUser.objects.create_user('Devon2','BAMF@uchicago.edu','login')
+#         self.assertEqual(self.u0.email, u1.email)
+#
+#     def test_add_topic_to_user(self):
+#         """ Can add a Topic to a user """
+#         u1 = RSSUser.objects.get(username='Devon')
+#         b1 = u1.addTopic("t1")
+#
+#         # Topic added to user
+#         self.assertEqual(b1, True)
+#         t1 = Topic.objects.get(name="t1")
+#         self.assertEqual(t1.user.username,'Devon')
 
-    def test_create_user(self):
-        """ Test the user constructor is working """
-        # Create user
-        u1 = RSSUser.objects.create_user('Test','test@example.com','password')
-
-        # Make sure user exists
-        self.assertEquals(u1, RSSUser.objects.get(username='Test'))
-
-    def test_missing_user(self):
-        """create_user fails if missing username"""
-        def bad_user_input():
-            RSSUser.objects.create_user("","a","b")
-        self.assertRaises(ValueError, bad_user_input)
-
-    def test_missing_email(self):
-        """create_user fails if missing email"""
-        def bad_email_input():
-            RSSUser.objects.create_user("a","","b")
-        self.assertRaises(ValueError, bad_email_input)
-
-    def test_missing_password(self):
-        """create_user fails if missing password"""
-        def bad_password_input():
-            RSSUser.objects.create_user("a","b","")
-        self.assertRaises(ValueError, bad_password_input)
-
-    def test_usernames_unique(self):
-        """ Test that usernames must be unique """
-        def badCreate():
-            u1 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
-        self.assertRaises(IntegrityError, badCreate)
-
-    def test_emails_not_unique(self):
-        """ Test that emails don't have to be unique """
-        u1 = RSSUser.objects.create_user('Devon2','BAMF@uchicago.edu','login')
-        self.assertEqual(self.u0.email, u1.email)
-
-    def test_add_topic_to_user(self):
-        """ Can add a Topic to a user """
-        u1 = RSSUser.objects.get(username='Devon')
-        b1 = u1.addTopic("t1")
-
-        # Topic added to user
-        self.assertEqual(b1, True)
-        t1 = Topic.objects.get(name="t1")
-        self.assertEqual(t1.user.username,'Devon')
-
-    def test_topic_names_unique(self):
-        """ Cannot add Topic to user if there already exists a Topic of the same name """
-        u1 = RSSUser.objects.get(username='Devon')
-        u1.addTopic("t_first")
-        def badAddTopic():
-            u1.addTopic("t_first")
-        self.assertRaises(IntegrityError, badAddTopic)
-
+#     def test_topic_names_unique(self):
+#         """ Cannot add Topic to user if there already exists a Topic of the same name """
+#         u1 = RSSUser.objects.get(username='Devon')
+#         u1.addTopic("t_first")
+#         def badAddTopic():
+#             u1.addTopic("t_first")
+#         self.assertRaises(IntegrityError, badAddTopic)
 
 #Topic tests
 class TopicTestCase(TestCase):
     def setUp(self):
-        self.u1 = RSSUser.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
-        self.u1.addTopic("t1")
-        self.t1 = self.u1.topic_set.get(name="t1")
-        self.u1.addTopic("t2")
-        self.t2 = self.u1.topic_set.get(name="t2")
+        self.u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        self.u1.topics.create(name="t1")
+        self.t1 = self.u1.topics.get(name="t1")
+        self.u1.topics.create(name="t2")
+        self.t2 = self.u1.topics.get(name="t2")
         self.f1 = Feed.createByUrl("http://home.uchicago.edu/~jharriman/example-rss.xml")
         self.f2 = Feed.createByUrl("http://xkcd.com/rss.xml")
 
@@ -136,7 +136,7 @@ class TopicTestCase(TestCase):
         #feed is in topic
         b1 = self.t1.deleteFeed(self.f1)
         self.assertEqual(b1, True)
-        self.assertEqual(self.t1.feed_set.all().exists(), False) #f1 deleted, queryset returned by feed_set.all is empty
+        self.assertEqual(self.t1.feeds.all().exists(), False) #f1 deleted, queryset returned by feed_set.all is empty
 
 
 class FeedTestCase(TestCase):
@@ -163,7 +163,7 @@ class FeedTestCase(TestCase):
         # self.assertEqual(feed.updated, pubTime)
 
         # Check each of the Posts
-        posts = feed.post_set.all()
+        posts = feed.posts.all()
         post = posts[0]
         self.assertEqual(post.title, u"Bracing for the Falls of an Aging Nation")
         self.assertEqual(post.content, u'As Americans live longer, fall-related injuries and deaths are rising, and homes for the elderly are tackling the problem in ways large and small \u2014 even by changing the color of their carpeting and toilet seats.<img border="0" height="1" src="http://rss.nytimes.com/c/34625/f/642562/s/4014157b/sc/36/mf.gif" width="1" /><br clear="all" />')
@@ -202,10 +202,10 @@ class FeedTestCase(TestCase):
         self.assertEqual(feed.getPosts(0), [])
 
         # Greater than total number of cases
-        self.assertEqual(feed.getPosts(3), list(feed.post_set.all()))
+        self.assertEqual(feed.getPosts(3), list(feed.posts.all()))
 
         # Check posts equal
-        self.assertEqual(feed.getPosts(1), list(feed.post_set.all()[0]))
+        self.assertEqual(feed.getPosts(1), list(feed.posts.all()[0]))
 
         # Empty feed
         feed = Feed()
@@ -217,7 +217,7 @@ class FeedTestCase(TestCase):
         feed = self.feed
 
         # Test that the default test returns all its posts
-        self.assertEqual(feed.getAll(), list(feed.post_set.all()))
+        self.assertEqual(feed.getAll(), list(feed.posts.all()))
 
         # Test that it returns an empty list with an empty feed
         feed = Feed()
