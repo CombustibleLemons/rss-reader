@@ -9,7 +9,7 @@
 	border-top: #e7e7e7 solid 1px;
 }
 body {
-  padding-top: 51px;  
+  padding-top: 51px;
 }
 .text-center {
   padding-top: 20px;
@@ -60,9 +60,9 @@ body {
 	}
 }
 
-.feeds {
+/* .feeds {
 	display:none;
-}
+} */
 
 .login-btn {
 	background: #EBB12D;

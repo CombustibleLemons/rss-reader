@@ -40,7 +40,7 @@ class TopicList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
-   
+
 
 class TopicDetail(generics.RetrieveAPIView):
     model = Topic
@@ -76,13 +76,41 @@ class FeedPostList(generics.ListAPIView):
         queryset = super(FeedPostList, self).get_queryset()
         return queryset.filter(feed__pk=feed_id)
 
+from django.db import IntegrityError
 @api_view(['GET','POST'])
 def feed_create(request):
     if request.method == "POST":
         # Create feed using input URL
-        print request.DATA["url"]
-        return Response(status=status.HTTP_200_OK)
-        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        url = request.DATA["url"]
+        try:
+            # Try creating a Feed with the url
+            f = Feed.createByUrl(url)
+            f.save()
+
+            # Add feed to uncategorized Topic
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+            try:
+                # If uncategorized already exists
+                t = user.topics.get(name="Uncategorized")
+                t.feeds.add(f)
+                t.save()
+            except Topic.DoesNotExist as e:
+                # If it doesn't create it
+                t = Topic(name="Uncategorized", user=user)
+                t.save()
+                t.feeds.add(f)
+                t.save()
+
+            # Serialize the Feed so it can be sent back
+            fs = FeedSerializer(f)
+            return Response(fs.data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # Post API
 class PostList(generics.ListCreateAPIView):

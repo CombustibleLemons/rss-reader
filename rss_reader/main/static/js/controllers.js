@@ -16,7 +16,8 @@ angular.module('main.controllers', [])
   })
   .controller('NavigationController', function($scope, $http) {
     // Attributes
-    $scope.expandedIndex;
+    $scope.expandedTopic;
+    $scope.expandedIndex = 0;
 
     // Functions
     $scope.addTopic = function(topicName) {
@@ -37,39 +38,26 @@ angular.module('main.controllers', [])
       });
     };
     $scope.expandTopic = function(index) {
-      var topic = $scope.topics[index];
-      if ($scope.expandedTopic != null){
-        // Set currently expanded topic to unexpanded
-        $('.topicButton[href="#' + $scope.expandedTopic["name"] + '"]').find(".arrow-up").removeAttr("style");
-        $('.topicButton[href="#' + $scope.expandedTopic["name"] + '"]').find(".arrow-down").attr("style", "display:none");
-        // Expand feed list
-        $('#' + $scope.expandedTopic["name"]).css("display", "none");
-      }
-      // Expand topic
-      $('.topicButton[href="#' + topic["name"] + '"]').find(".arrow-up").attr("style", "display:none");
-      $('.topicButton[href="#' + topic["name"] + '"]').find(".arrow-down").removeAttr("style");
-
-      // Expand feed list
-      $('#' + topic["name"]).css("display", "block");
-
-      // Set new expanded topic
-      $scope.expandedTopic = topic;
+      $scope.expandedIndex = index
     };
-    $scope.minimizeTopic = function() {
-      // woahhhhhh
+    $scope.minimizeTopic = function(index) {
+      // TODO: Decide if there is ANYTHING to do here or if Angular covers it all for us.
     };
     $scope.fetchTopics($scope, $http);
   })
   .controller('SearchController', function($scope, $http) {
-    $http.get('user/').success(function(data) {
-      $scope.user = data;
-    });
-    $scope.addFeed = function(url) {
-      // function goes here to add to uncategorized
+    $scope.addFeed = function() { // formerly passed url as an argument
+      $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
+        //alert(data);
+          // function goes here to add to uncategorized
+        }).error(function(data, status, headers, config){
+          //alert(status);
+        });
     };
   })
-  .controller('TopicController', function($scope, $http) {
-    $scope.topic = $scope.$parent.topics[$scope.$parent.$index]; // unsure how to tie this to specific topics, this is a placeholder
+  .controller('TopicController', function($scope, $http, $timeout, FeedService) {
+    $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
+    $scope.refreshInterval = 10;
     $scope.addFeedToTopic = function(url) {
       // function function function
     };
@@ -79,13 +67,13 @@ angular.module('main.controllers', [])
     $scope.fetchFeeds = function($scope, $http) {
       // Get the feed IDs
       var feed_ids = $scope.topic["feeds"];
-      var feed_list = [];
-      for (var i = 0; i < feed_ids.length; i++){
-        $http.get('feeds/' + feed_ids[i]).success(function(data){
-          feed_list.push(data);
-        });
-      }
-      $scope.feeds = feed_list;
+      // Accursed asyncronicity!!!
+      // Ask for the feed service to fetch all the feed_ids. Returns a promise that we wait to parse (using .then)
+      FeedService.getFeedsByIds(feed_ids).then(function(data){
+        $scope.feeds = data;
+      });
+      // Poll for feeds every $scope.refreshInterval so that we can get new feed info
+      $timeout(function(){$scope.fetchFeeds($scope, $http);}, $scope.refreshInterval * 1000);
     };
     $scope.expandFeed = function(feedName) {
       // expand the feed (one feed per topic in iteration one)

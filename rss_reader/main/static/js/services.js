@@ -47,4 +47,31 @@ angular.module('main.services', []).
                 });
           }
       };
+  })
+  .factory('FeedService', function($http, $q){
+    return {
+      getFeedsByIds : function(feed_ids){
+        var deferred = $q.defer();
+        var urlCalls = [];
+        angular.forEach(feed_ids, function(feed_id){
+          urlCalls.push($http.get('feeds/' + feed_id));
+        });
+        $q.all(urlCalls)
+          .then(function(results){
+            // For each result pluck out the data
+            // TODO: This should probably check that the status codes are all 200s
+            var ret = results.map(function(res){
+              return res["data"];
+            });
+            deferred.resolve(ret);
+          },
+          function(errors){
+            deferred.reject(errors);
+          },
+          function(updates){
+            deferred.update(updates);
+          });
+        return deferred.promise;
+      }
+    };
   });
