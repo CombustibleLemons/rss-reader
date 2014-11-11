@@ -3,23 +3,30 @@
 /* Controllers */
 
 angular.module('main.controllers', [])
-  .controller('UserController', function($scope, $rootScope, $http, UserService) {
+  .controller('UserController', function($scope, $rootScope, $http, $timeout, APIService) {
     $scope.refreshUser = function(){
-      return UserService.getUser()
-    }
-    $scope.getTopicIds = function(){
-      var promise = $scope.refreshUser().then(function(data){
-        return data["topics"];
+      return APIService.getUser().then(function(user){
+        $scope.user = user;
       });
-      return promise;
+    };
+    $scope.getTopicIds = function(){
+      if (this.user == null){
+        // Force a refresh
+        var promise = $scope.refreshUser().then(function(){
+          return $scope.user["topics"];
+        });
+        return promise;
+      }
+      else{
+        return function(){return $scope.user["topics"]};
+      }
     };
   })
-  .controller('NavigationController', function($scope, $http) {
+  .controller('NavigationController', function($scope, $http, APIService) {
     // Attributes
-    $scope.expandedTopic;
     $scope.expandedIndex = 0;
 
-    // Functions
+    // Methods
     $scope.addTopic = function(topicName) {
       // THIS IS WHERE A FUNCTION GOES, DOO DAH, DOO DAH
     };
@@ -27,14 +34,19 @@ angular.module('main.controllers', [])
       // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
     };
     $scope.fetchTopics = function($scope, $http) {
-      $scope.$parent.getTopicIds().then(function(data){
-        var topic_list = [];
+      // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
+      // Ask the UserController if it has data yet
+      $scope.$parent.getTopicIds().then(function(topic_ids){
+        APIService.getTopicsByIds(topic_ids).then(function(topics){
+          $scope.topics = topics;
+        });
+        /* var topic_list = [];
         for (var i = 0; i < data.length; i++){
           $http.get('topics/' + data[i]).success(function(data){
             topic_list.push(data);
           });
-        }
-        $scope.topics = topic_list;
+        }*/
+        //$scope.topics = topic_list;
       });
     };
     $scope.expandTopic = function(index) {
@@ -48,14 +60,14 @@ angular.module('main.controllers', [])
   .controller('SearchController', function($scope, $http) {
     $scope.addFeed = function() { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
-        //alert(data);
-          // function goes here to add to uncategorized
+          //alert(data);
+          // The server will do the adding to the uncategorized part
         }).error(function(data, status, headers, config){
           //alert(status);
         });
     };
   })
-  .controller('TopicController', function($scope, $http, $timeout, FeedService) {
+  .controller('TopicController', function($scope, $http, $timeout, APIService) {
     $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
     $scope.refreshInterval = 10;
     $scope.addFeedToTopic = function(url) {
@@ -69,7 +81,7 @@ angular.module('main.controllers', [])
       var feed_ids = $scope.topic["feeds"];
       // Accursed asyncronicity!!!
       // Ask for the feed service to fetch all the feed_ids. Returns a promise that we wait to parse (using .then)
-      FeedService.getFeedsByIds(feed_ids).then(function(data){
+      APIService.getFeedsByIds(feed_ids).then(function(data){
         $scope.feeds = data;
       });
       // Poll for feeds every $scope.refreshInterval so that we can get new feed info
