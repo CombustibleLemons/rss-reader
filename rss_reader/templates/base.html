@@ -42,48 +42,23 @@
 				<input type="text" placeholder="Search for a feed">
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
-				<ul class="nav nav-sidebar" ng-repeat="topic in topics">
-					<li>
-						{% verbatim %}
-						<a class="topicButton" href="#{{topic.name}}">
-	        				<div class="arrow-up">&#9658; {{topic.name}}</div>
-	        				<div style="display: none;" class="arrow-down">&#9660; {{topic.name}}</div>
-      			</a>
-						<div ng-controller="TopicController">
-						<ul class="feeds" id="#{{$parent.topics[$index].name}}">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-						{% endverbatim %}
-					</li>
-					<!--<li>
-						<a class="topicButton" href="#topic2">Topic2</a>
-						<ul class="feeds" id="topic2">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>
-					<li>
-						<a class="topicButton" href="#topic3">Topic3</a>
-						<ul class="feeds" id="topic3">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>
-					<li>
-						<a class="topicButton" href="#topic4">Topic4</a>
-						<ul class="feeds" id="topic4">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>-->
-				</ul>
+					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
+						<li>
+							{% verbatim %}
+							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
+		        				<div class="arrow-up">&#9658; {{topic.name}}</div>
+		        				<div style="display: none;" class="arrow-down">&#9660; {{topic.name}}</div>
+	      			</a>
+							<div ng-controller="TopicController">
+								<ul class="feeds" id="{{$parent.topics[$index].name}}" ng-repeat="feed in feeds">
+									<li><a href="#{{feed.name}}">{{feed.title}}</a></li>
+								</ul>
+							</div>
+							{% endverbatim %}
+						</li>
+					</ul>
+				</div>
 			</div>
-		</div>
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" style="border:black 1px solid;">
 				{% block content %}{% endblock %}
