@@ -39,18 +39,22 @@
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
 				<!-- Search Section -->
-				<input type="text" placeholder="Search for a feed">
+				<div ng-controller="SearchController">
+					<form id="searchForm">
+						<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && addFeed()">
+					</form>
+				</div>
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
 					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
 						<li>
 							{% verbatim %}
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
-		        				<div class="arrow-up">&#9658; {{topic.name}}</div>
-		        				<div style="display: none;" class="arrow-down">&#9660; {{topic.name}}</div>
+		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 	      			</a>
 							<div ng-controller="TopicController">
-								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds">
+								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
 									<li><a href="#{{feed.title}}">{{feed.title}}</a></li>
 								</ul>
 							</div>
