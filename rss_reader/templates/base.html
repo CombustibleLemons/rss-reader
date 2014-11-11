@@ -50,8 +50,8 @@
 		        				<div style="display: none;" class="arrow-down">&#9660; {{topic.name}}</div>
 	      			</a>
 							<div ng-controller="TopicController">
-								<ul class="feeds" id="{{$parent.topics[$index].name}}" ng-repeat="feed in feeds">
-									<li><a href="#{{feed.name}}">{{feed.title}}</a></li>
+								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds">
+									<li><a href="#{{feed.title}}">{{feed.title}}</a></li>
 								</ul>
 							</div>
 							{% endverbatim %}
