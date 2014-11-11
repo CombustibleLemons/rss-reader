@@ -75,18 +75,18 @@ angular.module('main.controllers', [])
       // Poll for feeds every $scope.refreshInterval so that we can get new feed info
       $timeout(function(){$scope.fetchFeeds($scope, $http);}, $scope.refreshInterval * 1000);
     };
-    $scope.expandFeed = function(feedName) {
-      // expand the feed (one feed per topic in iteration one)
+    $scope.expandFeed = function(feedName, FeedService) {
+      // update some service
     };
     $scope.fetchFeeds($scope, $http);
   })
   .controller('FeedController', function($scope, $http) { //scope is an angular template, from base.html, index.html
-    $http.get('feeds/' + id + "/posts").success(function(data) {
-      $scope.posts = data;
-    });
-    $scope.feed = 'foofeed'; // again unsure how to tie, placeholder
-    $scope.fetchPosts = function() {
-      // fetch the posts!
+    $scope.feed = $scope.$parent.feeds//[$scope.$parent.$index];
+    $scope.fetchPosts = function(e) {
+      console.log(e);
+      $http.get('feeds/' + id + "/posts").success(function(data) {
+        $scope.posts = data;
+      });
     };
   })
   .controller('PostController', function($scope, $http) {
