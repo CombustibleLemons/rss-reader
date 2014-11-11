@@ -34,7 +34,7 @@
     </nav>
 
 		<!--Main Section -->
-    <div class="container-fluid main-container" style="border:red 1px solid;" ng-controller="UserController">
+    <div class="container-fluid main-container" ng-controller="UserController">
 		<!--Navigation Section -->
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
@@ -52,10 +52,12 @@
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
 		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
-	      			</a>
+			      			</a>
 							<div ng-controller="TopicController">
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
-									<li><a href="#{{feed.title}}">{{feed.title}}</a></li>
+									<li>
+										<a href="#{{feed.title}}" ng-model="feed.id" ng-click="expandFeed(feed.title)">{{feed.title}}</a>
+									</li>
 								</ul>
 							</div>
 							{% endverbatim %}
@@ -64,7 +66,15 @@
 				</div>
 			</div>
 
-			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" style="border:black 1px solid;">
+			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
+				{% verbatim %}			
+				<div ng-controller="FeedController">
+					<div class="row-fluid post">
+						<h3>Post title</h3>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eu tellus ac nunc laoreet dignissim et ut velit. Nunc massa tortor, posuere ac ante et, facilisis efficitur ligula. Quisque vel porta sapien. Sed at est at nisi iaculis aliquam. Ut et volutpat justo, elementum congue ante. Proin ut urna purus. Vivamus rhoncus elit eget ex egestas, nec volutpat risus laoreet. Nulla convallis laoreet arcu a blandit. Suspendisse convallis ac ante id euismod. Pellentesque eget laoreet diam.</p>
+					</div>
+				</div>
+				{% endverbatim %}
 				{% block content %}{% endblock %}
 			</div>
 		</div>
@@ -79,8 +89,6 @@
 
 
 	<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-	<script src="{% static '../lib/angular/angular.js' %}"></script>
-	<script src="{% static '../lib/angular/angular-cookies.js' %}"></script>
 	<script src="{% static '/djangular/app.js' %}"></script>
 	<script src="{% static 'js/app.js' %}"></script>
 	<script src="{% static 'js/services.js' %}"></script>
