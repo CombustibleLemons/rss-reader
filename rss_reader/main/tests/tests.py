@@ -8,7 +8,7 @@ from main.models import Feed, Post, Topic
 from django.contrib.auth.models import User, UserManager
 
 # Exception
-from main.models import FeedURLInvalid
+from main.models import FeedURLInvalid, FeedExistsInTopic
 from django.db import IntegrityError
 
 # Python built-ins required for tests
@@ -85,8 +85,8 @@ class TopicTestCase(TestCase):
         self.t1 = self.u1.topics.get(name="t1")
         self.u1.topics.create(name="t2")
         self.t2 = self.u1.topics.get(name="t2")
-        self.f1 = Feed.createByUrl("http://home.uchicago.edu/~jharriman/example-rss.xml")
-        self.f2 = Feed.createByUrl("http://xkcd.com/rss.xml")
+        self.f1 = Feed.createByURL("http://home.uchicago.edu/~jharriman/example-rss.xml")
+        self.f2 = Feed.createByURL("http://xkcd.com/rss.xml")
 
     def test_minimal_topic(self):
         """Tests minimal data needed for Topic"""
@@ -102,51 +102,53 @@ class TopicTestCase(TestCase):
     def test_edit_topic_name(self):
         """editTopicName renames the topic"""
         b1 = self.t1.editTopicName("space")
-        self.assertEqual(b1, True)
         self.assertEqual(self.t1.name, "space")
 
     def test_repeat_topic_name(self):
         """editTopicName throws an error if name already exists"""
         def repeat_topic():
             self.t1.editTopicName("t2")
-        self.assertRaises(IntegrityError, repeat_topic())
+        self.assertRaises(IntegrityError, repeat_topic)
 
     def test_add_feed(self):
         """ addFeed adds a Feed to a Topic """
         b1 = self.t1.addFeed(self.f1)
-        self.assertEqual(b1, True)
+        self.assertEqual(self.t1.feeds.all()[0], self.f1)
 
         # adding Feed to topic it's already in should silently fail
         b1 = self.t1.addFeed(self.f1)
-        self.assertEqual(b1, True)
+        self.assertEqual(self.t1.feeds.all()[0], self.f1)
+        self.assertEqual(len(self.t1.feeds.all()), 1)
 
         # cannot add Feed to two topics (f1 in t1 already)
-        b1 = self.t2.addFeed(self.f1)
-        self.assertEqual(b1, False)
+    def test_other_topic_has_feed(self):
+        def other_topic():
+            self.t2.addFeed(self.f1)
+        self.assertRaises(FeedExistsInTopic, other_topic)
 
     def test_delete_feed(self):
         """ deleteFeed deletes a Feed from a Topic """
         self.t1.addFeed(self.f1)
         self.t2.addFeed(self.f2)
 
-        #feed not in topic
+        #feed not in topic, should fail silently
         b1 = self.t2.deleteFeed(self.f1)
-        self.assertEqual(b1, False)
+        self.assertEqual(len(self.t2.feeds.all()), 1)
+        self.assertEqual(self.t2.feeds.all()[0], self.f2)
 
         #feed is in topic
         b1 = self.t1.deleteFeed(self.f1)
-        self.assertEqual(b1, True)
-        self.assertEqual(self.t1.feeds.all().exists(), False) #f1 deleted, queryset returned by feed_set.all is empty
+        self.assertEqual(self.t1.feeds.all().exists(), False) #QuerySet of feeds is empty
 
 
 class FeedTestCase(TestCase):
     def setUp(self):
         self.testUrl = "http://home.uchicago.edu/~jharriman/example-rss.xml"
         self.badUrl = "http://example.com"
-        self.feed = Feed.createByUrl(self.testUrl)
+        self.feed = Feed.createByURL(self.testUrl)
 
     def test_create_by_url(self):
-        """Constructor Feed.createByUrl accurately creates a Feed object"""
+        """Constructor Feed.createByURL accurately creates a Feed object"""
         feed = self.feed
 
         # Check Feed fields
@@ -179,7 +181,7 @@ class FeedTestCase(TestCase):
     def test_url_invalid(self):
         """ Test if a bad URL (non-feed) raises an invalid feed exception """
         def badFeedUrlCreation():
-            feed = Feed.createByUrl(self.badUrl)
+            feed = Feed.createByURL(self.badUrl)
         self.assertRaises(FeedURLInvalid, badFeedUrlCreation)
 
     def test_minimal_feed(self):
@@ -206,7 +208,7 @@ class FeedTestCase(TestCase):
 
         # Check posts equal
         self.assertEqual(feed.getPosts(1), feed.posts.all()[0])
-        
+
         # Empty feed
         feed = Feed()
         self.assertEqual(feed.getPosts(1), [])
@@ -238,7 +240,6 @@ class PostTestCase(TestCase):
     def setUp(self):
         self.feed = Feed()
         self.feed.save()
-        pass
 
     def test_create_post(self):
         """ Test post constructor createByEntry """
@@ -271,8 +272,8 @@ class PostTestCase(TestCase):
         self.assertEqual(post.guid, "www.example.com/1892")
         self.assertEqual(post.url, "www.example.com/1892")
         self.assertEqual(post.contributor, "Joe Smith")
+        self.assertEqual(post.updated, datetime.datetime(2014, 11, 2, 14, 00, 22, tzinfo=pytz.UTC))
         self.assertEqual(post.pubDate, datetime.datetime(2014, 11, 2, 14, 00, 22, tzinfo=pytz.UTC))
-        self.assertEqual(post.updated_parsed, datetime.datetime(2014, 11, 2, 14, 00, 22, tzinfo=pytz.UTC))
 
     def test_post_no_feed(self):
         """ Test that we cannot create a post with the feed field = null"""

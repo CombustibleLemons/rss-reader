@@ -45,6 +45,9 @@ class ListField(models.TextField):
 class FeedURLInvalid(Exception):
     pass
 
+class FeedExistsInTopic(Exception):
+    pass
+
 class Feed(models.Model):
     # Attributes
 
@@ -99,11 +102,11 @@ class Feed(models.Model):
     # - logo : (string, string, string)
 
     def __unicode__(self):
-        return self.URL
+        return self.title
 
     # Constructor (uses class method as suggested by Django docs)
     @classmethod
-    def createByUrl(cls, url):
+    def createByURL(cls, url):
         res = feedparser.parse(url)
         # Check if bozo_exception was raised
         if res["version"] == "":
@@ -183,7 +186,6 @@ class Feed(models.Model):
     def getSize(self):
         return self.posts.all().count()
 
-
 class Topic(models.Model):
     name = models.TextField(unique=True)
     feeds = models.ManyToManyField(Feed, related_name = '+')
@@ -198,12 +200,8 @@ class Topic(models.Model):
 
     # - editTopicName(name : string)
     def editTopicName(self, topicname):
-        try:
             self.name = topicname
             self.save()
-            return True
-        except:
-            return False
 
 # - deleteTopic(topic : topic)
 # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
@@ -213,30 +211,19 @@ class Topic(models.Model):
 # - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
         for t in self.user.topics.all():
-            if self.feeds.filter(URL=feed.URL).exists():
+            if self.feeds.all().filter(URL=feed.URL).exists():
                 break
             else:
                 if t.feeds.filter(URL = feed.URL).exists():
-                    return False
-        try:
-            self.feeds.add(feed)
-            self.save()
-        except:
-            #traceback.print_exc()
-            return False
-        return True
+                    raise FeedExistsInTopic
+        self.feeds.add(feed)
+        self.save()
+
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(self, feedname):
-        try:
-            f = self.feeds.get(URL=feedname)
-            self.feeds.remove(f)
+    def deleteFeed(self, feed):
+            self.feeds.remove(feed)
             self.save()
-            return True
-        except:
-            #traceback.print_exc()
-            return False
-
 
 class Post(models.Model):
     # Attributes
@@ -310,6 +297,7 @@ class Post(models.Model):
         # Dates
         if entry.get("published_parsed", None):
             pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry["published_parsed"])
+            #pubTime = entry["published_parsed"]
             post_dict.update({"pubDate" : pubTime})
 
         if entry.get("updated_parsed", None):

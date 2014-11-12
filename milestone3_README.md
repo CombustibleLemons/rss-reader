@@ -1,11 +1,12 @@
 ###Compiling
 ~how to compile here~
+PYTHON MAGIC?
 
 ###Running Code
-~how to run code here~
+In the terminal, access the 'rss-reader/rss_reader' directory and type 'manage.py python runserver'. Access 'localhost:8000' via web browser. The rss feed website should be viewable.
 
 ###Running Unit Tests
-~how to run unit tests here~
+In the terminal, in the 'rss-reader/rss_reader directory', type 'manage.py python test'
 
 ###Acceptance Test Suggestions
 ~suggested acceptance tests here~
