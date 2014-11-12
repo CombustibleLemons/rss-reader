@@ -10,6 +10,7 @@
 
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular-cookies.js"></script>
+	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-sanitize.min.js"></script>
 	<script src="{% static 'js/controllers.js' %}"></script>
 	<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
 </head>
@@ -76,8 +77,10 @@
 								</div>
 							</a>
 							<div class="full" ng-show="expandedPostIndex == $index">
-								<h3>{{post.title}}</h3>
-								<p>{{post.content}}</p>
+									<h3>{{post.title}}</h3>
+									<p ng-bind-html="post.content" >{{post.content}}</p>
+									<p><a href="{{post.guid}}" target="_blank">View source</a></p>
+								</div>
 							</div>
 					</div>
 				</div>
