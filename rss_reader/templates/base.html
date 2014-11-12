@@ -51,12 +51,13 @@
 						<li>
 							{% verbatim %}
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
-		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
-		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
-			      			</a>
+		        			<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+		        			<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+			      	</a>
 							<div ng-controller="TopicController">
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
 									<li>
+										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
 										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
 									</li>
 								</ul>
@@ -79,7 +80,7 @@
 							<div class="full" ng-show="expandedPostIndex == $index">
 									<h3>{{post.title}}</h3>
 									<p ng-bind-html="post.content" >{{post.content}}</p>
-									<p><a href="{{post.guid}}" target="_blank">View source</a></p>
+									<p><a href="{{post.url}}" target="_blank">View source</a></p>
 								</div>
 							</div>
 					</div>
@@ -96,8 +97,6 @@
         <p class="text-muted">&copy; Combustible Lemons Inc, 2014<br/>BAMF@uchicago.edu</p>
       </div>
     </div>
-
-
 	<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script src="{% static '/djangular/app.js' %}"></script>
 	<script src="{% static 'js/app.js' %}"></script>
