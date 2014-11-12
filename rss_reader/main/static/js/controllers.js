@@ -115,6 +115,30 @@ angular.module('main.controllers', [])
 
     $scope.fetchPosts = function() {
       $http.get('feeds/' + $scope.feedID + "/posts").success(function(data) {
+
+        //this for loop removes unnecessary line breaks
+        // TESTED WITH NYT US FEED
+        // TEST THIS WITH OTHER FEEDS
+        for(var i=0; i<data.length; i++){
+          //create dummy div
+          var tmp = document.createElement('div');
+          
+          console.log(data[i])
+
+          //populate dummy div with post content
+          $(tmp).html(data[i].content);
+          
+          //get list of line breaks
+          var breakList = $(tmp).find("br");
+
+          //if more than 5 line breaks
+          if (breakList.length >= 5) {
+            //remove all of them
+            $(tmp).find("br").remove();
+          }
+          //put cleaned post content back into data array
+          data[i].content = $(tmp).html();
+        }
         $scope.posts = data;
       });
     };
