@@ -84,7 +84,7 @@ def feed_create(request):
         url = request.DATA["url"]
         try:
             # Try creating a Feed with the url
-            f = Feed.createByUrl(url)
+            f = Feed.createByURL(url)
             f.save()
 
             # Add feed to uncategorized Topic
