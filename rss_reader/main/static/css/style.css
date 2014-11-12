@@ -10,6 +10,7 @@
 }
 body {
   padding-top: 51px;
+	margin-bottom: 81px; /* Height of the footer */
 }
 .text-center {
   padding-top: 20px;

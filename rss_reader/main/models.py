@@ -1,5 +1,5 @@
 # Django
-from django.db import models
+from django.db import models, IntegrityError
 from django.contrib.auth.models import User, UserManager
 
 # RSS Parsing
@@ -154,11 +154,12 @@ class Feed(models.Model):
 
             # URL Field
             try:
-                url = next(x["href"] for x in feedData["links"] if x["rel"] == "self")
+                clsURL = url
+                # next(x["href"] for x in feedData["links"] if x["rel"] == "self")
             except StopIteration:
-                url = ""
+                clsURL = ""
             if url:
-                cls_dict.update({"URL" : url})
+                cls_dict.update({"URL" : clsURL})
 
             ret_feed = cls.objects.create(**cls_dict)
 
@@ -170,7 +171,6 @@ class Feed(models.Model):
 
     # Methods
     def getPosts(self, n):
-
         #empty list, or n is 0
         if (not(self.posts.all().exists()) or (n==0)):
             return list(self.posts.none())
@@ -185,6 +185,61 @@ class Feed(models.Model):
 
     def getSize(self):
         return self.posts.all().count()
+
+    def update(self):
+        res = feedparser.parse(self.URL)
+        # Check if bozo_exception was raised
+        if res["version"] == "":
+            raise FeedURLInvalid
+
+        if res["version"] == "rss20":
+            # Populate Feed fields
+            feedData = res["feed"]
+
+            # Text fields
+            cls_dict = {
+                "author" : feedData.get("author", ""),
+                "category" : feedData.get("category", ""),
+                "contributor" : feedData.get("contributor", ""),
+                "description" : feedData.get("description", ""),
+                "docURL" : feedData.get("docURL", ""),
+                "editorAddr" : feedData.get("editorAddr", ""),
+                "generator" : feedData.get("generator", ""),
+                "guid" : feedData.get("guid", ""),
+                "language" : feedData.get("language", ""),
+                "rights" : feedData.get("rights", ""),
+                "title" : feedData.get("title", ""),
+                "subtitle" : feedData.get("subtitle", ""),
+            }
+            if feedData.get("image",None):
+                cls_dict.update({"logo" : feedData["image"].get("href", "")})
+            else:
+                cls_dict.update({"logo" : ""})
+
+            # Integer field
+            cls_dict.update({
+                "ttl" : int(feedData["ttl"]) if feedData.get("ttl", None) else None,
+                "skipDays" : int(feedData["skipDays"]) if feedData.get("skipDays", None) else None,
+                "skipHours" : int(feedData["skipHours"]) if feedData.get("skipHours", None) else None
+            })
+
+            # Date fields
+            if feedData.get("published_parsed", None):
+                pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', feedData["published_parsed"])
+                cls_dict.update({"pubDate" : pubTime})
+
+            if res.get("updated_parsed", None):
+                updateTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', res["updated_parsed"])
+                cls_dict.update({"updated" : updateTime})
+
+            self.__dict__.update(cls_dict)
+
+            # Create Posts
+            for entry in res["entries"]:
+                try:
+                    Post.createByEntry(entry, self.URL, self)
+                except IntegrityError as e:
+                    pass # It's okay, an integrity error means we found a duplicate which we've already accounted for.
 
 class Topic(models.Model):
     name = models.TextField(unique=True)
@@ -265,8 +320,11 @@ class Post(models.Model):
     # Feed that post belongs to
     feed = models.ForeignKey(Feed, related_name="posts")
 
-    # Methods
+    # Since new posts will not (if the feed is correctly formed) have duplicate guids
+    class Meta:
+        unique_together = (('feed', 'guid'),);
 
+    # Methods
     def __unicode__(self):
         return self.title
 
