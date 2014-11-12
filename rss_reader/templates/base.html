@@ -67,11 +67,18 @@
 			</div>
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
-				{% verbatim %}			
+				{% verbatim %}
 				<div ng-controller="FeedController">
 					<div class="row-fluid post" ng-repeat="post in posts">
-						<h3>{{post.title}}</h3>
-						<p>{{post.content}}</p>
+							<a ng-click="expandPost($index)">
+								<div class="mini" ng-hide="expandedPostIndex == $index">
+									<h3>{{post.title}}</h3>
+								</div>
+							</a>
+							<div class="full" ng-show="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+								<p>{{post.content}}</p>
+							</div>
 					</div>
 				</div>
 				{% endverbatim %}
