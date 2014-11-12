@@ -13,14 +13,14 @@ from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSe
 from .models import Topic, Feed, Post
 
 # User API
-class UserList(generics.ListCreateAPIView):
+class UserList(generics.ListAPIView):
     model = User
     serializer_class = UserSerializer
     permission_classes = [
         permissions.AllowAny
     ]
 
-class UserDetail(generics.RetrieveAPIView):
+class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
     serializer_class = UserSerializer
 
@@ -42,7 +42,7 @@ class TopicList(generics.ListCreateAPIView):
 
 
 
-class TopicDetail(generics.RetrieveAPIView):
+class TopicDetail(generics.RetrieveUpdateAPIView):
     model = Topic
     serializer_class = TopicSerializer
 
@@ -64,7 +64,7 @@ class FeedList(generics.ListCreateAPIView):
 
     # We can limit the fields that we display here so that it is comprehensible to the user.
 
-class FeedDetail(generics.RetrieveAPIView):
+class FeedDetail(generics.RetrieveUpdateAPIView):
     model = Feed
     serializer_class = FeedSerializer
 

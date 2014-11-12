@@ -51,12 +51,13 @@
 						<li>
 							{% verbatim %}
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
-		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
-		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
-			      			</a>
+		        			<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+		        			<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+			      	</a>
 							<div ng-controller="TopicController">
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
 									<li>
+										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
 										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
 									</li>
 								</ul>
