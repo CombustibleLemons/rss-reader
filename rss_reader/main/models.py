@@ -112,9 +112,19 @@ class Feed(models.Model):
         if res["version"] == "":
             raise FeedURLInvalid
 
-        if res["version"] == "rss20":
+        elif res["version"] in [u"rss", u"rss20", u"atom", u"atom10"]:
             # Populate Feed fields
             feedData = res["feed"]
+
+            # docURL can sometimes by hidden in the links
+            docURL = feedData.get("link", "")
+            if docURL == "":
+                try:
+                    for link in feedData["links"]:
+                        if link["rel"] == "self":
+                            docURL = link["href"]
+                except KeyError:
+                    docURL = "";
 
             # Text fields
             cls_dict = {
@@ -122,7 +132,7 @@ class Feed(models.Model):
                 "category" : feedData.get("category", ""),
                 "contributor" : feedData.get("contributor", ""),
                 "description" : feedData.get("description", ""),
-                "docURL" : feedData.get("docURL", ""),
+                "docURL" : docURL,
                 "editorAddr" : feedData.get("editorAddr", ""),
                 "generator" : feedData.get("generator", ""),
                 "guid" : feedData.get("guid", ""),
@@ -165,7 +175,10 @@ class Feed(models.Model):
 
             # Create Posts
             for entry in res["entries"]:
-                Post.createByEntry(entry, url, ret_feed)
+                if res["version"] in ["rss", "rss20"]:
+                    RSS.createByEntry(entry, url, ret_feed)
+                elif res["version"] in ["atom", "atom10"]:
+                    Atom.createByEntry(entry, url, ret_feed)
 
         return ret_feed
 
@@ -192,7 +205,8 @@ class Feed(models.Model):
         if res["version"] == "":
             raise FeedURLInvalid
 
-        if res["version"] == "rss20":
+        # Supported versions
+        elif res["version"] in [u"rss20", u"atom10"]:
             # Populate Feed fields
             feedData = res["feed"]
 
@@ -237,9 +251,14 @@ class Feed(models.Model):
             # Create Posts
             for entry in res["entries"]:
                 try:
-                    Post.createByEntry(entry, self.URL, self)
+                    if res["version"] == "rss20":
+                        RSS.createByEntry(entry, self.URL, self)
+                    elif res["version"] == "atom10":
+                        Atom.createByEntry(entry, self.URL, self)
                 except IntegrityError as e:
-                    pass # It's okay, an integrity error means we found a duplicate which we've already accounted for.
+                    print "Integrity Error"
+                    # We've found a duplicate, but its fine if we've found a duplicate
+                    pass
 
 class Topic(models.Model):
     name = models.TextField(unique=True)
@@ -258,19 +277,22 @@ class Topic(models.Model):
             self.name = topicname
             self.save()
 
-# - deleteTopic(topic : topic)
-# --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
+    # - deleteTopic(topic : topic)
+    # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
 
-# - addFeed (feed : Feed)
-# - will take advantage of ManytoMany relationships
-# - must check that Feed is not already owned in Topic or in User
+    # - addFeed (feed : Feed)
+    # - will take advantage of ManytoMany relationships
+    # - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
-        for t in self.user.topics.all():
-            if self.feeds.all().filter(URL=feed.URL).exists():
-                break
-            else:
-                if t.feeds.filter(URL = feed.URL).exists():
-                    raise FeedExistsInTopic
+        # Remember to exclude self from the checking!
+        for t in self.user.topics.all().exclude(id=self.id):
+            # Check if the feed is in any other topic
+            if t.feeds.filter(id=feed.id).exists():
+                raise FeedExistsInTopic
+        # Check if feed is in this Topic's feed list
+        if self.feeds.all().filter(id=feed.id).exists():
+            # Fail to add silently, it's okay if a feed is already in a topic and we add it
+            return
         self.feeds.add(feed)
         self.save()
 
@@ -328,10 +350,9 @@ class Post(models.Model):
     def __unicode__(self):
         return self.title
 
-    @classmethod
-    def createByEntry(cls, entry, feedURL, feed):
-        # Required information for this constructor
-        post_dict = {"feed" : feed, "feedURL" : feedURL}
+    @staticmethod
+    def generateClassDict(entry):
+        post_dict = dict()
 
         # Categories is a set of tags for feedparser
         categories = list()
@@ -365,5 +386,51 @@ class Post(models.Model):
         # AckDate (DateTime that the post enters the database)
         post_dict.update({"ackDate" : time.time()})
 
+        return post_dict
+
+    @classmethod
+    def createByEntry(cls, entry, feedURL, feed):
+        pass # Virtual constructor
+
+
+class RSS(Post):
+    # Comments are a URL to a comments page
+    comments = models.URLField()
+    enclosure = ListField()
+    # Enclosures can be a list, see: https://pythonhosted.org/feedparser/reference-entry-enclosures.html#reference-entry-enclosures-href
+
+    @classmethod
+    def createByEntry(cls, entry, feedURL, feed):
+        # Required information for this constructor
+        post_dict = {"feed" : feed, "feedURL" : feedURL}
+        post_dict.update(cls.generateClassDict(entry))
+
+        # Special attributes for RSS
+        # Comments
+        post_dict.update({"comments" : entry.get("comments", "")})
+
+        # Enclosures
+        enclosures = list()
+        for tag in entry.get("tags", []):
+            enclosures.append(tag["term"])
+        post_dict.update({"enclosure" : enclosures})
+
         # Create object
-        return Post.objects.create(**post_dict)
+        return RSS.objects.create(**post_dict)
+
+class Atom(Post):
+    # Comments are a URL to a comments page
+    summary = models.TextField()
+
+    @classmethod
+    def createByEntry(cls, entry, feedURL, feed):
+        # Required information for this constructor
+        post_dict = {"feed" : feed, "feedURL" : feedURL}
+        post_dict.update(cls.generateClassDict(entry))
+
+        # Special attributes for RSS
+        # Comments
+        post_dict.update({"summary" : entry.get("summary", "")})
+
+        # Create object
+        return Atom.objects.create(**post_dict)
