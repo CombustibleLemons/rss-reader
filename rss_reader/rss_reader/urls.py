@@ -42,4 +42,8 @@ urlpatterns = patterns('',
 
     # Django Admin
     url(r'^admin/', include(admin.site.urls)),
-)
+
+	# Main
+    url(r'^', MainViews.index),
+
+   )
