@@ -9,6 +9,7 @@ from datetime import datetime
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
+import traceback #prints errors
 
 # do we still need this ?
 class ListField(models.TextField):
@@ -39,9 +40,12 @@ class ListField(models.TextField):
 
 # User class exists in Django, with email, username attributes; and
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
-# The login / register page/handling still needs to be implemented in view.py via controllers, I believe
+# user.topics.create(name="topicname")
 
 class FeedURLInvalid(Exception):
+    pass
+
+class FeedExistsInTopic(Exception):
     pass
 
 class Feed(models.Model):
@@ -97,9 +101,12 @@ class Feed(models.Model):
 
     # - logo : (string, string, string)
 
+    def __unicode__(self):
+        return self.title
+
     # Constructor (uses class method as suggested by Django docs)
     @classmethod
-    def createByUrl(cls, url):
+    def createByURL(cls, url):
         res = feedparser.parse(url)
         # Check if bozo_exception was raised
         if res["version"] == "":
@@ -163,15 +170,22 @@ class Feed(models.Model):
 
     # Methods
     def getPosts(self, n):
-        pass
+
+        #empty list, or n is 0
+        if (not(self.posts.all().exists()) or (n==0)):
+            return list(self.posts.none())
+
+        descending_posts = self.posts.all().order_by('-pubDate')
+        if (n==1):
+            return self.posts.all()[0]
+        return list(descending_posts[:(n-1)])
 
     def getAll(self):
-        print self.post_set.all()
+        return list(self.posts.all())
 
     def getSize(self):
-        pass
+        return self.posts.all().count()
 
-# Do we need to write new getters and setters?
 class Topic(models.Model):
     name = models.TextField(unique=True)
     feeds = models.ManyToManyField(Feed, related_name = '+')
@@ -186,12 +200,8 @@ class Topic(models.Model):
 
     # - editTopicName(name : string)
     def editTopicName(self, topicname):
-        u = self.user
-        if u.objects.get(username = topicname).exists():
-            return False
-        else:
-            self.name = name
-            return True
+            self.name = topicname
+            self.save()
 
 # - deleteTopic(topic : topic)
 # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
@@ -200,21 +210,20 @@ class Topic(models.Model):
 # - will take advantage of ManytoMany relationships
 # - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
-        try:
-            self.feeds.add(feed)
-            return True
-        except:
-            traceback.print_exc()
-            return False
+        for t in self.user.topics.all():
+            if self.feeds.all().filter(URL=feed.URL).exists():
+                break
+            else:
+                if t.feeds.filter(URL = feed.URL).exists():
+                    raise FeedExistsInTopic
+        self.feeds.add(feed)
+        self.save()
 
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(self, feedname):
-        if self.feeds.get(feedname).empty():
-            return False
-        else:
-            self.feed.delete(feedname)
-            return True
+    def deleteFeed(self, feed):
+            self.feeds.remove(feed)
+            self.save()
 
 class Post(models.Model):
     # Attributes
@@ -257,6 +266,10 @@ class Post(models.Model):
     feed = models.ForeignKey(Feed, related_name="posts")
 
     # Methods
+
+    def __unicode__(self):
+        return self.title
+
     @classmethod
     def createByEntry(cls, entry, feedURL, feed):
         # Required information for this constructor
@@ -284,6 +297,7 @@ class Post(models.Model):
         # Dates
         if entry.get("published_parsed", None):
             pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry["published_parsed"])
+            #pubTime = entry["published_parsed"]
             post_dict.update({"pubDate" : pubTime})
 
         if entry.get("updated_parsed", None):
