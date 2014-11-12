@@ -6,18 +6,99 @@
 	<title>{% block title %}RSS Reader{% endblock %}</title>
 
 	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css">
+
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular-cookies.js"></script>
+	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-sanitize.min.js"></script>
 	<script src="{% static 'js/controllers.js' %}"></script>
 	<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
 </head>
+<body ng-app="main">
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="navbar-header">
+		  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+		    <span class="sr-only">Toggle navigation</span>
+		    <span class="icon-bar"></span>
+		    <span class="icon-bar"></span>
+		    <span class="icon-bar"></span>
+		  </button>
+		  <a class="navbar-brand" href="#">RSS Reader</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+		  <ul class="nav navbar-nav navbar-right">
+		    <li><a href="#">About</a></li>
+		    <li><a href="#">Donate</a></li>
+		    <li class="login-btn"><a href="#">Login</a></li>
+		  </ul>
+		</div><!--/.nav-collapse -->
+    </nav>
 
-	{% block body %}{% endblock %}
+		<!--Main Section -->
+    <div class="container-fluid main-container" ng-controller="UserController">
+		<!--Navigation Section -->
+		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
+			<div class="col-sm-3 col-md-2 sidebar">
+				<!-- Search Section -->
+				<div ng-controller="SearchController">
+					<form id="searchForm">
+						<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && addFeed()">
+					</form>
+				</div>
+				<!-- Topics Section -->
+				<div> <!--ng-controller="TopicController"-->
+					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
+						<li>
+							{% verbatim %}
+							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
+		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+			      			</a>
+							<div ng-controller="TopicController">
+								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
+									<li>
+										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+									</li>
+								</ul>
+							</div>
+							{% endverbatim %}
+						</li>
+					</ul>
+				</div>
+			</div>
 
-	<div class="footer"></div>
+			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
+				{% verbatim %}
+				<div ng-controller="FeedController">
+					<div class="row-fluid post" ng-repeat="post in posts">
+							<a ng-click="expandPost($index)">
+								<div class="mini" ng-hide="expandedPostIndex == $index">
+									<h3>{{post.title}}</h3>
+								</div>
+							</a>
+							<div class="full" ng-show="expandedPostIndex == $index">
+									<h3>{{post.title}}</h3>
+									<p ng-bind-html="post.content" >{{post.content}}</p>
+									<p><a href="{{post.guid}}" target="_blank">View source</a></p>
+								</div>
+							</div>
+					</div>
+				</div>
+				{% endverbatim %}
+				{% block content %}{% endblock %}
+			</div>
+		</div>
+	</div>
+
+
+	<div class="footer">
+      <div class="container">
+        <p class="text-muted">&copy; Combustible Lemons Inc, 2014<br/>BAMF@uchicago.edu</p>
+      </div>
+    </div>
+
+
 	<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-	<script src="{% static '../lib/angular/angular.js' %}"></script>
-	<script src="{% static '../lib/angular/angular-cookies.js' %}"></script>
 	<script src="{% static '/djangular/app.js' %}"></script>
 	<script src="{% static 'js/app.js' %}"></script>
 	<script src="{% static 'js/services.js' %}"></script>
