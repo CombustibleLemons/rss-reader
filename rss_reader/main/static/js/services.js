@@ -6,6 +6,17 @@
 // In this case it is a simple value service.
 angular.module('main.services', []).
   value('version', '0.1')
+  .factory('FeedService', function($q){
+    var feedID = 0;
+    return {
+        getFeedID: function() {
+            return feedID;
+        },
+        setFeedID: function(value) {
+            feedID = value;
+        }
+    }
+  })
   .factory('APIService', function($http, $q){
     return {
         getUser: function() {
@@ -13,6 +24,9 @@ angular.module('main.services', []).
         },
         getTopic: function(topic_num) {
             return this.getSingle(topic_num, 'topics/');
+        },
+        getFeed: function(feed_num) {
+            return this.getSingle(feed_num, 'feeds/');
         },
         getSingle : function(id, leadUrl) {
           return $http.get(leadUrl + id)

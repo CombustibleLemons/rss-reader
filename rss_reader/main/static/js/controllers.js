@@ -74,7 +74,7 @@ angular.module('main.controllers', [])
         });
     };
   })
-  .controller('TopicController', function($scope, $http, $timeout, APIService) {
+  .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
     $scope.addFeedToTopic = function(url) {
       // function function function
     };
@@ -96,20 +96,29 @@ angular.module('main.controllers', [])
       // Poll for feeds every $scope.refreshInterval so that we can get new feed info
       $timeout(function(){$scope.fetchFeeds($scope, $http);}, $scope.refreshInterval * 1000);
     };
-    $scope.expandFeed = function(feedName, FeedService) {
-      // update some service
+    //this just updates the feedService which the feedController pulls from
+    $scope.expandFeed = function(feedID) {
+      $rootScope.$broadcast("clickFeed", {
+            identifier: feedID
+        });
+      //FeedService.setFeedID(feedID);
     };
     $scope.fetchFeeds($scope, $http);
     $scope.refreshTopic();
   })
-  .controller('FeedController', function($scope, $http) { //scope is an angular template, from base.html, index.html
-    $scope.feed = $scope.$parent.feeds//[$scope.$parent.$index];
-    $scope.fetchPosts = function(e) {
-      console.log(e);
-      $http.get('feeds/' + id + "/posts").success(function(data) {
+  .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+    
+    $rootScope.$on("clickFeed", function (event, message) {
+        $scope.feedID = message.identifier;
+        $scope.fetchPosts();
+    });
+
+    $scope.fetchPosts = function() {
+      $http.get('feeds/' + $scope.feedID + "/posts").success(function(data) {
         $scope.posts = data;
       });
     };
+
   })
   .controller('PostController', function($scope, $http) {
     $http.get('posts/26').success(function(data){
