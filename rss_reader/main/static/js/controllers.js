@@ -107,7 +107,7 @@ angular.module('main.controllers', [])
     $scope.refreshTopic();
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
-    
+    $scope.expandedPostIndex = 0;
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
@@ -118,14 +118,14 @@ angular.module('main.controllers', [])
         $scope.posts = data;
       });
     };
-
+    $scope.expandPost = function(index) {
+      $scope.expandedPostIndex = index;
+      console.log($scope.expandedPostIndex);
+      // expands the post
+    };
   })
   .controller('PostController', function($scope, $http) {
-    $http.get('posts/26').success(function(data){
-      $scope.detailed_post = data; //pushes things to detailed post
-    });
-    $scope.expanded = false;
-    $scope.expandPost = function() {
+    $scope.expandPost = function(index) {
       // expands the post
     };
     $scope.collapsePost = function() {
