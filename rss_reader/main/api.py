@@ -13,14 +13,14 @@ from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSe
 from .models import Topic, Feed, Post
 
 # User API
-class UserList(generics.ListCreateAPIView):
+class UserList(generics.ListAPIView):
     model = User
     serializer_class = UserSerializer
     permission_classes = [
         permissions.AllowAny
     ]
 
-class UserDetail(generics.RetrieveAPIView):
+class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
     serializer_class = UserSerializer
 
@@ -40,7 +40,7 @@ class TopicList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
-class TopicDetail(generics.RetrieveAPIView):
+class TopicDetail(generics.RetrieveUpdateAPIView):
     model = Topic
     serializer_class = TopicSerializer
 
@@ -62,7 +62,7 @@ class FeedList(generics.ListCreateAPIView):
 
     # We can limit the fields that we display here so that it is comprehensible to the user.
 
-class FeedDetail(generics.RetrieveAPIView):
+class FeedDetail(generics.RetrieveUpdateAPIView):
     model = Feed
     serializer_class = FeedSerializer
 
@@ -90,23 +90,43 @@ def feed_create(request):
             try:
                 # If uncategorized already exists
                 t = user.topics.get(name="Uncategorized")
-                t.feeds.add(f)
-                t.save()
             except Topic.DoesNotExist as e:
                 # If it doesn't create it
                 t = Topic(name="Uncategorized", user=user)
                 t.save()
-                t.feeds.add(f)
-                t.save()
+
+            # Add the Feed to the Topic
+            t.addFeed(f)
+			t.save()
 
             # Serialize the Feed so it can be sent back
             fs = FeedSerializer(f)
             return Response(fs.data, status=status.HTTP_200_OK)
         except IntegrityError as e:
-            # Return 409 if the url already exist
+            # Check if user already subscribed, then we have a genuine error
+            user = User.objects.get(id="1")
+            existsInOtherTopic = False
+            for topic in user.topics.all():
+                if topic.feeds.filter(URL=url).exists():
+                    existsInOtherTopic = True
+                    break
+            if not existsInOtherTopic:
+                # Find the feed
+                f = Feed.objects.get(URL=url)
+                try:
+                    # If uncategorized already exists
+                    t = user.topics.get(name="Uncategorized")
+                except Topic.DoesNotExist as e:
+                    # If it doesn't create it
+                    t = Topic(name="Uncategorized", user=user)
+                    t.save()
+                t.addFeed(f)
+                fs = FeedSerializer(f)
+                return Response(fs.data, status=status.HTTP_200_OK)
+            # User is already subscribed to feed elsewhere,
+            # Return 409 CONFLICT
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
-            print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -124,3 +144,74 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
         permissions.AllowAny
     ]
+
+@api_view(['GET','POST'])
+def topic_create(request):
+    if request.method == "POST":
+        # Create topic using input name
+        topicName = request.DATA.get("name")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try creating a Topic with the name
+            t = Topic(name=topicName, user=user)
+            t.save()
+
+            # Serialize the Topic so it can be sent back
+            ts = TopicSerializer(t)
+            return Response(ts.data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            print e
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def topic_delete(request):
+    if request.method == "POST":
+        # Delete topic using input name
+
+        topicID = request.DATA.get("index")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try deleting a topic
+            t = Topic.objects.get(id=topicID, user=user)
+            t.delete()
+
+            return Response({}, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def topic_rename(request):
+    if request.method == "POST":
+        # Delete topic using input name
+
+        topicID = request.DATA.get("index")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try deleting a topic
+            t = Topic.objects.get(id=topicID, user=user)
+            t.name = request.DATA.get("name", t.name)
+            t.save()
+
+            # Serialize the Topic so it can be sent back
+            ts = TopicSerializer(t)
+            return Response(ts.data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)

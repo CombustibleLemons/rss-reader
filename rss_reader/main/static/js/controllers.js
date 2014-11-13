@@ -10,7 +10,7 @@ angular.module('main.controllers', [])
       var promise = APIService.getUser().then(function(user){
         $scope.user = user;
       });
-      $timeout(function(){$scope.refreshUser();}, $scope.refreshInterval * 1000);
+      //$timeout(function(){$scope.refreshUser();}, $scope.refreshInterval * 1000);
       // I have no idea where this returns to when the function calls itself, and what
       // Angular does to garbage collect. But it works.
       return promise;
@@ -31,16 +31,93 @@ angular.module('main.controllers', [])
       }
     };
   })
-  .controller('NavigationController', function($scope, $http, $timeout, APIService) {
+  .controller('NavigationController', function($scope, $rootScope, $http, $timeout, APIService) {
+    $scope.topics;
+    $scope.topicIds;
+
+    // Event handlers
+
+    // when addedTopic event is fired
+    $rootScope.$on("addedTopic", function (event, message) {
+        $scope.topicIds.push(message.topic.id);
+        $scope.topics.push(message.topic);
+    });
+
+    // when removedTopic event is fired
+    $rootScope.$on("removedTopic", function (event, message) {
+      $scope.topicIds = $scope.topicIds.filter(function(topicId){
+        return topicId != message.identifier;
+      });
+      $scope.topics = $scope.topics.filter(function(topic){
+        return topic.id != message.identifier;
+      });
+    });
+
+    //when renamedTopic event is fired
+    $rootScope.$on("renamedTopic", function (event, message) {
+      $scope.topics = $scope.topics.filter(function(topic){
+        return topic.id != message.identifier;
+      });
+      $scope.topics.push(message.topic);
+    });
+
+    // End Event handlers
+
     // Attributes
     $scope.expandedIndex = 0;
 
     // Methods
-    $scope.addTopic = function(topicName) {
-      // THIS IS WHERE A FUNCTION GOES, DOO DAH, DOO DAH
+    $scope.showPopup = function() {
+      $("#popupWrapper").show();
+      $("#dimmer").show();
     };
-    $scope.removeTopic = function(topicName) {
-      // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
+
+    $scope.hidePopup = function() {
+      $("#popupWrapper").hide();
+      $("#dimmer").hide();
+    };
+
+    $scope.toggleEdit = function(topicID) {
+      $(".editTopic"+topicID).show();
+      $(".editBtn"+topicID).hide();
+    };
+
+    $scope.addTopic = function(topicName) {
+      $http.post('/topics/create', {"name" : topicName}).success(function(data) {
+
+          $rootScope.$broadcast("addedTopic", {
+                topic: data,
+          });
+          $scope.hidePopup();
+          $("#popupTopic input").val('');
+
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+    };
+
+    $scope.renameTopic = function(newTopicName, topicID) {
+      $http.post('/topics/rename', {"name" : newTopicName.name, "index" : topicID}).success(function(data) {
+          $rootScope.$broadcast("renamedTopic", {
+                topic: data,
+                identifier: topicID,
+          });
+
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+    };
+
+    $scope.removeTopic = function(topicID) {
+      $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
+          
+          $rootScope.$broadcast("removedTopic", {
+                identifier: topicID,
+          });
+        
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
     };
     $scope.fetchTopics = function() {
       // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
@@ -54,106 +131,122 @@ angular.module('main.controllers', [])
           });
         }
       });
-      $timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
+      //$timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
     };
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index
     };
-    $scope.minimizeTopic = function(index) {
-      // TODO: Decide if there is ANYTHING to do here or if Angular covers it all for us.
-    };
+
+    //End Methods 
+    
     $scope.fetchTopics();
   })
-  .controller('SearchController', function($scope, $http) {
+  .controller('SearchController', function($scope, $rootScope, $http) {
     $scope.addFeed = function() { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
-          //alert(data);
-          // The server will do the adding to the uncategorized part
+          // How do we figuure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("addFeed", {
+                feed: data,
+                topicName: "Uncategorized"
+          });
         }).error(function(data, status, headers, config){
           //alert(status);
         });
     };
   })
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
-    $scope.addFeedToTopic = function(url) {
-      // function function function
+    // Dispatch addFeed message to a Topic
+    $rootScope.$on("addFeed", function (event, message) {
+        if ($scope.topic.name == message.topicName){
+          var feed = message.feed;
+          $scope.addFeedToTopic(feed);
+        }
+    });
+
+    $scope.addFeedToTopic = function(feed) {
+      $scope.topic["feeds"].push(feed.id);
+      $scope.feeds.push(feed);
+      $scope.fetchFeeds();
     };
-    $scope.editName = function(newName) {
-      // FUNCTION YEAH
-    };
+    $scope.removeFeedFromTopic = function(feedId){
+      // Remove Feed-Topic relationship from server
+      $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
+        return id != feedId;
+      });
+      $http.put("topics/" + $scope.topic["id"], $scope.topic).success(function(data){
+        // If successful, trigger feed fetching to update the feed listing
+        $scope.fetchFeeds();
+      }).error(function(data, status, headers, config){
+        // Log the error
+        console.log(status);
+        // Add the feed back since there was an error
+        $scope.topic["feeds"].push(feedId);
+      });;
+    };  
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
-      $timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
+      //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
     }
-    $scope.fetchFeeds = function($scope, $http) {
+    $scope.fetchFeeds = function() {
       // Get the feed IDs
       var feed_ids = $scope.topic["feeds"];
-      // Accursed asyncronicity!!!
-      // Ask for the feed service to fetch all the feed_ids. Returns a promise that we wait to parse (using .then)
       APIService.getFeedsByIds(feed_ids).then(function(data){
         $scope.feeds = data;
       });
       // Poll for feeds every $scope.refreshInterval so that we can get new feed info
-      $timeout(function(){$scope.fetchFeeds($scope, $http);}, $scope.refreshInterval * 1000);
+      //$timeout(function(){$scope.fetchFeeds($scope, $http);}, $scope.refreshInterval * 1000);
     };
     //this just updates the feedService which the feedController pulls from
     $scope.expandFeed = function(feedID) {
       $rootScope.$broadcast("clickFeed", {
             identifier: feedID
         });
-      //FeedService.setFeedID(feedID);
     };
-    $scope.fetchFeeds($scope, $http);
+
+    $scope.fetchFeeds();
     $scope.refreshTopic();
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
-    $scope.expandedPostIndex = 0;
+    $scope.expandedPostIndex = -1;
+    
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
+        $scope.expandedPostIndex = -1;
     });
 
     $scope.fetchPosts = function() {
       $http.get('feeds/' + $scope.feedID + "/posts").success(function(data) {
 
-        //this for loop removes unnecessary line breaks
+        // This for loop removes unnecessary line breaks
         // TESTED WITH NYT US FEED
-        // TEST THIS WITH OTHER FEEDS
+        // TODO: TEST THIS WITH OTHER FEEDS
         for(var i=0; i<data.length; i++){
           //create dummy div
           var tmp = document.createElement('div');
-          
-          console.log(data[i])
 
-          //populate dummy div with post content
+          // console.log(data[i])
+
+          // Populate dummy div with post content
           $(tmp).html(data[i].content);
-          
-          //get list of line breaks
+
+          // Get list of line breaks
           var breakList = $(tmp).find("br");
 
-          //if more than 5 line breaks
+          // If more than 5 line breaks
           if (breakList.length >= 5) {
             //remove all of them
             $(tmp).find("br").remove();
           }
-          //put cleaned post content back into data array
+          // Put cleaned post content back into data array
           data[i].content = $(tmp).html();
         }
         $scope.posts = data;
       });
     };
     $scope.expandPost = function(index) {
+      // Expand the post
       $scope.expandedPostIndex = index;
-      console.log($scope.expandedPostIndex);
-      // expands the post
     };
   })
-  .controller('PostController', function($scope, $http) {
-    $scope.expandPost = function(index) {
-      // expands the post
-    };
-    $scope.collapsePost = function() {
-      // collapses the post
-    };
-  });
 //*/
