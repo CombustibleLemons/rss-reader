@@ -4,7 +4,9 @@ from django.db import models
 from django.contrib.auth.models import User, UserManager
 ## Exceptions
 from django.db import IntegrityError
-
+## Signals
+from django.db.models.signals import post_init
+from django.dispatch import receiver
 
 # RSS Parsing
 import feedparser
@@ -446,3 +448,10 @@ class Atom(Post):
         # Save before we exit
         atom.save()
         return atom
+
+# Create 'Uncategorized' Topic to put stuff in on user creation
+@receiver(post_init, sender=User)
+def createUncategorized(sender, instance, **kwargs):
+    if not instance.pk:
+        uncat = Topic(name="Uncategorized", user=instance)
+        uncat.save()
