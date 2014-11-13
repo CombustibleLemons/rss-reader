@@ -2,10 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from main import views as MainViews
 
-from main.api import UserList, UserDetail, UserTopicList
-from main.api import TopicList, TopicDetail, TopicFeedList
-from main.api import FeedList, FeedDetail, FeedPostList, feed_create
-from main.api import PostList, PostDetail
+from main.api import *
 
 user_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', UserTopicList.as_view(), name='userfeed-list'),
@@ -15,7 +12,9 @@ user_urls = patterns('',
 topic_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', TopicFeedList.as_view(), name='topicfeed-list'),
     url(r'^/(?P<pk>[0-9]+)$', TopicDetail.as_view(), name='topic-detail'),
-    url(r'^/$', TopicList.as_view(), name='topic-list')
+    url(r'^/$', TopicList.as_view(), name='topic-list'),
+    url(r'^/create$', topic_create, name='topic-create'),
+    url(r'^/delete$', topic_delete, name='topic-delete'),
 )
 
 feed_urls = patterns('',

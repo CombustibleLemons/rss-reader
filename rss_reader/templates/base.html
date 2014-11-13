@@ -47,13 +47,15 @@
 				</div>
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
+					<a href="#" ng-click="addTopic('topic1')">Add a topic</a>
 					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
 						<li>
 							{% verbatim %}
-							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
+							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
 		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 			      			</a>
+			      			<a href="#" ng-click="removeTopic(topic.name)" style="float:right;">x</a>
 							<div ng-controller="TopicController">
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
 									<li>

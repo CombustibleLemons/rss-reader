@@ -37,10 +37,19 @@ angular.module('main.controllers', [])
 
     // Methods
     $scope.addTopic = function(topicName) {
-      // THIS IS WHERE A FUNCTION GOES, DOO DAH, DOO DAH
+      $http.post('/topics/create', {"name" : $scope.query}).success(function(data) {
+          //alert(data);
+          // The server will do the adding to the uncategorized part
+        }).error(function(data, status, headers, config){
+          //alert(status);
+        });
     };
     $scope.removeTopic = function(topicName) {
-      // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
+      $http.post('/topics/delete', {"name" : $scope.query}).success(function(data) {
+          console.log("successfully deleted");
+        }).error(function(data, status, headers, config){
+          console.log("lolwut");
+        });
     };
     $scope.fetchTopics = function() {
       // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
