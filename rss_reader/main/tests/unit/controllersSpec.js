@@ -59,7 +59,7 @@ describe("Search controllers", function($rootScope) {
     }));
 
     it("should add feeds to uncategorized", function() {
-        scope.query = 'http://www.polygon.com/rss/index.xml';
+        scope.query = 'http://xkcd.com/rss.xml';
         expect(scope.addFeed()).toBe(true);
         // var newFeedSet = scope.user.topic_set['uncategorized']; // yet again
         // expect(originalFeedSet.length).toEqual(newFeedSet.length + 1);
