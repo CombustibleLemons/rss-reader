@@ -52,12 +52,10 @@ angular.module('main.controllers', [])
     });
 
     $rootScope.$on("renamedTopic", function (event, message) {
-      console.log($scope.topics); 
       $scope.topics = $scope.topics.filter(function(topic){
         return topic.id != message.identifier;
       });
       $scope.topics.push(message.topic);
-      console.log($scope.topics);
     });
 
 
