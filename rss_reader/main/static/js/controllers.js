@@ -32,15 +32,63 @@ angular.module('main.controllers', [])
     };
   })
   .controller('NavigationController', function($scope, $rootScope, $http, $timeout, APIService) {
+    $scope.topics;
+    $scope.topicIds;
+
+    // when addedTopic event is fired
+    $rootScope.$on("addedTopic", function (event, message) {
+        $scope.topicIds.push(message.topic.id);
+        $scope.topics.push(message.topic);
+    });
+
+    // when removedTopic event is fired
+    $rootScope.$on("removedTopic", function (event, message) {
+      $scope.topicIds = $scope.topicIds.filter(function(topicId){
+        return topicId != message.identifier;
+      });
+      $scope.topics = $scope.topics.filter(function(topic){
+        return topic.id != message.identifier;
+      });
+    });
+
+
     // Attributes
     $scope.expandedIndex = 0;
 
     // Methods
-    $scope.addTopic = function(topicName) {
-      // THIS IS WHERE A FUNCTION GOES, DOO DAH, DOO DAH
+    $scope.showPopup = function() {
+      $("#popupWrapper").show();
+      $("#dimmer").show();
     };
-    $scope.removeTopic = function(topicName) {
-      // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
+
+    $scope.hidePopup = function() {
+      $("#popupWrapper").hide();
+      $("#dimmer").hide();
+    };
+
+    $scope.addTopic = function(topicName) {
+      console.log(topicName);
+      $http.post('/topics/create', {"name" : topicName}).success(function(data) {
+
+          $rootScope.$broadcast("addedTopic", {
+                topic: data,
+          });
+          $scope.hidePopup();
+
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+    };
+    $scope.removeTopic = function(topicID) {
+      $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
+          
+          $rootScope.$broadcast("removedTopic", {
+                identifier: topicID,
+          });
+        
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
     };
     $scope.fetchTopics = function() {
       // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
@@ -85,6 +133,7 @@ angular.module('main.controllers', [])
           $scope.addFeedToTopic(feed);
         }
     });
+
     $scope.addFeedToTopic = function(feed) {
       $scope.topic["feeds"].push(feed.id);
       $scope.feeds.push(feed);

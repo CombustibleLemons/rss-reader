@@ -79,3 +79,36 @@ body {
 .navbar-default .navbar-nav>.login-btn>a:hover {
 	color: #fff;
 }
+
+#popupWrapper{
+	display: none;
+}
+
+#popupTopic {
+	position:absolute;
+	left:50%;
+	top:17%;
+	margin-left:-202px;
+	z-index:1031;
+
+}
+#popupTopic form {
+	max-width:300px;
+	min-width:250px;
+	padding:10px 50px;
+	border:2px solid gray;
+	border-radius:10px;
+	background-color:#fff
+}
+#dimmer
+{
+    background:#000;
+    opacity:0.5;
+    position:fixed; /* important to use fixed, not absolute */
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:none;
+    z-index:1031; /* may not be necessary */
+}
