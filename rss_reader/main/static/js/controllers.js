@@ -149,8 +149,13 @@ angular.module('main.controllers', [])
                 feed: data,
                 topicName: "Uncategorized"
           });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
         }).error(function(data, status, headers, config){
-          //alert(status);
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
         });
     };
   })
