@@ -2,7 +2,7 @@
 
 /* Controllers */
 
-angular.module('main.controllers', [])
+angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $http, $timeout, $q, APIService) {
     $scope.refreshInterval = 5;
     $scope.refreshUser = function(){

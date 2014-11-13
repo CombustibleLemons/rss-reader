@@ -1,6 +1,28 @@
 'use strict';
 
 /* jasmine specs for controllers go here */
+describe("User controllers", function() {
+    beforeEach(module("main.controllers"));
+
+    var userScope, httpBackend;
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend = $httpBackend;
+
+        userScope.$digest();
+    }));
+
+    it("should refresh users", function() {
+        dump("I have no idea how we would test this. - Devon");
+        expect(true).toBe(true);
+    });
+
+    it("should getTopicIDs", function() {
+        dump(userScope.getTopicIDs());
+    });
+});
+
 /*
 describe("Navigation controllers", function() {
     beforeEach(module("main.controllers"));
@@ -54,13 +76,23 @@ describe("Search controllers", function($rootScope) {
     beforeEach(inject(function($controller, $rootScope, $httpBackend) {
         scope = $rootScope.$new();
         $controller('SearchController', {$scope: scope});
+        httpBackend = $httpBackend;
 
         scope.$digest();
     }));
 
     it("should add feeds to uncategorized", function() {
-        scope.query = 'http://xkcd.com/rss.xml';
-        expect(scope.addFeed()).toBe(true);
+        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
+            'pretend this is feed data');
+        scope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
+        var success;
+        scope.addFeed();
+        scope.$on("addFeed", function (event, message) {
+            // check message
+            success = true;
+        });
+        httpBackend.flush();
+        expect(success).toBe(true);
         // var newFeedSet = scope.user.topic_set['uncategorized']; // yet again
         // expect(originalFeedSet.length).toEqual(newFeedSet.length + 1);
         // expect feed to be in uncategorized topic, uncertain of syntax at this time
