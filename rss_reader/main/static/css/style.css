@@ -117,3 +117,6 @@ body {
 .nav input[class^='editTopic'] {
 	display:none;
 }
+.error {
+	color:#f00;
+}
