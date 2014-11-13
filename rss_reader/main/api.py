@@ -40,8 +40,6 @@ class TopicList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
-
-
 class TopicDetail(generics.RetrieveUpdateAPIView):
     model = Topic
     serializer_class = TopicSerializer
@@ -92,14 +90,13 @@ def feed_create(request):
             try:
                 # If uncategorized already exists
                 t = user.topics.get(name="Uncategorized")
-                t.feeds.add(f)
-                t.save()
             except Topic.DoesNotExist as e:
                 # If it doesn't create it
                 t = Topic(name="Uncategorized", user=user)
                 t.save()
-                t.feeds.add(f)
-                t.save()
+
+            # Add the Feed to the Topic
+            t.addFeed(f)
 
             # Serialize the Feed so it can be sent back
             fs = FeedSerializer(f)
@@ -108,7 +105,6 @@ def feed_create(request):
             # Return 409 if the url already exist
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
-            print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 

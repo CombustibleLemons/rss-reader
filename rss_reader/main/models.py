@@ -1,6 +1,12 @@
 # Django
-from django.db import models, IntegrityError
+## Models
+from django.db import models
 from django.contrib.auth.models import User, UserManager
+## Exceptions
+from django.db import IntegrityError
+## Signals
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
 
 # RSS Parsing
 import feedparser
@@ -98,7 +104,6 @@ class Feed(models.Model):
     pubDate = models.DateTimeField(null=True)
     # - updated : date
     updated = models.DateTimeField(null=True)
-
     # - logo : (string, string, string)
 
     def __unicode__(self):
@@ -261,7 +266,7 @@ class Feed(models.Model):
                     pass
 
 class Topic(models.Model):
-    name = models.TextField(unique=True)
+    name = models.TextField()
     feeds = models.ManyToManyField(Feed, related_name = '+')
     user = models.ForeignKey(User, null=True, related_name="topics")
 
@@ -274,8 +279,13 @@ class Topic(models.Model):
 
     # - editTopicName(name : string)
     def editTopicName(self, topicname):
+        tmp = self.name
+        try:
             self.name = topicname
             self.save()
+        except IntegrityError as e:
+            self.name = tmp
+            raise e
 
     # - deleteTopic(topic : topic)
     # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
@@ -433,4 +443,17 @@ class Atom(Post):
         post_dict.update({"summary" : entry.get("summary", "")})
 
         # Create object
-        return Atom.objects.create(**post_dict)
+        atom = Atom.objects.create(**post_dict)
+
+        # Save before we exit
+        atom.save()
+        return atom
+
+# Create 'Uncategorized' Topic to put stuff in on user creation
+@receiver(post_save, sender=User)
+def createUncategorized(sender, instance, **kwargs):
+    try:
+        instance.topics.get(name="Uncategorized")
+    except Topic.DoesNotExist:
+        uncat = Topic(name="Uncategorized", user=instance)
+        uncat.save()
