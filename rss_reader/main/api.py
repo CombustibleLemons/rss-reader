@@ -102,7 +102,28 @@ def feed_create(request):
             fs = FeedSerializer(f)
             return Response(fs.data, status=status.HTTP_200_OK)
         except IntegrityError as e:
-            # Return 409 if the url already exist
+            # Check if user already subscribed, then we have a genuine error
+            user = User.objects.get(id="1")
+            existsInOtherTopic = False
+            for topic in user.topics.all():
+                if topic.feeds.filter(URL=url).exists():
+                    existsInOtherTopic = True
+                    break
+            if not existsInOtherTopic:
+                # Find the feed
+                f = Feed.objects.get(URL=url)
+                try:
+                    # If uncategorized already exists
+                    t = user.topics.get(name="Uncategorized")
+                except Topic.DoesNotExist as e:
+                    # If it doesn't create it
+                    t = Topic(name="Uncategorized", user=user)
+                    t.save()
+                t.addFeed(f)
+                fs = FeedSerializer(f)
+                return Response(fs.data, status=status.HTTP_200_OK)
+            # User is already subscribed to feed elsewhere,
+            # Return 409 CONFLICT
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
             # Return bad request if we get a general exception
