@@ -13,14 +13,14 @@ from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSe
 from .models import Topic, Feed, Post
 
 # User API
-class UserList(generics.ListCreateAPIView):
+class UserList(generics.ListAPIView):
     model = User
     serializer_class = UserSerializer
     permission_classes = [
         permissions.AllowAny
     ]
 
-class UserDetail(generics.RetrieveAPIView):
+class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
     serializer_class = UserSerializer
 
@@ -42,7 +42,7 @@ class TopicList(generics.ListCreateAPIView):
 
 
 
-class TopicDetail(generics.RetrieveAPIView):
+class TopicDetail(generics.RetrieveUpdateAPIView):
     model = Topic
     serializer_class = TopicSerializer
 
@@ -64,7 +64,7 @@ class FeedList(generics.ListCreateAPIView):
 
     # We can limit the fields that we display here so that it is comprehensible to the user.
 
-class FeedDetail(generics.RetrieveAPIView):
+class FeedDetail(generics.RetrieveUpdateAPIView):
     model = Feed
     serializer_class = FeedSerializer
 
@@ -84,7 +84,7 @@ def feed_create(request):
         url = request.DATA["url"]
         try:
             # Try creating a Feed with the url
-            f = Feed.createByUrl(url)
+            f = Feed.createByURL(url)
             f.save()
 
             # Add feed to uncategorized Topic
@@ -131,7 +131,7 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
 def topic_create(request):
     if request.method == "POST":
         # Create topic using input name
-        topicName = request.DATA["name"]
+        topicName = request.DATA.get("name")
         try:
             user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
 
@@ -144,6 +144,7 @@ def topic_create(request):
             return Response(ts.data, status=status.HTTP_200_OK)
         except IntegrityError as e:
             # Return 409 if the url already exist
+            print e
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
             print e
@@ -155,18 +156,15 @@ def topic_delete(request):
     if request.method == "POST":
         # Delete topic using input name
 
-        topicName = request.POST["name"]
+        topicID = request.DATA.get("index")
         try:
             user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
 
             # Try deleting a topic
-            t = Topic.objects.get(id=topicName, user=user)
-            t.remove()
-            t.save()
+            t = Topic.objects.get(id=topicID, user=user)
+            t.delete()
 
-            # Serialize the Topic so it can be sent back
-            #ts = TopicSerializer(t)
-            #return Response(ts.data, status=status.HTTP_200_OK)
+            return Response({}, status=status.HTTP_200_OK)
         except IntegrityError as e:
             # Return 409 if the url already exist
             return Response(status=status.HTTP_409_CONFLICT)

@@ -1,5 +1,5 @@
 # Django
-from django.db import models
+from django.db import models, IntegrityError
 from django.contrib.auth.models import User, UserManager
 
 # RSS Parsing
@@ -9,6 +9,7 @@ from datetime import datetime
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
+import traceback #prints errors
 
 # do we still need this ?
 class ListField(models.TextField):
@@ -39,9 +40,12 @@ class ListField(models.TextField):
 
 # User class exists in Django, with email, username attributes; and
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
-# The login / register page/handling still needs to be implemented in view.py via controllers, I believe
+# user.topics.create(name="topicname")
 
 class FeedURLInvalid(Exception):
+    pass
+
+class FeedExistsInTopic(Exception):
     pass
 
 class Feed(models.Model):
@@ -97,15 +101,112 @@ class Feed(models.Model):
 
     # - logo : (string, string, string)
 
+    def __unicode__(self):
+        return self.title
+
     # Constructor (uses class method as suggested by Django docs)
     @classmethod
-    def createByUrl(cls, url):
+    def createByURL(cls, url):
         res = feedparser.parse(url)
         # Check if bozo_exception was raised
         if res["version"] == "":
             raise FeedURLInvalid
 
-        if res["version"] == "rss20":
+        elif res["version"] in [u"rss", u"rss20", u"atom", u"atom10"]:
+            # Populate Feed fields
+            feedData = res["feed"]
+
+            # docURL can sometimes by hidden in the links
+            docURL = feedData.get("link", "")
+            if docURL == "":
+                try:
+                    for link in feedData["links"]:
+                        if link["rel"] == "self":
+                            docURL = link["href"]
+                except KeyError:
+                    docURL = "";
+
+            # Text fields
+            cls_dict = {
+                "author" : feedData.get("author", ""),
+                "category" : feedData.get("category", ""),
+                "contributor" : feedData.get("contributor", ""),
+                "description" : feedData.get("description", ""),
+                "docURL" : docURL,
+                "editorAddr" : feedData.get("editorAddr", ""),
+                "generator" : feedData.get("generator", ""),
+                "guid" : feedData.get("guid", ""),
+                "language" : feedData.get("language", ""),
+                "rights" : feedData.get("rights", ""),
+                "title" : feedData.get("title", ""),
+                "subtitle" : feedData.get("subtitle", ""),
+            }
+            if feedData.get("image",None):
+                cls_dict.update({"logo" : feedData["image"].get("href", "")})
+            else:
+                cls_dict.update({"logo" : ""})
+
+            # Integer field
+            cls_dict.update({
+                "ttl" : int(feedData["ttl"]) if feedData.get("ttl", None) else None,
+                "skipDays" : int(feedData["skipDays"]) if feedData.get("skipDays", None) else None,
+                "skipHours" : int(feedData["skipHours"]) if feedData.get("skipHours", None) else None
+            })
+
+            # Date fields
+            if feedData.get("published_parsed", None):
+                pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', feedData["published_parsed"])
+                cls_dict.update({"pubDate" : pubTime})
+
+            if res.get("updated_parsed", None):
+                updateTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', res["updated_parsed"])
+                cls_dict.update({"updated" : updateTime})
+
+            # URL Field
+            try:
+                clsURL = url
+                # next(x["href"] for x in feedData["links"] if x["rel"] == "self")
+            except StopIteration:
+                clsURL = ""
+            if url:
+                cls_dict.update({"URL" : clsURL})
+
+            ret_feed = cls.objects.create(**cls_dict)
+
+            # Create Posts
+            for entry in res["entries"]:
+                if res["version"] in ["rss", "rss20"]:
+                    RSS.createByEntry(entry, url, ret_feed)
+                elif res["version"] in ["atom", "atom10"]:
+                    Atom.createByEntry(entry, url, ret_feed)
+
+        return ret_feed
+
+    # Methods
+    def getPosts(self, n):
+        #empty list, or n is 0
+        if (not(self.posts.all().exists()) or (n==0)):
+            return list(self.posts.none())
+
+        descending_posts = self.posts.all().order_by('-pubDate')
+        if (n==1):
+            return self.posts.all()[0]
+        return list(descending_posts[:(n-1)])
+
+    def getAll(self):
+        return list(self.posts.all())
+
+    def getSize(self):
+        return self.posts.all().count()
+
+    def update(self):
+        res = feedparser.parse(self.URL)
+        # Check if bozo_exception was raised
+        if res["version"] == "":
+            raise FeedURLInvalid
+
+        # Supported versions
+        elif res["version"] in [u"rss20", u"atom10"]:
             # Populate Feed fields
             feedData = res["feed"]
 
@@ -145,33 +246,20 @@ class Feed(models.Model):
                 updateTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', res["updated_parsed"])
                 cls_dict.update({"updated" : updateTime})
 
-            # URL Field
-            try:
-                url = next(x["href"] for x in feedData["links"] if x["rel"] == "self")
-            except StopIteration:
-                url = ""
-            if url:
-                cls_dict.update({"URL" : url})
-
-            ret_feed = cls.objects.create(**cls_dict)
+            self.__dict__.update(cls_dict)
 
             # Create Posts
             for entry in res["entries"]:
-                Post.createByEntry(entry, url, ret_feed)
+                try:
+                    if res["version"] == "rss20":
+                        RSS.createByEntry(entry, self.URL, self)
+                    elif res["version"] == "atom10":
+                        Atom.createByEntry(entry, self.URL, self)
+                except IntegrityError as e:
+                    print "Integrity Error"
+                    # We've found a duplicate, but its fine if we've found a duplicate
+                    pass
 
-        return ret_feed
-
-    # Methods
-    def getPosts(self, n):
-        pass
-
-    def getAll(self):
-        print self.post_set.all()
-
-    def getSize(self):
-        pass
-
-# Do we need to write new getters and setters?
 class Topic(models.Model):
     name = models.TextField(unique=True)
     feeds = models.ManyToManyField(Feed, related_name = '+')
@@ -186,35 +274,33 @@ class Topic(models.Model):
 
     # - editTopicName(name : string)
     def editTopicName(self, topicname):
-        u = self.user
-        if u.objects.get(username = topicname).exists():
-            return False
-        else:
-            self.name = name
-            return True
+            self.name = topicname
+            self.save()
 
-# - deleteTopic(topic : topic)
-# --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
+    # - deleteTopic(topic : topic)
+    # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
 
-# - addFeed (feed : Feed)
-# - will take advantage of ManytoMany relationships
-# - must check that Feed is not already owned in Topic or in User
+    # - addFeed (feed : Feed)
+    # - will take advantage of ManytoMany relationships
+    # - must check that Feed is not already owned in Topic or in User
     def addFeed(self, feed):
-        try:
-            self.feeds.add(feed)
-            return True
-        except:
-            traceback.print_exc()
-            return False
+        # Remember to exclude self from the checking!
+        for t in self.user.topics.all().exclude(id=self.id):
+            # Check if the feed is in any other topic
+            if t.feeds.filter(id=feed.id).exists():
+                raise FeedExistsInTopic
+        # Check if feed is in this Topic's feed list
+        if self.feeds.all().filter(id=feed.id).exists():
+            # Fail to add silently, it's okay if a feed is already in a topic and we add it
+            return
+        self.feeds.add(feed)
+        self.save()
 
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
-    def deleteFeed(self, feedname):
-        if self.feeds.get(feedname).empty():
-            return False
-        else:
-            self.feed.delete(feedname)
-            return True
+    def deleteFeed(self, feed):
+            self.feeds.remove(feed)
+            self.save()
 
 class Post(models.Model):
     # Attributes
@@ -256,11 +342,17 @@ class Post(models.Model):
     # Feed that post belongs to
     feed = models.ForeignKey(Feed, related_name="posts")
 
+    # Since new posts will not (if the feed is correctly formed) have duplicate guids
+    class Meta:
+        unique_together = (('feed', 'guid'),);
+
     # Methods
-    @classmethod
-    def createByEntry(cls, entry, feedURL, feed):
-        # Required information for this constructor
-        post_dict = {"feed" : feed, "feedURL" : feedURL}
+    def __unicode__(self):
+        return self.title
+
+    @staticmethod
+    def generateClassDict(entry):
+        post_dict = dict()
 
         # Categories is a set of tags for feedparser
         categories = list()
@@ -284,6 +376,7 @@ class Post(models.Model):
         # Dates
         if entry.get("published_parsed", None):
             pubTime = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry["published_parsed"])
+            #pubTime = entry["published_parsed"]
             post_dict.update({"pubDate" : pubTime})
 
         if entry.get("updated_parsed", None):
@@ -293,5 +386,51 @@ class Post(models.Model):
         # AckDate (DateTime that the post enters the database)
         post_dict.update({"ackDate" : time.time()})
 
+        return post_dict
+
+    @classmethod
+    def createByEntry(cls, entry, feedURL, feed):
+        pass # Virtual constructor
+
+
+class RSS(Post):
+    # Comments are a URL to a comments page
+    comments = models.URLField()
+    enclosure = ListField()
+    # Enclosures can be a list, see: https://pythonhosted.org/feedparser/reference-entry-enclosures.html#reference-entry-enclosures-href
+
+    @classmethod
+    def createByEntry(cls, entry, feedURL, feed):
+        # Required information for this constructor
+        post_dict = {"feed" : feed, "feedURL" : feedURL}
+        post_dict.update(cls.generateClassDict(entry))
+
+        # Special attributes for RSS
+        # Comments
+        post_dict.update({"comments" : entry.get("comments", "")})
+
+        # Enclosures
+        enclosures = list()
+        for tag in entry.get("tags", []):
+            enclosures.append(tag["term"])
+        post_dict.update({"enclosure" : enclosures})
+
         # Create object
-        return Post.objects.create(**post_dict)
+        return RSS.objects.create(**post_dict)
+
+class Atom(Post):
+    # Comments are a URL to a comments page
+    summary = models.TextField()
+
+    @classmethod
+    def createByEntry(cls, entry, feedURL, feed):
+        # Required information for this constructor
+        post_dict = {"feed" : feed, "feedURL" : feedURL}
+        post_dict.update(cls.generateClassDict(entry))
+
+        # Special attributes for RSS
+        # Comments
+        post_dict.update({"summary" : entry.get("summary", "")})
+
+        # Create object
+        return Atom.objects.create(**post_dict)

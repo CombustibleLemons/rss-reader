@@ -15,6 +15,7 @@
 	<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
 </head>
 <body ng-app="main">
+	<div id="dimmer"></div>
 	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="navbar-header">
 		  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -47,7 +48,7 @@
 				</div>
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
-					<a href="#" ng-click="addTopic('topic1')">Add a topic</a>
+					<a href="#" ng-click="showPopup()">Add a topic</a>
 					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
 						<li>
 							{% verbatim %}
@@ -55,10 +56,12 @@
 		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 			      			</a>
-			      			<a href="#" ng-click="removeTopic(topic.name)" style="float:right;">x</a>
+			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
+
 							<div ng-controller="TopicController">
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
 									<li>
+										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
 										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
 									</li>
 								</ul>
@@ -73,21 +76,30 @@
 				{% verbatim %}
 				<div ng-controller="FeedController">
 					<div class="row-fluid post" ng-repeat="post in posts">
-							<a ng-click="expandPost($index)">
-								<div class="mini" ng-hide="expandedPostIndex == $index">
-									<h3>{{post.title}}</h3>
-								</div>
-							</a>
-							<div class="full" ng-show="expandedPostIndex == $index">
-									<h3>{{post.title}}</h3>
-									<p ng-bind-html="post.content" >{{post.content}}</p>
-									<p><a href="{{post.guid}}" target="_blank">View source</a></p>
-								</div>
+						<a ng-click="expandPost($index)">
+							<div class="mini" ng-hide="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
 							</div>
+						</a>
+						<div class="full" ng-show="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+								<p ng-bind-html="post.content" >{{post.content}}</p>
+								<p><a href="{{post.url}}" target="_blank">View source</a></p>
+						</div>
 					</div>
 				</div>
 				{% endverbatim %}
-				{% block content %}{% endblock %}
+			</div>
+			<div id="popupWrapper">
+				<div id="popupTopic">
+					<form action="#" id="form" name="form">
+						<h3>Add a topic</h3>
+						<hr>
+						<input ng-model="topic.name "name="name" placeholder="Topic Name" type="text"><br/>
+						<a href="#" class="addTopicBtn" ng-click="addTopic(topic.name)">Add Topic</a>
+						<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -98,8 +110,6 @@
         <p class="text-muted">&copy; Combustible Lemons Inc, 2014<br/>BAMF@uchicago.edu</p>
       </div>
     </div>
-
-
 	<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script src="{% static '/djangular/app.js' %}"></script>
 	<script src="{% static 'js/app.js' %}"></script>
