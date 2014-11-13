@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, UserManager
 ## Exceptions
 from django.db import IntegrityError
 ## Signals
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 # RSS Parsing
@@ -266,7 +266,7 @@ class Feed(models.Model):
                     pass
 
 class Topic(models.Model):
-    name = models.TextField(unique=True)
+    name = models.TextField()
     feeds = models.ManyToManyField(Feed, related_name = '+')
     user = models.ForeignKey(User, null=True, related_name="topics")
 
@@ -452,7 +452,8 @@ class Atom(Post):
 # Create 'Uncategorized' Topic to put stuff in on user creation
 @receiver(post_save, sender=User)
 def createUncategorized(sender, instance, **kwargs):
-    print type(instance)
-    if not instance.pk:
+    try:
+        instance.topics.get(name="Uncategorized")
+    except Topic.DoesNotExist:
         uncat = Topic(name="Uncategorized", user=instance)
         uncat.save()
