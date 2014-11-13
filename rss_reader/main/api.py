@@ -122,3 +122,74 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
         permissions.AllowAny
     ]
+
+@api_view(['GET','POST'])
+def topic_create(request):
+    if request.method == "POST":
+        # Create topic using input name
+        topicName = request.DATA.get("name")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try creating a Topic with the name
+            t = Topic(name=topicName, user=user)
+            t.save()
+
+            # Serialize the Topic so it can be sent back
+            ts = TopicSerializer(t)
+            return Response(ts.data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            print e
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def topic_delete(request):
+    if request.method == "POST":
+        # Delete topic using input name
+
+        topicID = request.DATA.get("index")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try deleting a topic
+            t = Topic.objects.get(id=topicID, user=user)
+            t.delete()
+
+            return Response({}, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def topic_rename(request):
+    if request.method == "POST":
+        # Delete topic using input name
+
+        topicID = request.DATA.get("index")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try deleting a topic
+            t = Topic.objects.get(id=topicID, user=user)
+            t.name = request.DATA.get("name", t.name)
+            t.save()
+
+            # Serialize the Topic so it can be sent back
+            ts = TopicSerializer(t)
+            return Response(ts.data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)

@@ -32,15 +32,92 @@ angular.module('main.controllers', [])
     };
   })
   .controller('NavigationController', function($scope, $rootScope, $http, $timeout, APIService) {
+    $scope.topics;
+    $scope.topicIds;
+
+    // Event handlers
+
+    // when addedTopic event is fired
+    $rootScope.$on("addedTopic", function (event, message) {
+        $scope.topicIds.push(message.topic.id);
+        $scope.topics.push(message.topic);
+    });
+
+    // when removedTopic event is fired
+    $rootScope.$on("removedTopic", function (event, message) {
+      $scope.topicIds = $scope.topicIds.filter(function(topicId){
+        return topicId != message.identifier;
+      });
+      $scope.topics = $scope.topics.filter(function(topic){
+        return topic.id != message.identifier;
+      });
+    });
+
+    //when renamedTopic event is fired
+    $rootScope.$on("renamedTopic", function (event, message) {
+      $scope.topics = $scope.topics.filter(function(topic){
+        return topic.id != message.identifier;
+      });
+      $scope.topics.push(message.topic);
+    });
+
+    // End Event handlers
+
     // Attributes
     $scope.expandedIndex = 0;
 
     // Methods
-    $scope.addTopic = function(topicName) {
-      // THIS IS WHERE A FUNCTION GOES, DOO DAH, DOO DAH
+    $scope.showPopup = function() {
+      $("#popupWrapper").show();
+      $("#dimmer").show();
     };
-    $scope.removeTopic = function(topicName) {
-      // THIS IS WHERE THE NEXT ONE GOES, DOO DAH, DOO DAH
+
+    $scope.hidePopup = function() {
+      $("#popupWrapper").hide();
+      $("#dimmer").hide();
+    };
+
+    $scope.toggleEdit = function(topicID) {
+      $(".editTopic"+topicID).show();
+      $(".editBtn"+topicID).hide();
+    };
+
+    $scope.addTopic = function(topicName) {
+      $http.post('/topics/create', {"name" : topicName}).success(function(data) {
+
+          $rootScope.$broadcast("addedTopic", {
+                topic: data,
+          });
+          $scope.hidePopup();
+          $("#popupTopic input").val('');
+
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+    };
+
+    $scope.renameTopic = function(newTopicName, topicID) {
+      $http.post('/topics/rename', {"name" : newTopicName.name, "index" : topicID}).success(function(data) {
+          $rootScope.$broadcast("renamedTopic", {
+                topic: data,
+                identifier: topicID,
+          });
+
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+    };
+
+    $scope.removeTopic = function(topicID) {
+      $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
+          
+          $rootScope.$broadcast("removedTopic", {
+                identifier: topicID,
+          });
+        
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
     };
     $scope.fetchTopics = function() {
       // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
@@ -59,9 +136,9 @@ angular.module('main.controllers', [])
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index
     };
-    $scope.minimizeTopic = function(index) {
-      // TODO: Decide if there is ANYTHING to do here or if Angular covers it all for us.
-    };
+
+    //End Methods 
+    
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, $http) {
@@ -85,6 +162,7 @@ angular.module('main.controllers', [])
           $scope.addFeedToTopic(feed);
         }
     });
+
     $scope.addFeedToTopic = function(feed) {
       $scope.topic["feeds"].push(feed.id);
       $scope.feeds.push(feed);
@@ -104,10 +182,7 @@ angular.module('main.controllers', [])
         // Add the feed back since there was an error
         $scope.topic["feeds"].push(feedId);
       });;
-    };
-    $scope.editName = function(newName) {
-      // FUNCTION YEAH
-    };
+    };  
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
       //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
@@ -127,11 +202,13 @@ angular.module('main.controllers', [])
             identifier: feedID
         });
     };
+
     $scope.fetchFeeds();
     $scope.refreshTopic();
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
+    
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
@@ -172,12 +249,4 @@ angular.module('main.controllers', [])
       $scope.expandedPostIndex = index;
     };
   })
-  .controller('PostController', function($scope, $http) {
-    $scope.expandPost = function(index) {
-      // expands the post
-    };
-    $scope.collapsePost = function() {
-      // collapses the post
-    };
-  });
 //*/
