@@ -172,3 +172,28 @@ def topic_delete(request):
             print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def topic_rename(request):
+    if request.method == "POST":
+        # Delete topic using input name
+
+        topicID = request.DATA.get("index")
+        try:
+            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+
+            # Try deleting a topic
+            t = Topic.objects.get(id=topicID, user=user)
+            t.name = request.DATA.get("name", t.name)
+            t.save()
+
+            # Serialize the Topic so it can be sent back
+            ts = TopicSerializer(t)
+            return Response(ts.data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)

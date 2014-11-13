@@ -15,6 +15,7 @@ topic_urls = patterns('',
     url(r'^/$', TopicList.as_view(), name='topic-list'),
     url(r'^/create$', topic_create, name='topic-create'),
     url(r'^/delete$', topic_delete, name='topic-delete'),
+    url(r'^/rename$', topic_rename, name='topic-delete'),
 )
 
 feed_urls = patterns('',

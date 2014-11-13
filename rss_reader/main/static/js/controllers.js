@@ -51,6 +51,15 @@ angular.module('main.controllers', [])
       });
     });
 
+    $rootScope.$on("renamedTopic", function (event, message) {
+      console.log($scope.topics); 
+      $scope.topics = $scope.topics.filter(function(topic){
+        return topic.id != message.identifier;
+      });
+      $scope.topics.push(message.topic);
+      console.log($scope.topics);
+    });
+
 
     // Attributes
     $scope.expandedIndex = 0;
@@ -66,19 +75,37 @@ angular.module('main.controllers', [])
       $("#dimmer").hide();
     };
 
+    $scope.toggleEdit = function(topicID) {
+      $(".editTopic"+topicID).show();
+      $(".editBtn"+topicID).hide();
+    };
+
     $scope.addTopic = function(topicName) {
-      console.log(topicName);
       $http.post('/topics/create', {"name" : topicName}).success(function(data) {
 
           $rootScope.$broadcast("addedTopic", {
                 topic: data,
           });
           $scope.hidePopup();
+          $("#popupTopic input").val('');
 
         }).error(function(data, status, headers, config){
           console.log(status);
         });
     };
+
+    $scope.renameTopic = function(newTopicName, topicID) {
+      $http.post('/topics/rename', {"name" : newTopicName.name, "index" : topicID}).success(function(data) {
+          $rootScope.$broadcast("renamedTopic", {
+                topic: data,
+                identifier: topicID,
+          });
+
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+    };
+
     $scope.removeTopic = function(topicID) {
       $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
           
