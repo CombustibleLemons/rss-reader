@@ -112,3 +112,8 @@ body {
     display:none;
     z-index:1031; /* may not be necessary */
 }
+
+.nav li a[class^='editTopic'], 
+.nav input[class^='editTopic'] {
+	display:none;
+}

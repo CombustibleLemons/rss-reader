@@ -8,11 +8,12 @@
 	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
 	<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css">
 
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular-cookies.js"></script>
 	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-sanitize.min.js"></script>
 	<script src="{% static 'js/controllers.js' %}"></script>
-	<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+	
 </head>
 <body ng-app="main">
 	<div id="dimmer"></div>
@@ -56,6 +57,12 @@
 		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 			      			</a>
+			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
+			      			
+			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
+			      			
+			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
+			      			
 			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 
 							<div ng-controller="TopicController">
