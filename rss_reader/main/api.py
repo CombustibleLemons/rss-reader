@@ -39,8 +39,18 @@ class TopicList(generics.ListCreateAPIView):
     permission_classes = [
         permissions.AllowAny
     ]
+    def create(self, request, *args, **kwargs):
+       serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+       if serializer.is_valid():
+           self.pre_save(serializer.object)
+           self.object = serializer.save(force_insert=True)
+           self.post_save(self.object, created=True)
+           headers = self.get_success_headers(serializer.data)
+           return Response(serializer.data, status=status.HTTP_201_CREATED,
+                           headers=headers)
+       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class TopicDetail(generics.RetrieveUpdateAPIView):
+class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Topic
     serializer_class = TopicSerializer
 
@@ -62,7 +72,7 @@ class FeedList(generics.ListCreateAPIView):
 
     # We can limit the fields that we display here so that it is comprehensible to the user.
 
-class FeedDetail(generics.RetrieveUpdateAPIView):
+class FeedDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Feed
     serializer_class = FeedSerializer
 
@@ -86,7 +96,7 @@ def feed_create(request):
             f.save()
 
             # Add feed to uncategorized Topic
-            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+            user = User.objects.all()[0] # TODO: Change this so that individual users can be recognized
             try:
                 # If uncategorized already exists
                 t = user.topics.get(name="Uncategorized")
@@ -127,6 +137,7 @@ def feed_create(request):
             # Return 409 CONFLICT
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
+            print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -145,13 +156,13 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
         permissions.AllowAny
     ]
 
-@api_view(['GET','POST'])
+@api_view(['POST'])
 def topic_create(request):
     if request.method == "POST":
         # Create topic using input name
         topicName = request.DATA.get("name")
         try:
-            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+            user = User.objects.all()[0] # TODO: Change this so that individual users can be recognized
 
             # Try creating a Topic with the name
             t = Topic(name=topicName, user=user)
@@ -159,49 +170,53 @@ def topic_create(request):
 
             # Serialize the Topic so it can be sent back
             ts = TopicSerializer(t)
-            return Response(ts.data, status=status.HTTP_200_OK)
+            return Response(ts.data, status=status.HTTP_201_CREATED)
         except IntegrityError as e:
             # Return 409 if the url already exist
-            print e
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
             print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','POST'])
+@api_view(['POST'])
 def topic_delete(request):
     if request.method == "POST":
         # Delete topic using input name
 
         topicID = request.DATA.get("index")
         try:
-            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+            user = User.objects.all()[0] # TODO: Change this so that individual users can be recognized
 
             # Try deleting a topic
             t = Topic.objects.get(id=topicID, user=user)
+
+            # Can't delete the Uncategorized topic from the user
+            if t.name == "Uncategorized":
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             t.delete()
 
-            return Response({}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except IntegrityError as e:
             # Return 409 if the url already exist
             return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
-            print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','POST'])
+@api_view(['POST'])
 def topic_rename(request):
     if request.method == "POST":
-        # Delete topic using input name
+        # Rename topic using input name
 
         topicID = request.DATA.get("index")
         try:
-            user = User.objects.get(id="1") # TODO: Change this so that individual users can be recognized
+            user = User.objects.all()[0] # TODO: Change this so that individual users can be recognized
 
             # Try deleting a topic
             t = Topic.objects.get(id=topicID, user=user)
+            if t.name == "Uncategorized":
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             t.name = request.DATA.get("name", t.name)
             t.save()
 
