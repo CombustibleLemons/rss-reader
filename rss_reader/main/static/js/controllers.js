@@ -35,6 +35,8 @@ angular.module('main.controllers', [])
     $scope.topics;
     $scope.topicIds;
 
+    // Event handlers
+
     // when addedTopic event is fired
     $rootScope.$on("addedTopic", function (event, message) {
         $scope.topicIds.push(message.topic.id);
@@ -51,6 +53,7 @@ angular.module('main.controllers', [])
       });
     });
 
+    //when renamedTopic event is fired
     $rootScope.$on("renamedTopic", function (event, message) {
       $scope.topics = $scope.topics.filter(function(topic){
         return topic.id != message.identifier;
@@ -58,6 +61,7 @@ angular.module('main.controllers', [])
       $scope.topics.push(message.topic);
     });
 
+    // End Event handlers
 
     // Attributes
     $scope.expandedIndex = 0;
@@ -132,9 +136,9 @@ angular.module('main.controllers', [])
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index
     };
-    $scope.minimizeTopic = function(index) {
-      // TODO: Decide if there is ANYTHING to do here or if Angular covers it all for us.
-    };
+
+    //End Methods 
+    
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, $http) {
@@ -178,10 +182,7 @@ angular.module('main.controllers', [])
         // Add the feed back since there was an error
         $scope.topic["feeds"].push(feedId);
       });;
-    };
-    $scope.editName = function(newName) {
-      // FUNCTION YEAH
-    };
+    };  
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
       //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
@@ -201,11 +202,13 @@ angular.module('main.controllers', [])
             identifier: feedID
         });
     };
+
     $scope.fetchFeeds();
     $scope.refreshTopic();
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
+    
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
@@ -246,12 +249,4 @@ angular.module('main.controllers', [])
       $scope.expandedPostIndex = index;
     };
   })
-  .controller('PostController', function($scope, $http) {
-    $scope.expandPost = function(index) {
-      // expands the post
-    };
-    $scope.collapsePost = function() {
-      // collapses the post
-    };
-  });
 //*/
