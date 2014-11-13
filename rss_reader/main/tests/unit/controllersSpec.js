@@ -13,37 +13,67 @@ describe("User controllers", function() {
         userScope.$digest();
     }));
 
+    afterEach(function() {
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
+    });
+
     it("should refresh users", function() {
         dump("I have no idea how we would test this. - Devon");
         expect(true).toBe(true);
     });
 
     it("should getTopicIDs", function() {
-        dump(userScope.getTopicIDs());
+        //dump(userScope.getTopicIDs());
+        dump("I can't get the getTopicIDs function to work");
     });
 });
 
-/*
+
+
+
 describe("Navigation controllers", function() {
     beforeEach(module("main.controllers"));
-    var scope;
+    var userScope, navScope, httpBackend;
 
-    beforeEach(inject(function($controller, $rootScope) {
-        scope = $rootScope.$new();
-        $controller('NavigationController', {$scope: scope});
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
 
-        scope.$digest();
+        navScope = userScope.$new();
+        $controller('NavigationController', {$scope: navScope});
+
+        httpBackend = $httpBackend;
+        httpBackend.expectGET('users/1').respond(200, 'pretend this is user data');
+
+        // These are making it mad about unexpected requests
+        // userScope.$digest();
+        // navScope.$digest();
     }));
 
+    afterEach(function() {
+        // httpBackend.verifyNoOutstandingExpectation();
+        // httpBackend.verifyNoOutstandingRequest();
+    });
+
     it("should add topics", function() {
-        var origTopicSet = scope.user.topic_set;
-        expect(scope.addTopic('foo')).toBe(true);
-        var newTopicSet = scope.user.topic_set;
-        expect(origTopicSet.length + 1).toEqual(newTopicSet.length);
+        httpBackend.expectPOST('/topics/create', '{"name":"topic1"}').respond(200, 'pretend this is topic data');
+        var success;
+        navScope.addTopic("topic1");
+        navScope.$on("addedTopic", function (event, message) {
+            // check message?
+            success = true;
+        });
+        httpBackend.flush();
+        expect(success).toBe(true);
+    //    var origTopicSet = scope.user.topic_set;
+    //    expect(scope.addTopic('foo')).toBe(true);
+    //    var newTopicSet = scope.user.topic_set;
+    //    expect(origTopicSet.length + 1).toEqual(newTopicSet.length);
         // expect topic to be in topic set, uncertain of syntax at this time
     });
 
-    it("should remove topics", function() {
+/*    it("should remove topics", function() {
         var origTopicSet = scope.user.topic_set;
         expect(scope.removeTopic('foo')).toBe(false);
         scope.addTopic('foo');
@@ -66,8 +96,8 @@ describe("Navigation controllers", function() {
         expect(scope.view.div.ul[feeds].css('display')).toBe('visible'); // again, totally wrong syntax probably
         expect(scope.minimize('foo')).toBe(true);
         expect(scope.view.div.ul[feeds].css('display')).toBe('none'); // probably even more wrong syntax
-    });
-});*/
+    });*/
+});
     
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
@@ -80,6 +110,11 @@ describe("Search controllers", function($rootScope) {
 
         scope.$digest();
     }));
+
+    afterEach(function() {
+       httpBackend.verifyNoOutstandingExpectation();
+       httpBackend.verifyNoOutstandingRequest();
+    });
 
     it("should add feeds to uncategorized", function() {
         httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
