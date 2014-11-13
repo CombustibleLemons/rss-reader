@@ -39,8 +39,8 @@ angular.module('main.controllers', [])
 
     // when addedTopic event is fired
     $rootScope.$on("addedTopic", function (event, message) {
-        $scope.topicIds.push(message.topic.id);
-        $scope.topics.push(message.topic);
+      $scope.topicIds.push(message.topic.id);
+      $scope.topics.push(message.topic);
     });
 
     // when removedTopic event is fired
@@ -145,21 +145,25 @@ angular.module('main.controllers', [])
     $scope.addFeed = function() { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
           // How do we figuure out where to put it if this creates a new feed?
-          $rootScope.$broadcast("addFeed", {
+          $rootScope.$broadcast("addedFeed", {
                 feed: data,
                 topicName: "Uncategorized"
           });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
         }).error(function(data, status, headers, config){
-          //alert(status);
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
         });
     };
   })
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
-    $rootScope.$on("addFeed", function (event, message) {
+    $rootScope.$on("addedFeed", function (event, message) {
         if ($scope.topic.name == message.topicName){
-          var feed = message.feed;
-          $scope.addFeedToTopic(feed);
+          $scope.addFeedToTopic(message.feed);
         }
     });
 
