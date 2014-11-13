@@ -24,6 +24,7 @@ class UserTests(APITestCase):
         self.user = User(username="shakespeare")
         self.user.save() #user creation isn't tested in iteration 1, it is assumed a user exists.
         self.u_id = self.user.id
+        self.u_uncat_id = self.user.topics.get(name="Uncategorized").id
         self.model_u = User(username="eecummings")
         self.u = UserSerializer(self.model_u)
 
@@ -35,7 +36,7 @@ class UserTests(APITestCase):
         """Check that UserList is alive and well"""
         response = self.client.get('/users/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, [{'id': self.u_id, 'username': u'shakespeare', 'first_name': u'', 'last_name': u'', 'topics': []}])
+        self.assertEqual(response.data, [{'id': self.u_id, 'username': u'shakespeare', 'first_name': u'', 'last_name': u'', 'topics': [self.u_uncat_id]}])
 
     def test_username_change(self):
         """Trying to change the username should fail"""
@@ -47,7 +48,7 @@ class UserTests(APITestCase):
         """Check that UserDetail is accurate"""
         response = self.client.get('/users/%d' % (self.u_id,))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'id': self.u_id, 'username':u'shakespeare', 'first_name': u'', 'last_name': u'', 'topics': []})
+        self.assertEqual(response.data, {'id': self.u_id, 'username':u'shakespeare', 'first_name': u'', 'last_name': u'', 'topics': [self.u_uncat_id]})
 
     def test_user_cannot_be_created(self): #there is one user in iteration 1, so a second one cannot be created
         """Iteration 1 should have one user, so users cannot be made"""
@@ -224,6 +225,11 @@ class FeedTests(APITestCase):
             "posts": [2,1]
             }
 
+    @classmethod
+    def tearDownClass(cls):
+        # Make sure to delete the feed so we don't run into other tests
+        cls.f1.delete()
+
     def test_create_feed(cls):
         """Test that Feed can be created by URL"""
         response = cls.client.put('/feeds/create', cls.f1_url)
@@ -264,7 +270,7 @@ class PostTests(APITestCase):
         cls.f1.save()
         cls.f1_id = cls.f1.id
         cls.p1_id = cls.f1.posts.all()[0].id
-        cls.p1_data = {
+        cls.p1_data = [
             {u'id': cls.p1_id,
             'feedURL': u'http://www.nytimes.com/services/xml/rss/nyt/US.xml',
             'author': u'By KATIE HAFNER',
@@ -280,7 +286,8 @@ class PostTests(APITestCase):
             'pubDate': datetime.datetime(2014, 11, 2, 13, 43, 10, tzinfo=pytz.UTC),
             'updated': datetime.datetime(2014, 11, 2, 13, 43, 10, tzinfo=pytz.UTC),
             'ackDate': 1415858199.31228,
-            'feed': cls.f1_id}}
+            'feed': cls.f1_id}
+        ]
 
     @classmethod
     def tearDownClass(cls):
