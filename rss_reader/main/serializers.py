@@ -16,7 +16,7 @@ class FeedSerializer(serializers.ModelSerializer):
     posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = Feed
-        fields = ("id","author", "category", "contributor", "description", "docURL",
+        fields = ("id", "author", "category", "contributor", "description", "docURL",
             "editorAddr", "generator", "guid", "language", "logo", "rights",
             "subtitle", "title", "webmaster", "URL", "ttl", "skipDays",
             "skipHours", "pubDate", "updated", "posts", )
