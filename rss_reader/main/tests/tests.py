@@ -17,66 +17,6 @@ import datetime
 import pytz
 import traceback
 
-#User tests
-# class UserTestCase(TestCase):
-#     def setUp(self):
-#         self.u0 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
-#
-#     def test_create_user(self):
-#         """ Test the user constructor is working """
-#         # Create user
-#         u1 = RSSUser.objects.create_user('Test','test@example.com','password')
-#
-#         # Make sure user exists
-#         self.assertEquals(u1, RSSUser.objects.get(username='Test'))
-#
-#     def test_missing_user(self):
-#         """create_user fails if missing username"""
-#         def bad_user_input():
-#             RSSUser.objects.create_user("","a","b")
-#         self.assertRaises(ValueError, bad_user_input)
-#
-#     def test_missing_email(self):
-#         """create_user fails if missing email"""
-#         def bad_email_input():
-#             RSSUser.objects.create_user("a","","b")
-#         self.assertRaises(ValueError, bad_email_input)
-#
-#     def test_missing_password(self):
-#         """create_user fails if missing password"""
-#         def bad_password_input():
-#             RSSUser.objects.create_user("a","b","")
-#         self.assertRaises(ValueError, bad_password_input)
-#
-#     def test_usernames_unique(self):
-#         """ Test that usernames must be unique """
-#         def badCreate():
-#             u1 = RSSUser.objects.create_user('Devon','BAMF@uchicago.edu','login')
-#         self.assertRaises(IntegrityError, badCreate)
-#
-#     def test_emails_not_unique(self):
-#         """ Test that emails don't have to be unique """
-#         u1 = RSSUser.objects.create_user('Devon2','BAMF@uchicago.edu','login')
-#         self.assertEqual(self.u0.email, u1.email)
-#
-#     def test_add_topic_to_user(self):
-#         """ Can add a Topic to a user """
-#         u1 = RSSUser.objects.get(username='Devon')
-#         b1 = u1.addTopic("t1")
-#
-#         # Topic added to user
-#         self.assertEqual(b1, True)
-#         t1 = Topic.objects.get(name="t1")
-#         self.assertEqual(t1.user.username,'Devon')
-
-#     def test_topic_names_unique(self):
-#         """ Cannot add Topic to user if there already exists a Topic of the same name """
-#         u1 = RSSUser.objects.get(username='Devon')
-#         u1.addTopic("t_first")
-#         def badAddTopic():
-#             u1.addTopic("t_first")
-#         self.assertRaises(IntegrityError, badAddTopic)
-
 #Topic tests
 class TopicTestCase(TestCase):
     def setUp(self):

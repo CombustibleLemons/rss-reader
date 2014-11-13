@@ -40,8 +40,6 @@ class TopicList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
-
-
 class TopicDetail(generics.RetrieveAPIView):
     model = Topic
     serializer_class = TopicSerializer

@@ -10,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
+        #fields = ('id', 'name', 'user', 'feeds', )
 
 class FeedSerializer(serializers.ModelSerializer):
     posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
