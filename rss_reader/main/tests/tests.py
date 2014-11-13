@@ -7,6 +7,9 @@ from main.models import Feed, Post, RSS, Atom, Topic
 # Built in users
 from django.contrib.auth.models import User, UserManager
 
+## Transaction Management
+from django.db import transaction
+
 # Exception
 from main.models import FeedURLInvalid, FeedExistsInTopic
 from django.db import IntegrityError
@@ -20,14 +23,39 @@ import feedparser
 
 #Topic tests
 class TopicTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # User
+        cls.u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+
+        # Feed 1
+        cls.f1 = Feed.createByURL("http://home.uchicago.edu/~jharriman/example-rss.xml")
+        cls.f1.save()
+
+        # Feed 2
+        cls.f2 = Feed.createByURL("http://xkcd.com/rss.xml")
+        cls.f2.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.f1.delete()
+        cls.f2.delete()
+        User.objects.get(username="Devon").delete()
+
     def setUp(self):
-        self.u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        # Create topic t1
         self.u1.topics.create(name="t1")
         self.t1 = self.u1.topics.get(name="t1")
+        self.t1.save()
+
+        # Create topic t2
         self.u1.topics.create(name="t2")
         self.t2 = self.u1.topics.get(name="t2")
-        self.f1 = Feed.createByURL("http://home.uchicago.edu/~jharriman/example-rss.xml")
-        self.f2 = Feed.createByURL("http://xkcd.com/rss.xml")
+        self.t2.save()
+
+    def tearDown(self):
+        self.t1.delete()
+        self.t2.delete()
 
     def test_minimal_topic(self):
         """Tests minimal data needed for Topic"""
@@ -48,7 +76,8 @@ class TopicTestCase(TestCase):
     def test_repeat_topic_name(self):
         """editTopicName throws an error if name already exists"""
         def repeat_topic():
-            self.t1.editTopicName("t2")
+            with transaction.atomic():
+                self.t1.editTopicName("t2")
         self.assertRaises(IntegrityError, repeat_topic)
 
     def test_add_feed(self):
@@ -84,10 +113,18 @@ class TopicTestCase(TestCase):
 
 
 class FeedTestCase(TestCase):
-    def setUp(self):
-        self.rssFeed = Feed.createByURL("main/tests/examples/rss20.xml")
-        self.atomFeed = Feed.createByURL("main/tests/examples/atom10.xml")
-        self.badUrl = "http://example.com"
+    @classmethod
+    def setUpClass(cls):
+        cls.rssFeed = Feed.createByURL("main/tests/examples/rss20.xml")
+        cls.rssFeed.save()
+        cls.atomFeed = Feed.createByURL("main/tests/examples/atom10.xml")
+        cls.rssFeed.save()
+        cls.badUrl = "http://example.com"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rssFeed.delete()
+        cls.atomFeed.delete()
 
     def test_create_by_url_atom(self):
         """Constructor Feed.createByURL accurately creates a Feed object"""
@@ -283,12 +320,19 @@ class PostTestCase(TestCase):
         self.assertEquals(wrap(), False)
 
 class RSSTestCase(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # Create a feed to put the post in, since the post must have a feed.
-        self.feed = Feed()
-        self.feed.save()
+        cls.feed = Feed()
+        cls.feed.save()
+
         # Grab an entry and parse it
-        self.entry = feedparser.parse("main/tests/examples/rss20.xml")["entries"][0]
+        cls.entry = feedparser.parse("main/tests/examples/rss20.xml")["entries"][0]
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.feed.delete()
+
     def test_create_rss(self):
         """ Test RSS constructor createByEntry """
         # Create post
