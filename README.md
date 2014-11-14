@@ -1,37 +1,43 @@
 # rss-reader
 ## Milestone 3.B
 ### Compiling and Installation
-We are primarily using Django and Angularjs, so there is no direct compilation. However, there are a lot of packages that need to be installed in order to get the system up and running.
+We are primarily using Django and AngularJS, so there is no direct compilation. However, there are a lot of packages that need to be installed in order to get the system up and running. We heavily recommend Linux or Ubuntu to install the necessary packages.
 
-##### Steps
-We heavily recommend Linux or Ubuntu to install the necessary packages.
+###### Step One: Install PostgreSQL
+  1. Run `[your favourite package manager] install postgresql`
+  2.  Depending on your OS:
 
-1. Install PostgreSQL:
-  a) Run `[your favourite package manager] install postgresql`
-  b) Depending on your OS (aka if you are using Arch) run `systemctl start postgresql`
-  c) (for OSX) Run `sudo su postgres` and enter the password for your computer to get the shell as a postgres user. If you are using Arch, use `sudo -i -u postgres`
-  d) Run `createdb feeddb` to make a database named feeddb
-  e) Run `createuser -P combustible` to make a user named combustible
-  f) Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
-  g) Run `exit`
-  h) Run `python manage.py migrate`
-2. Install pip, virtualenv, and virtualenvwrapper
-3. Create a new virtualenv and activate it
-4. Navigate to the repository and run `pip install -r requirements`
-5. Install karma:
+  For Arch: run `systemctl start postgresql`. Then run `sudo -i -u postgres` and enter your password when prompted.
+
+  For OSX: Run `sudo su postgres` and enter the password for your computer to get the shell as a postgres user.
+  3. Run `createdb feeddb` to make a database named feeddb
+  4. Run `createuser -P combustible` to make a user named combustible
+  5. Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
+  6. Run `exit`
+  7. Run `python manage.py migrate`
+
+###### Step Two: Install virtualenv and other packages
+  1. Install pip, virtualenv, and virtualenvwrapper
+  2. Create a new virtualenv and activate it
+  3. Navigate to the repository and run `pip install -r requirements`
+
+###### Step Three: Install karma
   1. Install npm
   2. Run `npm install -g karma`
   3. Run `npm install -g jasmine`
   4. Run `npm install -g karma-jasmine`
   5. Run `npm install -g karma-chrome-launcher`
-  6. Run `npm install -g karma-cli` (not strictly necessary but it makes it much easier)
-  7. Have a cookie on us.
-  8. Aw shucks, have another.
-    NOTE: the -g is a global install. you can install locally to a project with --save-dev. the official
-guidelines recommend you do both if you have trouble.
-6. Navigate to `rss-reader/rss_reader` and run `./manage.py migrate` to get the database setup
+  6. Run `npm install -g karma-cli` This is not strictly necessary, but makes things much easier.
 
-And you've started an instance of rss-reader!
+    NOTE: the -g is a global install. You can install locally to a project with --save-dev. The official
+guidelines recommend you do both if you have trouble.
+
+###### Step Four: Start the rss-reader
+  1. Navigate to `rss-reader/rss_reader` and run `./manage.py migrate` to get the database setup
+  2. Have a cookie, on us
+  3. Aw shucks, have another
+
+And you've started an instance of the rss-reader!
 
 ### Running Code
 In the terminal, access the `rss-reader/rss_reader` directory and type `.manage.py python runserver`.  Access `localhost:8000` via web browser. The rss feed website should be viewable.
@@ -39,11 +45,11 @@ In the terminal, access the `rss-reader/rss_reader` directory and type `.manage.
 ### Running Unit Tests
 To run unit tests against Django, navigate to the `rss-reader/rss_reader` directory and enter `./manage.py test` into the terminal. This runs the model and API tests.
 
-To run unit tests against AngularJS: navigate to the `rss-reader/rss_reader directory` and enter `./manage.py testjs` into the terminal.
+To run unit tests against AngularJS, navigate to the `rss-reader/rss_reader` directory and enter `./manage.py testjs` into the terminal.
 
 ### Acceptance Test Suggestions
 
-We have provided a script for initially setting up a user with topics and a few feeds. To run the script, run `./manage.py shell < init_script.py`.
+We have provided a script that initializes a user with a few topics and feeds. To run the script, run `./manage.py shell < init_script.py`.
 
 To run front-end acceptance tests, first run the server and access 'localhost:8000' via a web browser. If the init_script was successful, there should already be "Comics" and "Science" Topics, alongside "Uncategorized", along with some feeds.
 
