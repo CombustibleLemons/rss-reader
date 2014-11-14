@@ -1,9 +1,11 @@
 # rss-reader
-## Milestone 3
+## Milestone 3.B
 ### Compiling and Installation
 We are primarily using Django and Angularjs, so there is no direct compilation. However, there are a lot of packages that need to be installed in order to get the system up and running.
 
 ##### Steps
+We heavily recommend Linux or Ubuntu to install the necessary packages.
+
 1. Install PostgreSQL:
   1. TODO! sub-instructions for getting the PostgresSQL server setup
 2. Install pip, virtualenv, and virtualenvwrapper
@@ -33,11 +35,21 @@ To run unit tests against Django, navigate to the `rss-reader/rss_reader` direct
 To run unit tests against AngularJS: navigate to the `rss-reader/rss_reader directory` and enter `./manage.py testjs` into the terminal.
 
 ### Acceptance Test Suggestions
-To run front-end acceptance tests, first run the server and access 'localhost:8000' via a web browser.
+
+We have provided a script for initially setting up a user with topics and a few feeds. To run the script, run `./manage.py shell < init_script.py`.
+
+To run front-end acceptance tests, first run the server and access 'localhost:8000' via a web browser. If the init_script was successful, there should already be "Comics" and "Science" Topics, alongside "Uncategorized", along with some feeds.
 
 #### Uncategorized Topic
 * Look to the navigation bar on the left side. A section of topics called 'Uncategorized' should be automatically present.
-* Click on the 'x' next to 'Uncategorized'. The topic should not disappear because 'Uncategorized' cannot be removed.
+* Clicking on the 'x' next to 'Uncategorized' should have no effect; 'Uncategorized' cannot be removed.
+
+#### Navigation
+* Click on 'Comics'. The Topic should expand to show 4 feeds: 'xkcd.com', 'QC RSS', 'Broodhollow', and 'Zero Punctuation'
+* Click on 'Science'. The Topic should expand, and the 'Comics' Topic should collapse.
+* Click on 'Comics' again. Click on the 'xkcd.com' Feed, a list of Posts should appear on the right.
+* Click on the first Post in the 'xkcd.com' Feed's Post list. It should expand to show a the post's content, in this case a comic, and a link labeled 'View Source'.
+* Click on 'View Source' - you should be redirected to the Post's website.
 
 #### Add a Topic
 * Click on 'Add a topic'. A popup should appear with a box to enter a topic name.
@@ -45,16 +57,15 @@ To run front-end acceptance tests, first run the server and access 'localhost:80
 * Click on 'Add a topic' again and this time enter the name 'Penguins' in the 'Topic Name' bar. Click on 'Add Topic'. The popup should close, the screen returns to the home page, and a topic 'Penguins' is now present in the navigation bar to the left.
 
 #### Edit and Delete a Topic
-* Click on 'edit' next to the 'Penguins' Topic. An empty box should appear to its right. Enter 'Giraffes' into the box and press enter. The name of the Topic originally called 'Penguins' should now read as 'Giraffes'.
+* Click on 'edit' next to the 'Penguins' Topic. An empty box should appear underneath. Enter 'Giraffes' into the box and click submit. The name of the Topic originally called 'Penguins' should now read 'Giraffes'.
 * Press the 'x' to the right of the Topic 'Giraffes'. The Topic should now not appear in the list of Topics in the navigation bar.
+* Press the 'x' to the right of the Topic 'Science'. This should eliminate 'Science' (checkmate, atheists!), and all the feeds it contains.
 
 #### Add a Feed
-* Copy and paste 'http://interglacial.com/rss/pokey_the_penguin.rss' into the 'Search for a feed' bar on the left side. Press enter. You should now have a feed 'Pokey the Penguin' under the Topic 'Uncategorized'. Currently moving Feeds to Topics other tha Uncategorized has not been implemented on the front-end, though it works on the back-end.
-
-#### View a Feed
-* Click on 'Pokey the Penguin' in the navigation bar. One post titled 'pokey and the dust storm' should show in the middle of the screen now.
-* Click on the 'pokey and the dust storm' post. The grey section will expand and the link 'View Source' will appear.
-* Click on 'View Source'. You will be redirected to a webcomic involving a penguin.
+* Copy and paste 'http://interglacial.com/rss/pokey_the_penguin.rss' into the 'Search for a feed' bar on the left side. Press enter. You should now have a Feed titled 'Pokey the Penguin' under the Topic 'Uncategorized'. Currently moving Feeds to Topics other the Uncategorized has not been implemented on the front-end, though it works on the back-end.
+* Now copy and paste 'xkcd.com/rss.xml' into the search bar. The string "You are already subscribed to that feed" should appear beneath the search bar, in soothing red text.
+* Now copy and paste 'http://rss.nytimes.com/services/xml/rss/nyt/Science.xml' into the 'Search for a feed' bar. The 'NYT > Science' Feed, which had been deleted earlier when the 'Science' Topic was deleted, should be re-added. The red text should disappear.
+* Copy and paste a non-existent url, 'http://jsfiddle.net' into the search bar. No change should occur in the Feed/Topic list.
 
 #### Miscellaneous
 * Click on the 'Login', 'Donate', and 'About' buttons. The page should stay the same because the 'login' button is to be implemented in iteration 2 and the other two have not been directed to pages yet.
