@@ -32,7 +32,17 @@ To run unit tests against Django, navigate to the `rss-reader/rss_reader` direct
 To run unit tests against AngularJS: navigate to the `rss-reader/rss_reader directory` and enter `./manage.py testjs` into the terminal.
 
 ### Acceptance Test Suggestions
-~suggested acceptance tests here~
+To run front-end acceptance tests, first run the server and access 'localhost:8000' via a web browser. 
+
+* Click on the 'Login', 'Donate', and 'About' buttons. The page should stay the same because the 'login' button is to be implemented in iteration 2 and the other two have not been directed to pages yet.
+* Look to the navigation bar on the left side. A section of topics 'Uncategorized' should be automatically present.
+* Click on 'Add a topic'. A popup should appear with a box to enter a topic name. 
+* Click on 'Cancel'. The screen should return to the original home page and the popup should disappear.
+* Click on 'Add a topic' again and this time enter the name 'Penguins' in the 'Topic Name' bar. Click on 'Add Topic'. The popup should close, the screen returns to the home page, and a topic 'Penguins' is now present in the navigation bar to the left.
+* Copy and paste 'http://interglacial.com/rss/pokey_the_penguin.rss' into the 'Search for a feed' bar on the left side. Press enter. You should now have a feed 'Pokey the Penguin' under the Topic 'Uncategorized'. 
+* Click on 'edit' next to the 'Penguins' Topic. An empty box should appear to its right.
+* Enter 'Giraffes' into the box and press enter. The name of the Topic originally called 'Penguins' should now read as 'Giraffes'.
+* Press the 'x' to the right of the Topic 'Giraffes'. The Topic should not now appear in the list of Topics in the navigation bar.
 
 ### What Is Implemented
 An RSS feed that supports a single user, who can make topics, add feeds to topics, delete feeds, and expand and browse posts and feeds.
