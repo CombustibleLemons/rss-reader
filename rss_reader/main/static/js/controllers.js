@@ -64,7 +64,7 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Attributes
-    $scope.expandedIndex = 0;
+    $scope.expandedIndex = -1;
 
     // Methods
     $scope.showPopup = function() {
@@ -127,14 +127,16 @@ angular.module('main.controllers', ['main.services'])
         if ($scope.topicIds != topic_ids){
           $scope.topicIds = topic_ids;
           APIService.getTopicsByIds(topic_ids).then(function(topics){
+            dump('HELP');
             $scope.topics = topics;
+            dump('ok');
           });
         }
       });
       //$timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
     };
     $scope.expandTopic = function(index) {
-      $scope.expandedIndex = index
+      $scope.expandedIndex = index;
     };
 
     //End Methods 
@@ -144,7 +146,7 @@ angular.module('main.controllers', ['main.services'])
   .controller('SearchController', function($scope, $rootScope, $http) {
     $scope.addFeed = function() { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
-          // How do we figuure out where to put it if this creates a new feed?
+          // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
                 feed: data,
                 topicName: "Uncategorized"
@@ -188,6 +190,7 @@ angular.module('main.controllers', ['main.services'])
       });;
     };  
     $scope.refreshTopic = function(){
+      dump($scope.$parent.topics);
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
       //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
     }
@@ -206,9 +209,9 @@ angular.module('main.controllers', ['main.services'])
             identifier: feedID
         });
     };
-
-    $scope.fetchFeeds();
+    dump('yes');
     $scope.refreshTopic();
+    $scope.fetchFeeds();
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
