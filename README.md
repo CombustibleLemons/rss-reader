@@ -29,7 +29,7 @@ We are primarily using Django and AngularJS, so there is no direct compilation. 
   5. Run `npm install -g karma-chrome-launcher`
   6. Run `npm install -g karma-cli` This is not strictly necessary, but makes things much easier.
 
-    NOTE: the -g is a global install. You can install locally to a project with --save-dev. The official
+    *Note:* the `-g` is a global install. You can install locally to a project with `--save-dev`. The official
 guidelines recommend you do both if you have trouble.
 
 ###### Step Four: Start the RSS-reader
