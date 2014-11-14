@@ -80,7 +80,6 @@ class TopicAddTests(APITestCase):
         cls.t1_m = Topic(name = "sonnets", user = cls.user)
         cls.t2_m = Topic(name = "tragedies", user = cls.user)
         cls.evil_t1_m = Topic(name = "tragedies", user=cls.user)
-        # cls.evil_t1_id = 154 # shakespeare wrote this many sonnets! <- Be more subtle Lucia, let the reader figure it out
 
         # Turn topics into JSON objects
         cls.t1_data = model_to_dict(cls.t1_m)
@@ -177,6 +176,12 @@ class TopicTests(APITestCase):
         """Tests that Topic renamed with another Topic's name fails"""
         url = '/topics/%d' % (cls.t2_id,)
         response = cls.client.patch(url, {'name':u'sonnets'}, format='json')
+        cls.assertEqual(response.status_code, 400)
+
+    def test_rename_nameless_topic(cls):
+        """A Test cannot be renamed without a name"""
+        url = '/topics/%d' % (cls.t2_id,)
+        response = cls.client.patch(url, {'name':u''}, format='json')
         cls.assertEqual(response.status_code, 400)
 
     def test_rename_uncategorized(cls):
