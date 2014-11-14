@@ -127,9 +127,7 @@ angular.module('main.controllers', ['main.services'])
         if ($scope.topicIds != topic_ids){
           $scope.topicIds = topic_ids;
           APIService.getTopicsByIds(topic_ids).then(function(topics){
-            dump('HELP');
             $scope.topics = topics;
-            dump('ok');
           });
         }
       });
@@ -189,7 +187,6 @@ angular.module('main.controllers', ['main.services'])
       });;
     };
     $scope.refreshTopic = function(){
-      dump($scope.$parent.topics);
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
       //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
     }
@@ -208,7 +205,6 @@ angular.module('main.controllers', ['main.services'])
             identifier: feedID
         });
     };
-    dump('yes');
     $scope.refreshTopic();
     $scope.fetchFeeds();
   })

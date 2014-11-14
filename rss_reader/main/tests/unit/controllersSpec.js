@@ -214,7 +214,6 @@ describe("Topic controllers", function() {
           deferred.resolve($controller('NavigationController', {$scope: navScope}));
           return deferred.promise;
         }).then(function(x){
-          dump('hey');
           topicScope = navScope.$new();
           var topic = {"name":"topic1", "id":12, "user":1, "feeds": []};
           topicScope.$parent.topics = [topic];
@@ -222,7 +221,6 @@ describe("Topic controllers", function() {
           $controller('TopicController', {$scope: topicScope})
         });
 
-        dump('ho');
         userScope.$digest();
         navScope.$digest();
         topicScope.$digest();
@@ -233,8 +231,6 @@ describe("Topic controllers", function() {
         httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should do things!", function() {});
-
     it("should refresh its own topic", function() {
         var origTopic = topicScope.topic;
         topicScope.$parent.topics = [origTopic];
@@ -244,35 +240,55 @@ describe("Topic controllers", function() {
     });
 
     it("should fetch feeds when there are no feeds", function() {
-        dump(topicScope.fetchFeeds());
+        var origTopic = topicScope.topic;
+        topicScope.fetchFeeds();
+        expect(topicScope.topic).toEqual(origTopic);
     });
 
     it("should add and remove feeds", function() {
         // add foofeed
         var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.whenGET('feeds/12').respond(200, 'this is a fake feed');
+        httpBackend.whenGET('feeds/12').respond(200, foofeed);
         topicScope.addFeedToTopic(foofeed);
         httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
         expect(topicScope.feeds[0]).toEqual(foofeed);
-        httpBackend.expectPUT('topics/12', topicScope.topic).respond(200);
+        // check fetching feeds when there are feeds
+        var origTopic = topicScope.topic;
+        topicScope.fetchFeeds();
         httpBackend.flush();
-        httpBackend.flush();
+        expect(topicScope.topic).toEqual(origTopic);
 
+        // remove nonexistent feed
+        httpBackend.expectPUT('topics/12', topicScope.topic).respond(200, '');
+        topicScope.removeFeedFromTopic(28);
+        httpBackend.flush();
+        expect(topicScope.feeds[0]).toEqual(foofeed);
+        // remove foofeed unsuccessfully
+        httpBackend.expectPUT('topics/12', topicScope.topic).respond(400, '');
+        topicScope.removeFeedFromTopic(12);
+        httpBackend.flush();
+        expect(topicScope.feeds[0]).toEqual(foofeed);
+        // remove foofeed successfully
+        httpBackend.expectPUT('topics/12', topicScope.topic).respond(200, '');
+        topicScope.removeFeedFromTopic(12);
+        httpBackend.flush();
+        expect(topicScope.feeds).toEqual([]);
+    });
+
+    it("should test that the expand feed signal is properly sent", function() {
+        var success = false;
+        topicScope.$on("clickFeed", function (event, message) {
+            if(message.identifier == 12) {
+                success = true;
+            }
+        });
+        topicScope.expandFeed(48);
+        expect(success).toBe(false);
+        topicScope.expandFeed(12);
+        expect(success).toBe(true);
     });
 });
-
-/*
-    it("should expand individual feeds", function() {
-        expect(scope.expandFeed('foo')).toBe(true);
-        expect(scope.view.h3['feedtitle']).toEqual('foo'); // probably wrong syntax
-        scope.addFeedToTopic('url');
-        expect(scope.expandFeed('bar')).toBe(true);
-        expect(scope.view.h3['feedtitle']).not.toEqual('foo'); // yeahhhh
-        expect(scope.view.h3['feedtitle']).toEqual('bar'); // still probably wrong syntax
-    });
-});
-*/
 
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
@@ -308,67 +324,67 @@ describe("Search controllers", function($rootScope) {
         // expect feed to be in uncategorized topic, uncertain of syntax at this time
     });
 });
-/*
-describe("Topic controllers", function($rootScope) {
+
+describe("Feed controllers", function() {
     beforeEach(module("main.controllers"));
-    var scope;
+    var userScope, navScope, topicScope, feedScope, httpBackend;
 
-    beforeEach(inject(function($controller, $rootScope) {
-        scope = $rootScope.$new();
-        $controller('TopicController', {$scope: scope});
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
 
-        scope.$digest();
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        userScope.refreshUser();
+        httpBackend.flush();
+
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          topicScope = navScope.$new();
+          var topic = {"name":"topic1", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope});
+        });
+
+        feedScope = topicScope.$new();
+        $controller('FeedController', {$scope: feedScope});
+
+        userScope.$digest();
+        navScope.$digest();
+        topicScope.$digest();
+        feedScope.$digest();
     }));
 
-    it("should edit names", function() {
-        var originalName = scope.topic.name;
-        var changedName = scope.topic.editName("bar");
-        expect(changedName).toBe(true);
-        expect(self.Topic.name).toBe("bar");
+    afterEach(function() {
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should not let names be empty strings", function() {
-        var changedName = scope.topic.editName("");
-        expect(changedName).toBe(false);
+    it("should expand posts", function() {
+        expect(feedScope.expandedPostIndex).toEqual(-1);
+        feedScope.expandPost(12);
+        expect(feedScope.expandedPostIndex).toEqual(12);
     });
 
-    it("should add feeds", function() {
-       var url = "http://xkcd.com/rss.xml";
-       var addedFeed = scope.addFeedToTopic(url);
-       expect(addedFeed).toBe(true);
-       expect(scope.topic.feed_set.all()[0].URL).toBe(url);
-       expect(scope.addFeedToTopic(url)).toBe(false);
-    });
-
-    it("should fetch all feeds", function() {
-        expect(scope.fetchFeeds()).toBe(true);
-        expect(scope.topic.feed_set.length).toEqual(0);
-        var url = "http://xkcd.com/rss.xml";
-        scope.addFeedToTopic(url);
-        expect(scope.topic.feed_set.length).toEqual(1);
-    });
-
-    it("should expand individual feeds", function() {
-        expect(scope.expandFeed('foo')).toBe(true);
-        expect(scope.view.h3['feedtitle']).toEqual('foo'); // probably wrong syntax
-        scope.addFeedToTopic('url');
-        expect(scope.expandFeed('bar')).toBe(true);
-        expect(scope.view.h3['feedtitle']).not.toEqual('foo'); // yeahhhh
-        expect(scope.view.h3['feedtitle']).toEqual('bar'); // still probably wrong syntax
+    it("should fetch posts", function() {
+        // feed has no posts
+        httpBackend.expectGET('feeds/12/posts').respond(200, []);
+        topicScope.expandFeed(12);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([]);
+        var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
+        httpBackend.expectGET('feeds/12/posts').respond(200, fake_post_array);
+        topicScope.expandFeed(12);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
 });
-
-describe("Feed controllers", function($rootScope) {
-    beforeEach(module("main.controllers"));
-    var scope;
-
-    beforeEach(inject(function($controller, $rootScope) {
-        scope = $rootScope.$new();
-        $controller('FeedController', {$scope: scope});
-
-        scope.$digest();
-    }));
-
+/*
     it("should fetch posts", function() {
         var posts = scope.fetchPosts(validFeed);
         expect(posts).toBe(true);
@@ -376,39 +392,4 @@ describe("Feed controllers", function($rootScope) {
         expect(scope.view.div.ul['posts']).toBeGreaterThan(0); // syntax???
     });
 });
-
-describe("Post controllers", function($rootScope) {
-    beforeEach(module("main.controllers"));
-    var scope;
-
-    beforeEach(inject(function($controller, $rootScope) {
-        scope = $rootScope.$new();
-        $controller('PostController', {$scope: scope});
-
-        scope.$digest();
-    }));
-
-    it("should expand posts", function() {
-        var height = scope.view.div.attr('height'); // again, syntax
-        var expanded = scope.expandPost();
-        expect(expanded).toBe(true);
-        expect(scope.view.div.height).toBeGreaterThan(height); // syntax again
-        expect(scope.expanded).toBe(true);
-    });
-
-    it("should leave already expanded posts alone", function() {
-        var height = scope.view.div.attr('height'); // syntax
-        var expanded = scope.expandPost();
-        expect(expanded).toBe(false);
-        expect(scope.view.div.height).toEqual(height); // syntax
-        expect(scope.expanded).toBe(true);
-    });
-
-    it("should collapse posts", function() {
-        var height = scope.view.div.attr('height'); // syntax
-        var collapsed = scope.collapsePost();
-        expect(collapsed).toBe(true);
-        expect(scope.view.div.height).toBeLessThan(height); // syntax
-        expect(scope.expanded).toBe(false);
-    });
-});*/
+*/
