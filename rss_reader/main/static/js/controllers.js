@@ -110,11 +110,11 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.removeTopic = function(topicID) {
       $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
-          
+
           $rootScope.$broadcast("removedTopic", {
                 identifier: topicID,
           });
-        
+
         }).error(function(data, status, headers, config){
           console.log(status);
         });
@@ -139,8 +139,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedIndex = index;
     };
 
-    //End Methods 
-    
+    //End Methods
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, $http) {
@@ -188,7 +187,7 @@ angular.module('main.controllers', ['main.services'])
         // Add the feed back since there was an error
         $scope.topic["feeds"].push(feedId);
       });;
-    };  
+    };
     $scope.refreshTopic = function(){
       dump($scope.$parent.topics);
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
@@ -215,7 +214,7 @@ angular.module('main.controllers', ['main.services'])
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
-    
+
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();

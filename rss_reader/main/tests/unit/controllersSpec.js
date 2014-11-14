@@ -209,12 +209,18 @@ describe("Topic controllers", function() {
         httpBackend.flush();
 
         navScope = userScope.$new();
-        $controller('NavigationController', {$scope: navScope});
-
-        dump('hey');
-        topicScope = navScope.$new();
-        $controller('TopicController', {$scope: topicScope});
-        topicScope.topic = {"name":"topic1", "id":12, "user":1, "feeds"[]};
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          dump('hey');
+          topicScope = navScope.$new();
+          var topic = {"name":"topic1", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope})
+        });
 
         dump('ho');
         userScope.$digest();
@@ -267,7 +273,7 @@ describe("Topic controllers", function() {
     });
 });
 */
-    
+
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
     var searchScope, httpBackend;
