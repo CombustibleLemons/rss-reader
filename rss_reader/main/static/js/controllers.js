@@ -2,7 +2,7 @@
 
 /* Controllers */
 
-angular.module('main.controllers', [])
+angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $http, $timeout, $q, APIService) {
     $scope.refreshInterval = 5;
     $scope.refreshUser = function(){
@@ -64,7 +64,7 @@ angular.module('main.controllers', [])
     // End Event handlers
 
     // Attributes
-    $scope.expandedIndex = 0;
+    $scope.expandedIndex = -1;
 
     // Methods
     $scope.showPopup = function() {
@@ -110,11 +110,11 @@ angular.module('main.controllers', [])
 
     $scope.removeTopic = function(topicID) {
       $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
-          
+
           $rootScope.$broadcast("removedTopic", {
                 identifier: topicID,
           });
-        
+
         }).error(function(data, status, headers, config){
           console.log(status);
         });
@@ -134,17 +134,16 @@ angular.module('main.controllers', [])
       //$timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
     };
     $scope.expandTopic = function(index) {
-      $scope.expandedIndex = index
+      $scope.expandedIndex = index;
     };
 
-    //End Methods 
-    
+    //End Methods
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, $http) {
     $scope.addFeed = function() { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
-          // How do we figuure out where to put it if this creates a new feed?
+          // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
                 feed: data,
                 topicName: "Uncategorized"
@@ -186,7 +185,7 @@ angular.module('main.controllers', [])
         // Add the feed back since there was an error
         $scope.topic["feeds"].push(feedId);
       });;
-    };  
+    };
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
       //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
@@ -206,13 +205,12 @@ angular.module('main.controllers', [])
             identifier: feedID
         });
     };
-
-    $scope.fetchFeeds();
     $scope.refreshTopic();
+    $scope.fetchFeeds();
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
-    
+
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
