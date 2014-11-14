@@ -7,7 +7,14 @@ We are primarily using Django and Angularjs, so there is no direct compilation. 
 We heavily recommend Linux or Ubuntu to install the necessary packages.
 
 1. Install PostgreSQL:
-  1. TODO! sub-instructions for getting the PostgresSQL server setup
+  a) Run `[your favourite package manager] install postgresql`
+  b) Depending on your OS (aka if you are using Arch) run `systemctl start postgresql`
+  c) (for OSX) Run `sudo su postgres` and enter the password for your computer to get the shell as a postgres user. If you are using Arch, use `sudo -i -u postgres`
+  d) Run `createdb feeddb` to make a database named feeddb
+  e) Run `createuser -P combustible` to make a user named combustible
+  f) Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
+  g) Run `exit`
+  h) Run `python manage.py migrate`
 2. Install pip, virtualenv, and virtualenvwrapper
 3. Create a new virtualenv and activate it
 4. Navigate to the repository and run `pip install -r requirements`
