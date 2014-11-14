@@ -4,10 +4,10 @@
 describe("User controllers", function() {
     beforeEach(module("main.controllers"));
 
-    var userScope, httpBackend;
+    var userScope, httpBackend, userController;
     beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
         userScope = $rootScope.$new();
-        $controller('UserController', {$scope: userScope});
+        userController = $controller('UserController', {$scope: userScope});
         httpBackend = $httpBackend;
 
         userScope.$digest();
@@ -19,18 +19,29 @@ describe("User controllers", function() {
     });
 
     it("should refresh users", function() {
-        dump("I have no idea how we would test this. - Devon");
-        expect(true).toBe(true);
+        // There isn't a user yet
+        expect(userScope.user).toBe(undefined);
+        // Set it up to return a very fake user object
+        httpBackend.expectGET('users/1').respond(200, {"topics": 12});
+        // Call the function
+        userScope.refreshUser();
+        // Send the response back from fake-server to client
+        httpBackend.flush();
+        // Make sure that the user variable has been properly set
+        expect(userScope.user).toEqual({"topics": 12});
     });
 
-    it("should getTopicIDs", function() {
-        //dump(userScope.getTopicIDs());
-        dump("I can't get the getTopicIDs function to work");
+    it("should getTopicIds", function() {
+        // Set it up to return fake user object when refreshUser is called inside getTopicIds
+        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        // Call the function
+        userScope.getTopicIds();
+        // Send the response
+        httpBackend.flush();
+        // Make sure it's what we expect
+        expect(userScope.user["topics"]).toEqual([]);
     });
 });
-
-
-
 
 describe("Navigation controllers", function() {
     beforeEach(module("main.controllers"));
@@ -44,31 +55,51 @@ describe("Navigation controllers", function() {
         $controller('NavigationController', {$scope: navScope});
 
         httpBackend = $httpBackend;
-        httpBackend.expectGET('users/1').respond(200, 'pretend this is user data');
+        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        userScope.refreshUser();
 
-        // These are making it mad about unexpected requests
-        // userScope.$digest();
-        // navScope.$digest();
+        userScope.$digest();
+        navScope.$digest();
     }));
 
     afterEach(function() {
-        // httpBackend.verifyNoOutstandingExpectation();
-        // httpBackend.verifyNoOutstandingRequest();
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it("should fetch all of the topics", function() {
+        navScope.fetchTopics();
+        httpBackend.flush();
+        expect(navScope.topicIds).toEqual([]);
+        expect(navScope.topics).toEqual([]);
     });
 
     it("should add topics", function() {
-        httpBackend.expectPOST('/topics/create', '{"name":"topic1"}').respond(200, 'pretend this is topic data');
-        var success;
+        // need to initialize some topic variables to mimic things
+        navScope.fetchTopics();
+        httpBackend.flush();
+        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
+        var success = false;;
+        expect(navScope.topics.length).toEqual(0);
         navScope.addTopic("topic1");
         navScope.$on("addedTopic", function (event, message) {
-            // check message?
             success = true;
         });
         httpBackend.flush();
         expect(success).toBe(true);
-    //    var origTopicSet = scope.user.topic_set;
-    //    expect(scope.addTopic('foo')).toBe(true);
-    //    var newTopicSet = scope.user.topic_set;
+        expect(navScope.topics[0]["name"]).toEqual("topic1");
+        expect(navScope.topics[0]["id"]).toEqual(12);
+        success = false;
+        expect(success).toBe(false);
+        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
+        expect(navScope.topics.length).toEqual(1);
+        navScope.addTopic("topic2");
+        httpBackend.flush();
+        expect(success).toBe(true);
+        expect(navScope.topics[0]["name"]).toEqual("topic1");
+        expect(navScope.topics[0]["id"]).toEqual(12);
+        expect(navScope.topics[1]["name"]).toEqual("topic2");
+        expect(navScope.topics[1]["id"]).toEqual(13);
     //    expect(origTopicSet.length + 1).toEqual(newTopicSet.length);
         // expect topic to be in topic set, uncertain of syntax at this time
     });
@@ -101,14 +132,14 @@ describe("Navigation controllers", function() {
     
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
-    var scope, httpBackend;
+    var searchScope, httpBackend;
 
     beforeEach(inject(function($controller, $rootScope, $httpBackend) {
-        scope = $rootScope.$new();
-        $controller('SearchController', {$scope: scope});
+        searchScope = $rootScope.$new();
+        $controller('SearchController', {$scope: searchScope});
         httpBackend = $httpBackend;
 
-        scope.$digest();
+        searchScope.$digest();
     }));
 
     afterEach(function() {
@@ -119,10 +150,10 @@ describe("Search controllers", function($rootScope) {
     it("should add feeds to uncategorized", function() {
         httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
             'pretend this is feed data');
-        scope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
+        searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
-        scope.addFeed();
-        scope.$on("addFeed", function (event, message) {
+        searchScope.addFeed();
+        searchScope.$on("addedFeed", function (event, message) {
             // check message
             success = true;
         });
