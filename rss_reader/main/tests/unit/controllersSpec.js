@@ -210,11 +210,11 @@ describe("Topic controllers", function() {
 
         navScope = userScope.$new();
         $controller('NavigationController', {$scope: navScope});
-        navScope.fetchTopics();
 
         dump('hey');
         topicScope = navScope.$new();
         $controller('TopicController', {$scope: topicScope});
+        topicScope.topic = {"name":"topic1", "id":12, "user":1, "feeds"[]};
 
         dump('ho');
         userScope.$digest();
@@ -227,51 +227,36 @@ describe("Topic controllers", function() {
         httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should do things!", function() {
+    it("should do things!", function() {});
+
+    it("should refresh its own topic", function() {
+        var origTopic = topicScope.topic;
+        topicScope.$parent.topics = [origTopic];
+        topicScope.$parent.$index = 0;
+        topicScope.refreshTopic();
+        expect(topicScope.topic).toEqual(origTopic);
+    });
+
+    it("should fetch feeds when there are no feeds", function() {
+        dump(topicScope.fetchFeeds());
+    });
+
+    it("should add and remove feeds", function() {
+        // add foofeed
+        var foofeed = {"name":"foofeed", "id":12};
+        httpBackend.whenGET('feeds/12').respond(200, 'this is a fake feed');
+        topicScope.addFeedToTopic(foofeed);
+        httpBackend.flush();
+        expect(topicScope.topic["feeds"][0]).toEqual(12);
+        expect(topicScope.feeds[0]).toEqual(foofeed);
+        httpBackend.expectPUT('topics/12', topicScope.topic).respond(200);
+        httpBackend.flush();
+        httpBackend.flush();
 
     });
 });
 
 /*
-describe("Topic controllers", function($rootScope) {
-    beforeEach(module("main.controllers"));
-    var scope;
-
-    beforeEach(inject(function($controller, $rootScope) {
-        scope = $rootScope.$new();
-        $controller('TopicController', {$scope: scope});
-
-        scope.$digest();
-    }));
-
-    it("should edit names", function() {
-        var originalName = scope.topic.name;
-        var changedName = scope.topic.editName("bar");
-        expect(changedName).toBe(true);
-        expect(self.Topic.name).toBe("bar");
-    });
-
-    it("should not let names be empty strings", function() {
-        var changedName = scope.topic.editName("");
-        expect(changedName).toBe(false);
-    });
-
-    it("should add feeds", function() {
-       var url = "http://xkcd.com/rss.xml";
-       var addedFeed = scope.addFeedToTopic(url);
-       expect(addedFeed).toBe(true);
-       expect(scope.topic.feed_set.all()[0].URL).toBe(url);
-       expect(scope.addFeedToTopic(url)).toBe(false);
-    });
-
-    it("should fetch all feeds", function() {
-        expect(scope.fetchFeeds()).toBe(true);
-        expect(scope.topic.feed_set.length).toEqual(0);
-        var url = "http://xkcd.com/rss.xml";
-        scope.addFeedToTopic(url);
-        expect(scope.topic.feed_set.length).toEqual(1);
-    });
-
     it("should expand individual feeds", function() {
         expect(scope.expandFeed('foo')).toBe(true);
         expect(scope.view.h3['feedtitle']).toEqual('foo'); // probably wrong syntax
