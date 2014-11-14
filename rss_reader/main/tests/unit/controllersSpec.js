@@ -209,12 +209,18 @@ describe("Topic controllers", function() {
         httpBackend.flush();
 
         navScope = userScope.$new();
-        $controller('NavigationController', {$scope: navScope});
-        navScope.fetchTopics();
-
-        dump('hey');
-        topicScope = navScope.$new();
-        $controller('TopicController', {$scope: topicScope});
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          dump('hey');
+          topicScope = navScope.$new();
+          var topic = {"name":"topic1", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope})
+        });
 
         dump('ho');
         userScope.$digest();
@@ -282,7 +288,7 @@ describe("Topic controllers", function($rootScope) {
     });
 });
 */
-    
+
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
     var searchScope, httpBackend;
@@ -301,7 +307,7 @@ describe("Search controllers", function($rootScope) {
     });
 
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
+        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200,
             'pretend this is feed data');
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
