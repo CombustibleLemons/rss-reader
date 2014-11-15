@@ -5,9 +5,11 @@ from main import views as MainViews
 from main.api import *
 
 #urls for login and logout. not sure what to name them.
-urlpatterns = patterns('',
-    url(r'^login/$', 'django.contrib.auth.views.login'),
-    url(r'^logout/$', 'django.contrib.auth.views.logout'),
+account_urls = patterns('',
+    url(r'^/login/$', 'django.contrib.auth.views.login', name="login"),
+    url(r'^/logout/$', 'django.contrib.auth.views.logout_then_login',name="logout"),
+    url(r'^/register/$', MainViews.register, name="logout")
+)
 
 user_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', UserTopicList.as_view(), name='userfeed-list'),
@@ -40,6 +42,7 @@ urlpatterns = patterns('',
     url(r'^djangular/', include('djangular.urls')),
 
     # REST API
+    url(r'^account', include(account_urls)),
     url(r'^users', include(user_urls)),
     url(r'^topics', include(topic_urls)),
     url(r'^feeds', include(feed_urls)),

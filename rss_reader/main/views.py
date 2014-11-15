@@ -1,53 +1,59 @@
 # Create your views here.
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.template import RequestContext, loader
 from django.contrib.auth.decorators import login_required
+from django import forms
+from .forms import UserForm
 import logging
 
+@login_required(login_url="/account/login/")
 def index(request):
     template = "index.html"
     return render(request, template, {})
 
-#from https://docs.djangoproject.com/en/dev/topics/auth/default/#auth-web-requests
-def login_view(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        #if user.is_active:
-        login(request, user)
-        return HttpResponseRedirect("a success page .html")
-        #else:
-            # Return a 'disabled account' error message
-            # I'm not sure this is necessary in our case:
-            ## "If you want to reject a login based on is_active, check that in your own login/custom authentication backend"
-            ## from https://docs.djangoproject.com/en/1.7/ref/contrib/auth/
-    else:
-        # Return an 'invalid login' error message.
-        # this shouldn't really error/exception, as much as just have a different outcome, right?
-        return HttpResponse("Your Username or Password is invalid")
+def register(request):
+    # Like before, get the request's context.
+    context = RequestContext(request)
 
-def logout_view(request):
-    logout(request)
-    # Redirect to a success page.
-
-# using http://www.tangowithdjango.com/book/chapters/login.html
-def register_view(request):
-    #initially registered is false
+    # A boolean value for telling the template whether the registration was successful.
+    # Set to False initially. Code changes value to True when registration succeeds.
     registered = False
 
-    #make a userform
-    user_form = UserForm(data=request.POST) #forms.py has a user_form, you can put data in it
-    if user_form.is_valid():
-        user = user_form.save()
+    # If it's a HTTP POST, we're interested in processing form data.
+    if request.method == 'POST':
+        # print "HELLO!"
+        # Attempt to grab information from the raw form information.
+        # Note that we make use of both UserForm and UserProfileForm.
+        user_form = UserForm(data=request.POST)
 
-        #set a password for the user
-        user.set_password(user.password)
-        user.save()
+        # If the two forms are valid...
+        if user_form.is_valid():
+            # Save the user's form data to the database.
+            user = user_form.save()
 
-        registered = True
+            # Now we hash the password with the set_password method.
+            # Once hashed, we can update the user object.
+            user.set_password(user.password)
+            user.save()
 
+            # Update our variable to tell the template registration was successful.
+            registered = True
+
+        # Invalid form or forms - mistakes or something else?
+        # Print problems to the terminal.
+        # They'll also be shown to the user.
+        else:
+            print user_form.errors
+
+    # Not a HTTP POST, so we render our form using two ModelForm instances.
+    # These forms will be blank, ready for user input.
     else:
-        print user_form.errors
+        user_form = UserForm()
+
+    # Render the template depending on the context.
+    return render_to_response(
+            'registration/register.html',
+            {'user_form': user_form, 'registered': registered},
+            context)
