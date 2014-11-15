@@ -4,6 +4,11 @@ from main import views as MainViews
 
 from main.api import *
 
+#urls for login and logout. not sure what to name them.
+urlpatterns = patterns('',
+    url(r'^login/$', 'django.contrib.auth.views.login'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout'),
+
 user_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', UserTopicList.as_view(), name='userfeed-list'),
     url(r'^/(?P<pk>[0-9]+)$', UserDetail.as_view(), name='user-detail'),
