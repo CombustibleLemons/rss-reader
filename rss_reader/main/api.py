@@ -3,7 +3,7 @@ from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 
 # User class from django
 from django.contrib.auth.models import User, UserManager
@@ -23,6 +23,10 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
     serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    def get(self, request, *args, **kwargs):
+        print request.user
+        return self.retrieve(request, *args, **kwargs)
 
 class UserTopicList(generics.ListAPIView):
     model = Topic
@@ -75,6 +79,8 @@ class FeedList(generics.ListCreateAPIView):
 class FeedDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Feed
     serializer_class = FeedSerializer
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
 class FeedPostList(generics.ListAPIView):
     model = Post
