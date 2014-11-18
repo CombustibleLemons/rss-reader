@@ -49,5 +49,6 @@ urlpatterns = patterns('',
     url(r'^login/', MainViews.login),
     url(r'^register/', MainViews.register),
     url(r'^about/', MainViews.about),
-
+    url(r'^settings/', MainViews.settings),
+    url(r'^search/', MainViews.search),
    )

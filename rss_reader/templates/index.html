@@ -11,8 +11,13 @@
 				<div ng-controller="SearchController">
 					<form id="searchForm">
 						<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && addFeed()">
-					</form>
+						
+						<input type="image" onclick="location.href='/settings';" class="settings-btn" src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg">
+						<input type="image" onclick="location.href='/search';" class="settings-btn" src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png">
+						</form> 
+
 				</div>
+
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
 					<a href="#" ng-click="showPopup()">Add a topic</a>
