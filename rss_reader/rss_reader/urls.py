@@ -48,7 +48,10 @@ urlpatterns = patterns('',
     url(r'^feeds', include(feed_urls)),
     url(r'^posts', include(post_urls)),
 
-    #
+    # Searching
+    url(r'^search/', search, name='search-for-feed'),
+
+    # Rest API Auth
     url(r'^rest-auth/', include('rest_auth.urls')),
 
     # Django Admin
