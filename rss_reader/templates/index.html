@@ -2,29 +2,8 @@
 {% load staticfiles %}
 {% block content %}
 
-<body ng-app="main">
-	<div id="dimmer"></div>
-	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" href="#">RSS Reader</a>
-		</div>
-		<div id="navbar" class="navbar-collapse collapse">
-			<ul class="nav navbar-nav navbar-right">
-				<li><a href="#">About</a></li>
-				<li><a href="#">Donate</a></li>
-				<li class="login-btn"><a href="#">Login</a></li>
-			</ul>
-		</div><!--/.nav-collapse -->
-		</nav>
-
-		<!--Main Section -->
-		<div class="container-fluid main-container" ng-controller="UserController">
+	<!--Main Section -->
+    <div class="container-fluid main-container" ng-controller="UserController">
 		<!--Navigation Section -->
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
@@ -41,16 +20,16 @@
 						<li>
 							{% verbatim %}
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
-										<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
-										<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
-									</a>
-									<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
-
-									<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
-
-									<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
-
-									<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
+		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+			      			</a>
+			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
+			      			
+			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
+			      			
+			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
+			      			
+			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 
 							<div ng-controller="TopicController">
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
@@ -97,19 +76,5 @@
 			</div>
 		</div>
 	</div>
-
-
-	<div class="footer">
-			<div class="container">
-				<p class="text-muted">&copy; Combustible Lemons Inc, 2014<br/>BAMF@uchicago.edu</p>
-			</div>
-		</div>
-	<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-	<script src="{% static '/djangular/app.js' %}"></script>
-	<script src="{% static 'js/app.js' %}"></script>
-	<script src="{% static 'js/services.js' %}"></script>
-	<script src="{% static 'js/controllers.js' %}"></script>
-	<script src="{% static 'js/filters.js' %}"></script>
-	<script src="{% static 'js/directives.js' %}"></script>
 
 {% endblock %}
