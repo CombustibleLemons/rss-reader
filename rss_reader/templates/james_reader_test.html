@@ -23,7 +23,7 @@ function getTime1() {
         elapsed = (endTime - startTime) / 1000;
         var wpm = Math.round(wordcount1 / elapsed * 60);
     }
-    document.getElementById("time1").innerHTML = wpm;
+    document.getElementById("time1").innerHTML = "You read at " + wpm + " words per minute";
 }
 
 function getTime2() {
