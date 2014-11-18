@@ -57,8 +57,49 @@ class TopicList(generics.ListCreateAPIView):
         return queryset.filter(user__username=self.request.user)
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
+    # TODO! Add checks to make sure topic can only be accessed by an authenticated user
     model = Topic
     serializer_class = TopicSerializer
+    def create(self, request, *args, **kwargs):
+        try:
+            # Add the user to the data
+            user = User.objects.get(username=request.user)
+            data = request.data
+            data.update({"user" : user.id})
+            serializer = self.get_serializer(data=data)
+
+            # Continue as normal
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Check if topic name is uncategorized, if so we can't delete it
+        if instance.name == "Uncategorized":
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        # Check if topic name is being changed from uncategorized
+        # and stop the update (including reverting changes) if it is
+        if instance.name == "Uncategorized" and request.data["name"] != "Uncategorized":
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 class TopicFeedList(generics.ListAPIView):
     model = Feed
