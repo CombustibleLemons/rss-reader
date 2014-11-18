@@ -53,8 +53,10 @@ class TopicList(generics.ListCreateAPIView):
     ]
     # Filter out Topics from other users that are not the requester
     def get_queryset(self):
+        print self.request.user
+        User_id = User.objects.get(username=self.request.user)
         queryset = super(TopicList, self).get_queryset()
-        return queryset.filter(user__username=self.request.user)
+        return queryset.filter(User__pk=User_id)
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     # TODO! Add checks to make sure topic can only be accessed by an authenticated user
