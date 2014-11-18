@@ -8,6 +8,9 @@ from rest_framework import status, permissions
 # User class from django
 from django.contrib.auth.models import User, UserManager
 
+# For overriding response when a User is requested
+from django.shortcuts import get_object_or_404
+
 # Models and Serializers
 from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer
 from .models import Topic, Feed, Post
@@ -24,9 +27,14 @@ class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    def get(self, request, *args, **kwargs):
-        print request.user
-        return self.retrieve(request, *args, **kwargs)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        # Force username to be from the requesting user
+        filter = {"username" : self.request.user}
+        obj = get_object_or_404(queryset, **filter)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 class UserTopicList(generics.ListAPIView):
     model = Topic
@@ -43,16 +51,10 @@ class TopicList(generics.ListCreateAPIView):
     permission_classes = [
         permissions.AllowAny
     ]
-    def create(self, request, *args, **kwargs):
-       serializer = self.get_serializer(data=request.DATA, files=request.FILES)
-       if serializer.is_valid():
-           self.pre_save(serializer.object)
-           self.object = serializer.save(force_insert=True)
-           self.post_save(self.object, created=True)
-           headers = self.get_success_headers(serializer.data)
-           return Response(serializer.data, status=status.HTTP_201_CREATED,
-                           headers=headers)
-       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Filter out Topics from other users that are not the requester
+    def get_queryset(self):
+        queryset = super(TopicList, self).get_queryset()
+        return queryset.filter(user__username=self.request.user)
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Topic
@@ -74,13 +76,9 @@ class FeedList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
-    # We can limit the fields that we display here so that it is comprehensible to the user.
-
 class FeedDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Feed
     serializer_class = FeedSerializer
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
 
 class FeedPostList(generics.ListAPIView):
     model = Post
@@ -102,7 +100,7 @@ def feed_create(request):
             f.save()
 
             # Add feed to uncategorized Topic
-            user = User.objects.all()[0] # TODO: Change this so that individual users can be recognized
+            user = User.objects.get()[0] # TODO: Change this so that individual users can be recognized
             try:
                 # If uncategorized already exists
                 t = user.topics.get(name="Uncategorized")
