@@ -44,6 +44,9 @@ DEFAULT_APPS = (
 THIRD_PARTY_APPS = (
     'djangular',
     'rest_framework',
+    'watson',
+    # 'haystack',
+    'rest_auth'
 )
 
 LOCAL_APPS = (
@@ -99,3 +102,18 @@ USE_TZ = True
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static/"),)
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
+    },
+}

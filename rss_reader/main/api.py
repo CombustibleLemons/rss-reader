@@ -3,7 +3,7 @@ from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 
 # User class from django
 from django.contrib.auth.models import User, UserManager
@@ -23,6 +23,10 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
     serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    def get(self, request, *args, **kwargs):
+        print request.user
+        return self.retrieve(request, *args, **kwargs)
 
 class UserTopicList(generics.ListAPIView):
     model = Topic
@@ -75,6 +79,8 @@ class FeedList(generics.ListCreateAPIView):
 class FeedDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Feed
     serializer_class = FeedSerializer
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
 class FeedPostList(generics.ListAPIView):
     model = Post
@@ -226,6 +232,40 @@ def topic_rename(request):
         except IntegrityError as e:
             # Return 409 if the url already exist
             return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+# Search
+import watson
+@api_view(['GET'])
+def search(request):
+    if request.method == "GET":
+        # Create feed using input URL
+        searchString = request.DATA.get("searchString")
+        try:
+            results = watson.search(searchString)
+            # Results can contain Feeds, Topics, Posts, you name it
+            # Get at the feed for each post and then uniq the data
+            feeds = list()
+            # TODO Pare this list down before parsing for objects
+            for result in results:
+                obj = result.object
+                if type(obj) == Topic:
+                    topicFeeds = map(lambda x: FeedSerializer(x).data, obj.feeds)
+                    feeds.extend(topicFeeds)
+                elif type(obj) == Post:
+                    fs = FeedSerializer(obj.feed)
+                    feeds.append(fs.data)
+                elif type(obj) == Feed:
+                    fs = FeedSerializer(obj)
+                    feeds.append(fs.data)
+                else:
+                    # We do nothing if the search object is a User
+                    pass
+            # TODO: Verify feed relevancy is in the right order
+            return Response(feeds, status=status.HTTP_200_OK)
         except Exception as e:
             print e
             # Return bad request if we get a general exception

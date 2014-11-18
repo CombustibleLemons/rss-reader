@@ -1,12 +1,19 @@
 # Django
+
 ## Models
 from django.db import models
 from django.contrib.auth.models import User, UserManager
+import watson
+
 ## Exceptions
 from django.db import IntegrityError
+
 ## Signals
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
+
+# Forms
+from django import forms
 
 # RSS Parsing
 import feedparser
@@ -457,3 +464,9 @@ def createUncategorized(sender, instance, **kwargs):
     except Topic.DoesNotExist:
         uncat = Topic(name="Uncategorized", user=instance)
         uncat.save()
+
+# Register classes that we want to be able to search
+# We will only be returning information about the Feed.
+watson.register(Topic)
+watson.register(Feed)
+watson.register(Post)
