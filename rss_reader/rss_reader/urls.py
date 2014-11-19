@@ -16,7 +16,7 @@ account_urls = patterns('',
 )
 
 user_urls = patterns('',
-    url(r'^/$', UserList.as_view(), name='user-list')
+    url(r'^/$', UserDetail.as_view(), name='user-list')
 )
 
 topic_urls = patterns('',
@@ -66,6 +66,6 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^login/', MainViews.login),
+    url(r'^login', MainViews.login),
 
    )

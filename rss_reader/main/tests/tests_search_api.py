@@ -28,7 +28,7 @@ def FeedSearchTests(APITestCase):
     def setUpClass(cls):
 
         # init user
-        cls.user = User(username = "Lucia")
+        cls.user = User.objects.create_user(username = "Lucia")
         cls.user.save()
 
         #init videogame Feeds

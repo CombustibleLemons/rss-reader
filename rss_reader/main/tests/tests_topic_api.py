@@ -27,7 +27,7 @@ class TopicAddTests(APITestCase):
     @classmethod
     def setUpClass(cls):
         # Create User
-        cls.user = User(username="shakespeare")
+        cls.user = User.objects.create_user(username="shakespeare", password="shakespeare")
         cls.user.save()
         cls.u_id = cls.user.id
 
@@ -47,6 +47,12 @@ class TopicAddTests(APITestCase):
     @classmethod
     def tearDownClass(cls):
         cls.user.delete()
+
+    def setUp(self):
+        self.client.login(username="shakespeare", password="shakespeare")
+
+    def tearDown(self):
+        self.client.logout()
 
     def test_add_topic(cls):
         """Tests that Topic can be added"""
@@ -88,7 +94,7 @@ class TopicTests(APITestCase):
     @classmethod
     def setUpClass(cls):
         # Create User
-        cls.user = User(username="shakespeare")
+        cls.user = User.objects.create_user(username="shakespeare", password="shakespeare")
         cls.user.save()
         cls.u_id = cls.user.id
 
@@ -115,6 +121,12 @@ class TopicTests(APITestCase):
         cls.t1_m.delete()
         cls.t2_m.delete()
         cls.user.delete()
+
+    def setUp(self):
+        self.client.login(username="shakespeare", password="shakespeare")
+
+    def tearDown(self):
+        self.client.logout()
 
     def test_rename_topic(cls):
         """Tests that Topic can be renamed"""

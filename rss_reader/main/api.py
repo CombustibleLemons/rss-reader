@@ -15,6 +15,8 @@ from django.shortcuts import get_object_or_404
 from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer
 from .models import Topic, Feed, Post
 
+from pprint import pprint
+
 # User API
 class UserList(generics.ListAPIView):
     model = User
@@ -53,10 +55,9 @@ class TopicList(generics.ListCreateAPIView):
     ]
     # Filter out Topics from other users that are not the requester
     def get_queryset(self):
-        print self.request.user
-        User_id = User.objects.get(username=self.request.user)
+        userID = User.objects.get(username=self.request.user)
         queryset = super(TopicList, self).get_queryset()
-        return queryset.filter(User__pk=User_id)
+        return queryset.filter(user=userID)
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     # TODO! Add checks to make sure topic can only be accessed by an authenticated user
@@ -93,15 +94,28 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        # Check if topic name is being changed from uncategorized
-        # and stop the update (including reverting changes) if it is
-        if instance.name == "Uncategorized" and request.data["name"] != "Uncategorized":
+        self.object = self.get_object_or_none()
+        # Check to make sure this is not an uncategorized Topic
+        if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
+        serializer = self.get_serializer(self.object, data=request.DATA,
+                                        files=request.FILES, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            self.pre_save(serializer.object)
+        except ValidationError as err:
+            # full_clean on model instance may be called in pre_save,
+            # so we have to handle eventual errors.
+            return Response(err.message_dict, status=status.HTTP_400_BAD_REQUEST)
+        if self.object is None:
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        self.object = serializer.save(force_update=True)
+        self.post_save(self.object, created=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class TopicFeedList(generics.ListAPIView):
     model = Feed
