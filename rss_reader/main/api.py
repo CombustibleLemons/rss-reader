@@ -156,19 +156,20 @@ def feed_create(request):
             f = Feed.createByURL(url)
             f.save()
 
-            # Add feed to uncategorized Topic
-            user = User.objects.get()[0] # TODO: Change this so that individual users can be recognized
-            try:
-                # If uncategorized already exists
-                t = user.topics.get(name="Uncategorized")
-            except Topic.DoesNotExist as e:
-                # If it doesn't create it
-                t = Topic(name="Uncategorized", user=user)
-                t.save()
+            # We don't care about adding this to topics /here/ in iteration-2
+            # # Add feed to uncategorized Topic
+            # user = User.objects.get(username=request.user)
+            # try:
+            #     # If uncategorized already exists
+            #     t = user.topics.get(name="Uncategorized")
+            # except Topic.DoesNotExist as e:
+            #     # If it doesn't create it
+            #     t = Topic(name="Uncategorized", user=user)
+            #     t.save()
 
             # Add the Feed to the Topic
-            t.addFeed(f)
-            t.save()
+            # t.addFeed(f)
+            # t.save()
 
             # Serialize the Feed so it can be sent back
             fs = FeedSerializer(f)
