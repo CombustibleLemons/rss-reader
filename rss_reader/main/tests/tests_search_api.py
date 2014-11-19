@@ -43,7 +43,7 @@ class SearchTests(APITestCase):
         watson.register(Topic)
 
         # init user
-        cls.user = User(username = "Lucia")
+        cls.user = User.objects.create_user(username = "Lucia")
         cls.user.save()
 
         #init videogame Feeds

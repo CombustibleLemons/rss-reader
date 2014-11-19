@@ -4,17 +4,19 @@ from main import views as MainViews
 
 from main.api import *
 
-#urls for login and logout. not sure what to name them.
+# Debug URLs should circumvent username restrictions
+debug_urls = patterns('',
+    url(r'^/users$', UserDetail.as_view(), name='user-detail'),
+)
+# urls for login and logout. not sure what to name them.
 account_urls = patterns('',
-    url(r'^/login/$', 'django.contrib.auth.views.login', name="login"),
-    url(r'^/logout/$', 'django.contrib.auth.views.logout_then_login',name="logout"),
-    url(r'^/register/$', MainViews.register, name="logout")
+    url(r'^/login/$', MainViews.user_login, name="login"),
+    url(r'^/logout/$', MainViews.user_logout,name="logout"),
+    url(r'^/register/$', MainViews.register, name="register"),
 )
 
 user_urls = patterns('',
-    url(r'^/(?P<pk>[0-9]+)/posts$', UserTopicList.as_view(), name='userfeed-list'),
-    url(r'^/(?P<pk>[0-9]+)$', UserDetail.as_view(), name='user-detail'),
-    url(r'^/$', UserList.as_view(), name='user-list')
+    url(r'^/$', UserDetail.as_view(), name='user-list')
 )
 topic_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', TopicFeedList.as_view(), name='topicfeed-list'),
@@ -42,8 +44,8 @@ urlpatterns = patterns('',
     url(r'^djangular/', include('djangular.urls')),
 
     # REST API
-    url(r'^account', include(account_urls)),
-    url(r'^users', include(user_urls)),
+    url(r'^accounts', include(account_urls)),
+    url(r'^user', include(user_urls)),
     url(r'^topics', include(topic_urls)),
     url(r'^feeds', include(feed_urls)),
     url(r'^posts', include(post_urls)),
@@ -54,12 +56,16 @@ urlpatterns = patterns('',
     # Rest API Auth
     url(r'^rest-auth/', include('rest_auth.urls')),
 
+    # Debug urls
+    url(r'^debug', include(debug_urls)),
+
     # Django Admin
     url(r'^admin/', include(admin.site.urls)),
 
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^login/', MainViews.login),
-
+    url(r'^about/', MainViews.about),
+    url(r'^settings/', MainViews.settings),
+    url(r'^search/', MainViews.search),
    )

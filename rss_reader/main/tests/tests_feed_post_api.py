@@ -26,7 +26,7 @@ import traceback
 class FeedCreateTests(APITestCase):
     @classmethod
     def setUpClass(cls):
-        cls.user = User(username="FeedTests")
+        cls.user = User.objects.create_user(username="FeedTests")
         cls.user.save()
         cls.f1_url = "http://home.uchicago.edu/~jharriman/example-rss.xml"
         cls.f1_id = None
@@ -130,7 +130,7 @@ class FeedCreateTests(APITestCase):
 class FeedTests(APITestCase):
     @classmethod
     def setUpClass(cls):
-        cls.user = User(username="FeedTests")
+        cls.user = User.objects.create_user(username="FeedTests")
         cls.user.save()
         cls.f1_url = "http://home.uchicago.edu/~jharriman/example-rss.xml"
         cls.f1_id = None

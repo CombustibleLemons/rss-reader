@@ -32,8 +32,8 @@ angular.module('main.controllers', ['main.services'])
     };
   })
   .controller('NavigationController', function($scope, $rootScope, $http, $timeout, APIService) {
-    $scope.topics;
-    $scope.topicIds;
+    $scope.topics = [];
+    $scope.topicIds = [];
 
     // Event handlers
 
