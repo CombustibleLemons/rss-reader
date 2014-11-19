@@ -13,7 +13,7 @@ import logging
 @login_required(login_url="/accounts/login/")
 def index(request):
     template = "index.html"
-    return render(request, template, {})
+    return render(request, template, {"authenticated":True})
 
 def register(request):
     # Like before, get the request's context.
@@ -32,7 +32,7 @@ def register(request):
             # print "HELLO!"
             # Attempt to grab information from the raw form information.
             # Note that we make use of both UserForm and UserProfileForm.
-            user_form = UserCreationForm(data=request.POST)
+            user_form = UserForm(data=request.POST)
 
             # If the two forms are valid...
             if user_form.is_valid():
@@ -46,6 +46,7 @@ def register(request):
 
                 # Update our variable to tell the template registration was successful.
                 registered = True
+                return HttpResponseRedirect("/")
 
             # Invalid form or forms - mistakes or something else?
             # Print problems to the terminal.
@@ -56,13 +57,13 @@ def register(request):
         # Not a HTTP POST, so we render our form using two ModelForm instances.
         # These forms will be blank, ready for user input.
         else:
-            user_form = UserCreationForm()
+            user_form = UserForm()
 
-        # Render the template depending on the context.
-        return render_to_response(
-                'registration/register.html',
-                {'user_form': user_form, 'registered': registered},
-                context)
+            # Render the template depending on the context.
+            return render_to_response(
+                    'registration/register.html',
+                    {'user_form': user_form, 'registered': registered},
+                    context)
 
 def about(request):
 	template = "about.html"
@@ -81,6 +82,9 @@ def user_login(request):
 
     authenticated = request.user.is_authenticated()
 
+    if authenticated:
+        return HttpResponseRedirect("/")
+
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
@@ -94,10 +98,8 @@ def user_login(request):
             {'form': AuthenticationForm(request.POST), "authenticated":authenticated},
                 context)
     else:
-        print "MOTHERBUTTER!"
-        return render(request, 'registration/login.html', {'form': AuthenticationForm()})
+        return render(request, 'registration/login.html', {'form': AuthenticationForm(), "authenticated": authenticated})
 
 def user_logout(request):
-    print request
     logout(request)
     return HttpResponseRedirect("/accounts/login")

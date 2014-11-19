@@ -16,9 +16,9 @@
 		    <li><a href="/about">About</a></li>
 		    <li><a href="#">Donate</a></li>
 		    {% if authenticated %}
-			    <li class="login-btn"><a href="/accounts/login">Login</a></li>
-		    {% else %}
 			    <li class="login-btn"><a href="/accounts/logout">Logout</a></li>
+		    {% else %}
+			    <li class="login-btn"><a href="/accounts/login">Login</a></li>
 		    {% endif %}
 		  </ul>
 		</div><!--/.nav-collapse -->
