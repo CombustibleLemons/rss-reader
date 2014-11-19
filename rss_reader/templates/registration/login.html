@@ -14,12 +14,15 @@
 				<p>Your username and password didn't match. Please try again.</p>
 			{% endif %}
 
-			<form method="post" action="{% url 'django.contrib.auth.views.login' %}">
+			{{form.errors}}
+			<form method="post" action=".">
 				{% csrf_token %}
 				{{form.as_p}}
 				<input type="submit" value="login" />
 				<input type="hidden" name="next" value="{{ next }}" />
-			</form>		
+			</form>
+
+			<p>Don't have an account? <a href="/accounts/register">Register here!</a></p>
 		</div>
 	</div>
 </div>

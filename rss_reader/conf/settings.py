@@ -117,3 +117,4 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'haystack',
     },
 }
+LOGIN_REDIRECT_URL = '/'

@@ -6,10 +6,9 @@ from main.api import *
 
 #urls for login and logout. not sure what to name them.
 account_urls = patterns('',
-    url(r'^/login/$', 'django.contrib.auth.views.login', name="login"),
-    url(r'^/logout/$', 'django.contrib.auth.views.logout_then_login',name="logout"),
-    url(r'^/register/$', MainViews.register, name="logout"),
-    url(r'^/profile/$', MainViews.profile, name="loggedIn")
+    url(r'^/login/$', MainViews.user_login, name="login"),
+    url(r'^/logout/$', MainViews.user_logout,name="logout"),
+    url(r'^/register/$', MainViews.register, name="register"),
 )
 
 user_urls = patterns('',
@@ -61,8 +60,6 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^login/', MainViews.login_user),
-    url(r'^register/', MainViews.register),
     url(r'^about/', MainViews.about),
     url(r'^settings/', MainViews.settings),
     url(r'^search/', MainViews.search),
