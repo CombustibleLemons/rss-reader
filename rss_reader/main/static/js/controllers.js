@@ -210,11 +210,14 @@ angular.module('main.controllers', ['main.services'])
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
+    
 
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
         $scope.expandedPostIndex = -1;
+
+        $scope.predicate - '';
     });
 
     $scope.fetchPosts = function() {
