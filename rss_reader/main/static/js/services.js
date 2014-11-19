@@ -20,13 +20,13 @@ angular.module('main.services', []).
   .factory('APIService', function($http, $q){
     return {
         getUser: function() {
-            return this.getSingle('1', 'users/');
+            return this.getSingle('1', '/users/');
         },
         getTopic: function(topic_num) {
-            return this.getSingle(topic_num, 'topics/');
+            return this.getSingle(topic_num, '/topics/');
         },
         getFeed: function(feed_num) {
-            return this.getSingle(feed_num, 'feeds/');
+            return this.getSingle(feed_num, '/feeds/');
         },
         getSingle : function(id, leadUrl) {
           return $http.get(leadUrl + id)
@@ -44,13 +44,13 @@ angular.module('main.services', []).
             });
         },
         getTopicsByIds : function(topic_ids){
-          return this.urlsDeferred(topic_ids, 'topics/');
+          return this.urlsDeferred(topic_ids, '/topics/');
         },
         getFeedsByIds : function(feed_ids){
-          return this.urlsDeferred(feed_ids, 'feeds/');
+          return this.urlsDeferred(feed_ids, '/feeds/');
         },
         getPostsByIds : function(post_ids){
-          return this.urlsDeferred(post_ids, 'posts/');
+          return this.urlsDeferred(post_ids, '/posts/');
         },
         urlsDeferred : function(ids, leadUrl) {
           var deferred = $q.defer();

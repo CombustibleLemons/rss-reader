@@ -10,15 +10,14 @@ debug_urls = patterns('',
 )
 # urls for login and logout. not sure what to name them.
 account_urls = patterns('',
-    url(r'^/login/$', 'django.contrib.auth.views.login', name="login"),
-    url(r'^/logout/$', 'django.contrib.auth.views.logout_then_login',name="logout"),
-    url(r'^/register/$', MainViews.register, name="logout")
+    url(r'^/login/$', MainViews.user_login, name="login"),
+    url(r'^/logout/$', MainViews.user_logout,name="logout"),
+    url(r'^/register/$', MainViews.register, name="register"),
 )
 
 user_urls = patterns('',
     url(r'^/$', UserDetail.as_view(), name='user-list')
 )
-
 topic_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', TopicFeedList.as_view(), name='topicfeed-list'),
     url(r'^/(?P<pk>[0-9]+)$', TopicDetail.as_view(), name='topic-detail'),
@@ -52,7 +51,7 @@ urlpatterns = patterns('',
     url(r'^posts', include(post_urls)),
 
     # Searching
-    url(r'^search', search, name='search-for-feed'),
+    url(r'^search/', search, name='search-for-feed'),
 
     # Rest API Auth
     url(r'^rest-auth/', include('rest_auth.urls')),
@@ -66,6 +65,7 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^login', MainViews.login),
-
+    url(r'^about/', MainViews.about),
+    url(r'^settings/', MainViews.settings),
+    url(r'^search/', MainViews.search),
    )
