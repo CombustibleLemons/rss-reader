@@ -46,7 +46,7 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^login/', MainViews.login),
+    url(r'^login/', MainViews.login_user),
     url(r'^register/', MainViews.register),
     url(r'^about/', MainViews.about),
     url(r'^settings/', MainViews.settings),
