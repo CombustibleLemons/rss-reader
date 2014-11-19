@@ -193,6 +193,33 @@ describe("Navigation controllers", function() {
         navScope.expandTopic(1);
         expect(navScope.expandedIndex).toEqual(1);
     });
+/*
+    it("should move feeds from topic to topic", function() {
+        var topicScope1, topicScope2;
+
+        topicScope1 = navScope.$new();
+        var topic1 = {"name":"topic1", "id":12, "user":1, "feeds": []};
+        topicScope1.$parent.topics = [topic1];
+        topicScope1.$parent.$index = 0;
+        $controller('TopicController', {$scope: topicScope1});
+
+
+        // need to initialize some variables to mimic things
+        navScope.fetchTopics();
+        httpBackend.flush();
+        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
+        navScope.addTopic("topic1");
+        httpBackend.flush();
+        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
+        navScope.addTopic("topic2");
+        httpBackend.flush();
+        expect(navScope.topics.length).toEqual(2);
+        expect(navScope.topics[0]["name"]).toEqual("topic1");
+        expect(navScope.topics[0]["id"]).toEqual(12);
+        expect(navScope.topics[1]["name"]).toEqual("topic2");
+        expect(navScope.topics[1]["id"]).toEqual(13);
+    });
+*/
 });
 
 describe("Topic controllers", function() {
@@ -218,7 +245,7 @@ describe("Topic controllers", function() {
           var topic = {"name":"topic1", "id":12, "user":1, "feeds": []};
           topicScope.$parent.topics = [topic];
           topicScope.$parent.$index = 0;
-          $controller('TopicController', {$scope: topicScope})
+          $controller('TopicController', {$scope: topicScope});
         });
 
         userScope.$digest();
