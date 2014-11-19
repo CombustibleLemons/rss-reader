@@ -45,7 +45,6 @@ THIRD_PARTY_APPS = (
     'djangular',
     'rest_framework',
     'watson',
-    # 'haystack',
     'rest_auth'
 )
 
@@ -110,10 +109,10 @@ REST_FRAMEWORK = {
     )
 }
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': 'http://127.0.0.1:9200/',
-        'INDEX_NAME': 'haystack',
-    },
-}
+# HAYSTACK_CONNECTIONS = {
+#     'default': {
+#         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+#         'URL': 'http://127.0.0.1:9200/',
+#         'INDEX_NAME': 'haystack',
+#     },
+# }
