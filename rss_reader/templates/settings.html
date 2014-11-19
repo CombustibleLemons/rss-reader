@@ -1,107 +1,92 @@
+{% extends 'base.html' %}
 {% load staticfiles %}
-<!DOCTYPE html>
-<html lang="en" ng-app="main">
-<link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400' rel='stylesheet' type='text/css'>
-<head>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>{% block title %}RSS Reader{% endblock %}</title>
+{% block content %}
 
-	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
-	<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css">
-
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.js"></script>
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular-cookies.js"></script>
-	<script src="{% static 'js/controllers.js' %}"></script>
-	<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
-</head>
-<body>
-	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-		<div class="navbar-header">
-		  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-		    <span class="sr-only">Toggle navigation</span>
-		    <span class="icon-bar"></span>
-		    <span class="icon-bar"></span>
-		    <span class="icon-bar"></span>
-		  </button>
-		  <a class="navbar-brand" href="/">Dumblr</a>
-		</div>
-		<div id="navbar" class="navbar-collapse collapse">
-		  <ul class="nav navbar-nav navbar-right">
-		    <li><a href="#">About</a></li>
-		    <li><a href="settings">Settings</a></li>
-		    <li><a href="#">Donate</a></li>
-		    <li class="login-btn"><a href="#">Login</a></li>
-		  </ul>
-		</div><!--/.nav-collapse -->
-    </nav>
-
-
-    <div class="container-fluid main-container" style="border:red 1px solid;">
-		<div class="row-fluid row-offcanvas row-offcanvas-left">	
+	<!--Main Section -->
+    <div class="container-fluid main-container" ng-controller="UserController">
+		<!--Navigation Section -->
+		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
-			<h4>Settings</h4>
-				<br><br>
-				<ul class="nav nav-sidebar">
-					<li>
-						<a class="topicButton" href="#topic1">
-	        				<div class="arrow-up">&#9658; User</div>
-	        				<div style="display: none;" class="arrow-down">&#9660; Topic 1</div>
-      					</a>
-						<ul class="feeds" id="topic1">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>
-					<li>
-						<a class="topicButton" href="#topic2">Topics</a>
-						<ul class="feeds" id="topic2">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>
-					<li>
-						<a class="topicButton" href="#topic3">Feeds</a>
-						<ul class="feeds" id="topic3">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>
-					<li>
-						<a class="topicButton" href="#topic4">Posts</a>
-						<ul class="feeds" id="topic4">
-							<li><a href="#">Feed1</a></li>
-							<li><a href="#">Feed2</a></li>
-							<li><a href="#">Feed3</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div>
+				<!-- Search Section -->
+				<h4>Settings</h4>
 
-			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" style="border:black 1px solid;">
-				{% block content %}{% endblock %}			
+				<!-- Topics Section -->
+				<div> <!--ng-controller="TopicController"-->
+					<a href="#" ng-click="showPopup()">Add a topic</a>
+					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
+						<li>
+							{% verbatim %}
+							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
+		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+			      			</a>
+			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
+			      			
+			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
+			      			
+			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
+			      			
+			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
+
+							<div ng-controller="TopicController">
+								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
+									<li>
+										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
+										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+									</li>
+								</ul>
+							</div>
+							{% endverbatim %}
+						</li>
+					</ul>
+				</div>
 			</div>
-		</div>	
+				<div class="dropbox">
+						<ul>
+							<li class="dropdown">
+								<a href="/#" class="dropdown-toggle" data-toggle="dropdown">Sort by<span class="caret"></span></a>
+								<ul class="dropdown-menu" role="menu">
+									<li><a href="#">Time</a></li>
+									<li><a href="#">Length</a></li>
+									<li><a href="#">Rating</a></li>
+									<li><a href="#">Queue</a></li>
+									<li><a href="#">Autodelete?</a></li>
+
+								</ul>
+							</li>
+						</ul>
+						</div>
+			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
+				{% verbatim %}
+				<div ng-controller="FeedController">
+
+					<div class="row-fluid post" ng-repeat="post in posts">
+						<a ng-click="expandPost($index)">
+							<div class="mini" ng-hide="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+								<p ng-bind-html="post.content" >{{post.content}}</p>
+								<p><a href="{{post.url}}" target="_blank">View source</a></p>
+						</div>
+					</div>
+				</div>
+				{% endverbatim %}
+			</div>
+			<div id="popupWrapper">
+				<div id="popupTopic">
+					<form action="#" id="form" name="form">
+						<h3>Add a topic</h3>
+						<hr>
+						<input ng-model="topic.name "name="name" placeholder="Topic Name" type="text"><br/>
+						<a href="#" class="addTopicBtn" ng-click="addTopic(topic.name)">Add Topic</a>
+						<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
-	
 
-	<div class="footer">
-      <div class="container">
-        <p class="text-muted">&copy; Combustible Lemons Inc, 2014<br/>BAMF@uchicago.edu</p>
-      </div>
-    </div>
-
-
-	<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-	<script src="{% static '../lib/angular/angular.js' %}"></script>
-	<script src="{% static '../lib/angular/angular-cookies.js' %}"></script>
-	<script src="{% static '/djangular/app.js' %}"></script>
-	<script src="{% static 'js/app.js' %}"></script>
-	<script src="{% static 'js/services.js' %}"></script>
-	<script src="{% static 'js/controllers.js' %}"></script>
-	<script src="{% static 'js/filters.js' %}"></script>
-	<script src="{% static 'js/directives.js' %}"></script>
-</body>
-</html>
+{% endblock %}

@@ -1,12 +1,16 @@
 .footer {
 	position: fixed;
 	bottom: 0;
-	width: 100%;
 	background-color: #f8f8f8;
-	padding:15px 10px;
+	padding: 15px 10px;
+	width: 100%;
 	z-index:1001;
 	border-color: #e7e7e7;
 	border-top: #e7e7e7 solid 1px;
+}
+.text-muted {
+		
+		float: bottom;
 }
 body {
   padding-top: 51px;
@@ -33,6 +37,9 @@ body {
 	list-style-type: none;
 }
 
+.dropbox li {
+  list-style-type: none;
+}
 .post {
 	padding:15px;
 	margin-bottom:15px;
@@ -66,12 +73,19 @@ body {
 } */
 
 .login-btn {
-	background: #EBB12D;
+	background: #fa5800;
 	font-weight: bold;
 }
 .login-btn:hover {
 	background: #EBB12D;
 	font-weight: bold;
+}
+
+.settings-btn {
+	max-height: 10%;
+	max-width: 10%;
+	float: right;
+	padding-left: 5px;
 }
 .navbar-default .navbar-nav>.login-btn>a {
 	color: #fff;
@@ -120,3 +134,20 @@ body {
 .error {
 	color:#f00;
 }
+.dropbox {
+	float:right;
+	padding-right: 100px;
+	padding-top: 10px;
+}
+
+.searchbox {
+	height: 30%;
+	width: 100%;
+}
+/*
+.black-swirls {
+	float: left;
+	max-width:10%;
+	max-height: 10%;
+	padding-right: 25px;
+}*/
