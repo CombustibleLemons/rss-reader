@@ -7,13 +7,12 @@ from django.contrib.auth.models import User, UserManager
 class RegisterTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.url = '/account/register/'
+        self.url = '/accounts/register/'
         self.user = User.objects.create_user("leGuin", "lefthand")
 
     def test_register_page(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        #print response
         self.assertContains(response, 'Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only.')
 
     def test_valid_user(self):
