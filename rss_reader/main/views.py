@@ -81,22 +81,21 @@ def user_login(request):
 
     authenticated = request.user.is_authenticated()
 
-    if authenticated:
-        return HttpResponseRedirect("/")
-
-    if request.POST:
+    if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
 
-        if user is not None:        
+        if user is not None:
             login(request, user)
             return HttpResponseRedirect("/")
         else:
             return render_to_response('registration/login.html',
             {'form': AuthenticationForm(request.POST), "authenticated":authenticated},
-                context)    
-    return render(request, 'registration/login.html', {'form': AuthenticationForm()})
+                context)
+    else:
+        print "MOTHERBUTTER!"
+        return render(request, 'registration/login.html', {'form': AuthenticationForm()})
 
 def user_logout(request):
     print request
