@@ -6,9 +6,9 @@ from main.api import *
 
 #urls for login and logout. not sure what to name them.
 account_urls = patterns('',
-    url(r'^/login/$', 'django.contrib.auth.views.login', name="login"),
-    url(r'^/logout/$', 'django.contrib.auth.views.logout_then_login',name="logout"),
-    url(r'^/register/$', MainViews.register, name="logout")
+    url(r'^/login/$', MainViews.user_login, name="login"),
+    url(r'^/logout/$', MainViews.user_logout,name="logout"),
+    url(r'^/register/$', MainViews.register, name="register"),
 )
 
 user_urls = patterns('',
@@ -42,7 +42,7 @@ urlpatterns = patterns('',
     url(r'^djangular/', include('djangular.urls')),
 
     # REST API
-    url(r'^account', include(account_urls)),
+    url(r'^accounts', include(account_urls)),
     url(r'^users', include(user_urls)),
     url(r'^topics', include(topic_urls)),
     url(r'^feeds', include(feed_urls)),
@@ -60,6 +60,7 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^login/', MainViews.login),
-
+    url(r'^about/', MainViews.about),
+    url(r'^settings/', MainViews.settings),
+    url(r'^search/', MainViews.search),
    )

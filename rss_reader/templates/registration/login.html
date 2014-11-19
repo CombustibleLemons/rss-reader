@@ -2,25 +2,29 @@
 
 {% block content %}
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+<!--Main Section -->
+<div class="container-fluid main-container">
+	<!--Navigation Section -->
+	<div class="row-fluid row-offcanvas row-offcanvas-left">
+		<div class="col-sm-3 col-md-2">
+		</div>
 
-<form method="post" action="{% url 'django.contrib.auth.views.login' %}">
-{% csrf_token %}
-<table>
-<tr>
-    <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
+		<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
+			{% if form.errors %}
+				<p>Your username and password didn't match. Please try again.</p>
+			{% endif %}
 
-<input type="submit" value="login" />
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
+			{{form.errors}}
+			<form method="post" action=".">
+				{% csrf_token %}
+				{{form.as_p}}
+				<input type="submit" value="login" />
+				<input type="hidden" name="next" value="{{ next }}" />
+			</form>
+
+			<p>Don't have an account? <a href="/accounts/register">Register here!</a></p>
+		</div>
+	</div>
+</div>
 
 {% endblock %}
