@@ -463,7 +463,6 @@ def createUncategorized(sender, instance, **kwargs):
         instance.topics.get(name="Uncategorized")
     except Topic.DoesNotExist:
         uncat = Topic(name="Uncategorized", user=instance)
-        print instance.topics.all()
         uncat.save()
 
 # Register classes that we want to be able to search

@@ -6,7 +6,7 @@ from django.template import RequestContext, loader
 from django.contrib.auth.decorators import login_required
 from django import forms
 from .forms import UserForm
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render_to_response
 import logging
 
