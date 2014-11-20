@@ -410,6 +410,48 @@ describe("Feed controllers", function() {
         httpBackend.flush();
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
+
+describe("Speedtest controllers", function() {
+    beforeEach(module("main.controllers"));
+    var userScope, navScope, topicScope, httpBackend;
+
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend.whenGET('/speedtest/').respond(200, {"test": []});
+        userScope.refreshUser();
+        httpBackend.flush();
+
+        userScope.$digest();
+        navScope.$digest();
+        topicScope.$digest();
+    }));
+
+    afterEach(function() {
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
+    });
+
+
+    it("should test that the expand feed signal is properly sent", function() {
+        var success = false;
+        topicScope.$on("clickTest", function (event, message) {
+            if(message.identifier == 2) {
+                success = true;
+            }
+        });
+        userScope.expandTest(1);
+        expect(success).toBe(false);
+        userScope.expandFeed(2);
+        expect(success).toBe(true);
+    });
+    // This is all that can be done, as it exists since js stops running if you
+    // have a confirm box. Or so I've been told
+    // Actually if the user stuff moved, then maybe we should test setting
+    // the wpm variable here
+
 });
 /*
     it("should fetch posts", function() {
