@@ -22,7 +22,7 @@ describe("User controllers", function() {
         // There isn't a user yet
         expect(userScope.user).toBe(undefined);
         // Set it up to return a very fake user object
-        httpBackend.expectGET('users/1').respond(200, {"topics": 12});
+        httpBackend.expectGET('/user/').respond(200, {"topics": 12});
         // Call the function
         userScope.refreshUser();
         // Send the response back from fake-server to client
@@ -33,7 +33,7 @@ describe("User controllers", function() {
 
     it("should getTopicIds", function() {
         // Set it up to return fake user object when refreshUser is called inside getTopicIds
-        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/').respond(200, {"topics": []});
         // Call the function
         userScope.getTopicIds();
         // Send the response
@@ -55,7 +55,7 @@ describe("Navigation controllers", function() {
         $controller('NavigationController', {$scope: navScope});
 
         httpBackend = $httpBackend;
-        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/').respond(200, {"topics": []});
         userScope.refreshUser();
         httpBackend.flush();
         userScope.$digest();
@@ -231,7 +231,7 @@ describe("Topic controllers", function() {
 
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
-        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/').respond(200, {"topics": []});
         userScope.refreshUser();
         httpBackend.flush();
 
@@ -275,7 +275,7 @@ describe("Topic controllers", function() {
     it("should add and remove feeds", function() {
         // add foofeed
         var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.whenGET('feeds/12').respond(200, foofeed);
+        httpBackend.whenGET('/feeds/12').respond(200, foofeed);
         topicScope.addFeedToTopic(foofeed);
         httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
@@ -361,7 +361,7 @@ describe("Feed controllers", function() {
 
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
-        httpBackend.whenGET('users/1').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/').respond(200, {"topics": []});
         userScope.refreshUser();
         httpBackend.flush();
 

@@ -20,7 +20,7 @@ angular.module('main.services', []).
   .factory('APIService', function($http, $q){
     return {
         getUser: function() {
-            return this.getSingle('1', '/users/');
+            return this.getSingle('', '/user/');
         },
         getTopic: function(topic_num) {
             return this.getSingle(topic_num, '/topics/');
