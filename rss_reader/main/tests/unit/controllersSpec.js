@@ -383,6 +383,60 @@ describe("Feed controllers", function() {
         httpBackend.flush();
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
+
+describe("Speedtest controllers", function() {
+    beforeEach(module("main.controllers"));
+    var userScope, navScope, topicScope, httpBackend;
+
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend.whenGET('users/1').respond(200, {"test": []});
+        userScope.refreshUser();
+        httpBackend.flush();
+
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          SpeedScope = navScope.$new();
+          var test = {"user":1, "id":12};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('SpeedtestController', {$scope: speedtestScope})
+        });
+
+        userScope.$digest();
+        navScope.$digest();
+        topicScope.$digest();
+    }));
+
+    afterEach(function() {
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
+    });
+
+
+
+    it("should test that the expand feed signal is properly sent", function() {
+        var success = false;
+        topicScope.$on("clickFeed", function (event, message) {
+            if(message.identifier == 2) {
+                success = true;
+            }
+        });
+        speedtestScope.expandTest(1);
+        expect(success).toBe(false);
+        speedtestScope.expandTest(2);
+        expect(success).toBe(true);
+    });
+    // This is actually the only test for confirm boxes
+    // If we lightbox it, I'll change it.
+});
 });
 /*
     it("should fetch posts", function() {
