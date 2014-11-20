@@ -85,13 +85,11 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addTopic = function(topicName) {
       $http.post('/topics/create', {"name" : topicName}).success(function(data) {
-
           $rootScope.$broadcast("addedTopic", {
                 topic: data,
           });
           $scope.hidePopup();
           $("#popupTopic input").val('');
-
         }).error(function(data, status, headers, config){
           console.log(status);
         });

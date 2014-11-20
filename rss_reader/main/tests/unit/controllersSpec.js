@@ -277,7 +277,6 @@ describe("Topic controllers", function() {
         var foofeed = {"name":"foofeed", "id":12};
         httpBackend.expectPUT('/topics/12').respond(200, '');
         topicScope.addFeedToTopic(foofeed);
-        dump('hey');
         httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
         expect(topicScope.feeds[0]).toEqual(foofeed);
@@ -285,7 +284,6 @@ describe("Topic controllers", function() {
         httpBackend.expectGET('/feeds/12').respond(200, foofeed);
         var origTopic = topicScope.topic;
         topicScope.fetchFeeds();
-        dump('ho');
         httpBackend.flush();
         expect(topicScope.topic).toEqual(origTopic);
 
