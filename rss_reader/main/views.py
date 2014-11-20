@@ -29,9 +29,8 @@ def register(request):
 
         # If it's a HTTP POST, we're interested in processing form data.
         if request.method == 'POST':
-            # print "HELLO!"
             # Attempt to grab information from the raw form information.
-            # Note that we make use of both UserForm and UserProfileForm.
+            # Note that we make use of both UserForm.
             user_form = UserForm(data=request.POST)
 
             # If the two forms are valid...
@@ -52,13 +51,17 @@ def register(request):
             # Print problems to the terminal.
             # They'll also be shown to the user.
             else:
-                print user_form.errors
+                # NOTE: If we resend the response with the SAME form then it will send back errors
+                # with the form.
+                return render_to_response(
+                        'registration/register.html',
+                        {'user_form': user_form, 'registered': registered},
+                        context)
 
         # Not a HTTP POST, so we render our form using two ModelForm instances.
         # These forms will be blank, ready for user input.
         else:
             user_form = UserForm()
-
             # Render the template depending on the context.
             return render_to_response(
                     'registration/register.html',
@@ -70,7 +73,7 @@ def about(request):
 	return render(request, template, {})
 
 def settings(request):
-	template = "settings.html" 
+	template = "settings.html"
 	return render(request, template, {})
 
 def search(request):
