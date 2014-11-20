@@ -85,13 +85,11 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addTopic = function(topicName) {
       $http.post('/topics/create', {"name" : topicName}).success(function(data) {
-
           $rootScope.$broadcast("addedTopic", {
                 topic: data,
           });
           $scope.hidePopup();
           $("#popupTopic input").val('');
-
         }).error(function(data, status, headers, config){
           console.log(status);
         });
@@ -170,22 +168,29 @@ angular.module('main.controllers', ['main.services'])
     $scope.addFeedToTopic = function(feed) {
       $scope.topic["feeds"].push(feed.id);
       $scope.feeds.push(feed);
-      $scope.fetchFeeds();
+      var destUrl = '/topics/' + $scope.topic["id"];
+      $http.put(destUrl, $scope.topic).error(function(data, status, headers, config) {
+          // Log the error
+          console.log(status);
+          // Try again
+          $scope.addFeedToTopic(feed);
+        });
     };
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
       $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
         return id != feedId;
       });
-      $http.put("topics/" + $scope.topic["id"], $scope.topic).success(function(data){
-        // If successful, trigger feed fetching to update the feed listing
-        $scope.fetchFeeds();
+      $http.put("topics/" + $scope.topic["id"], $scope.topic).success(function(data) {
+        $scope.feeds = $scope.feeds.filter(function(feed) {
+          return feed["id"] != feedId;
+        });
       }).error(function(data, status, headers, config){
-        // Log the error
-        console.log(status);
-        // Add the feed back since there was an error
-        $scope.topic["feeds"].push(feedId);
-      });;
+          // Log the error
+          console.log(status);
+          // Add the feed back since there was an error
+          $scope.topic["feeds"].push(feedId);
+      });
     };
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
@@ -247,7 +252,7 @@ angular.module('main.controllers', ['main.services'])
         }
         $scope.posts = data;
       });
-    };
+    }; 
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
