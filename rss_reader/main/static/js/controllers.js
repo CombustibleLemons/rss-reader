@@ -65,6 +65,7 @@ angular.module('main.controllers', ['main.services'])
 
     // Attributes
     $scope.expandedIndex = -1;
+    $scope.predicate = "";
 
     // Methods
     $scope.showPopup = function() {
@@ -216,8 +217,6 @@ angular.module('main.controllers', ['main.services'])
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
         $scope.expandedPostIndex = -1;
-
-        $scope.predicate - '';
     });
 
     $scope.fetchPosts = function() {
