@@ -245,7 +245,7 @@ angular.module('main.controllers', ['main.services'])
         }
         $scope.posts = data;
       });
-    };
+    }; 
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
