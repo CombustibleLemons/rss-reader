@@ -2,6 +2,9 @@
 {% load staticfiles %}
 {% block content %}
 
+
+{% verbatim %}
+
 	<!--Main Section -->
     <div class="container-fluid main-container" ng-controller="UserController">
 		<!--Navigation Section -->
@@ -12,10 +15,13 @@
 					<form id="searchForm">
 						<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && addFeed()">
 						
-						<input type="image" onclick="location.href='/settings';" class="settings-btn" src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg">
-						<input type="image" onclick="location.href='/search';" class="settings-btn" src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png">
-						</form> 
-
+						<a href='/settings' class="settings-btn">
+							<img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
+						</a>
+						<a href='/search' class="settings-btn">
+							<img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
+						</a>
+					</form> 
 				</div>
 
 				<!-- Topics Section -->
@@ -23,7 +29,6 @@
 					<a href="#" ng-click="showPopup()">Add a topic</a>
 					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
 						<li>
-							{% verbatim %}
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
 		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
@@ -36,7 +41,7 @@
 			      			
 			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 
-							<div ng-controller="TopicController">
+							<div ng-controller="TopicController"><br><br>
 								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
 									<li>
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
@@ -44,31 +49,30 @@
 									</li>
 								</ul>
 							</div>
-							{% endverbatim %}
 						</li>
 					</ul>
 				</div>
 			</div>
-				<div class="dropbox">
-						<ul>
-							<li class="dropdown">
-								<a href="/#" class="dropdown-toggle" data-toggle="dropdown">Sort by<span class="caret"></span></a>
-								<ul class="dropdown-menu" role="menu">
-									<li><a href="#">Time</a></li>
-									<li><a href="#">Length</a></li>
-									<li><a href="#">Rating</a></li>
-									<li><a href="#">Queue</a></li>
-									<li><a href="#">Autodelete?</a></li>
-
-								</ul>
-							</li>
+			<div class="dropbox">
+				<ul>
+					<li class="dropdown">
+						<a href="/#" ng-click="predicate=''" class="dropdown-toggle" data-toggle="dropdown">Sort by<span class="caret"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
+							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li> 
+							<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
+							<li><a href="">Length</a></li>
+							<li><a href="">Rating</a></li>
+							<li><a href="">Queue</a></li>
+							<li><a href="">Autodelete?</a></li>
 						</ul>
-						</div>
+					</li>
+				</ul>
+			</div>
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
-				{% verbatim %}
 				<div ng-controller="FeedController">
 
-					<div class="row-fluid post" ng-repeat="post in posts">
+					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
 						<a ng-click="expandPost($index)">
 							<div class="mini" ng-hide="expandedPostIndex == $index">
 								<h3>{{post.title}}</h3>
@@ -81,7 +85,6 @@
 						</div>
 					</div>
 				</div>
-				{% endverbatim %}
 			</div>
 			<div id="popupWrapper">
 				<div id="popupTopic">
@@ -96,5 +99,7 @@
 			</div>
 		</div>
 	</div>
+
+{% endverbatim %}
 
 {% endblock %}

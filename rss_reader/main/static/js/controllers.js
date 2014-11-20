@@ -65,6 +65,7 @@ angular.module('main.controllers', ['main.services'])
 
     // Attributes
     $scope.expandedIndex = -1;
+    $scope.predicate = "";
 
     // Methods
     $scope.showPopup = function() {
@@ -217,6 +218,7 @@ angular.module('main.controllers', ['main.services'])
   })
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
+    
 
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
