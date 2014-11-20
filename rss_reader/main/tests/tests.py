@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 # Model classes
-from main.models import Feed, Post, RSS, Atom, Topic
+from main.models import UserSettings, Feed, Post, RSS, Atom, Topic
 
 # Built in users
 from django.contrib.auth.models import User, UserManager
@@ -20,6 +20,28 @@ import datetime
 import pytz
 import traceback
 import feedparser
+
+#UserSettings tests
+class UserSettingsTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        self.user.save()
+
+    def tearDown(self):
+        self.user.delete()
+
+    def settings_exist(self):
+        """Users are created with settings"""
+        self.assertEqual(self.user.settings.exists(), True)
+
+    def test_readtime_default(self):
+        """Default readtime is 300"""
+        self.assertEqual(self.user.settings.readtime, 300)
+
+    def change_readtime_exists(self):
+        """Changing the readtime should work"""
+        self.user.settings.readTime = 400
+        self.assertEqual(self.user.settings.readtime, 400)
 
 #Topic tests
 class TopicTestCase(TestCase):
@@ -261,6 +283,18 @@ class FeedTestCase(TestCase):
         # Test 0 case
         feed = Feed()
         self.assertEqual(feed.getSize(), 0)
+
+class QueueFeedTestCase(TestCase):
+
+    #test creating a queuefeed from url, with posts per time unit, starting post date
+
+    #test that posts exist in the correct order/time
+
+    #test that correct number of posts exist
+
+    #test modify queuefeed, with new posts per time unit
+
+    #test delete queuefeed
 
 class PostTestCase(TestCase):
     def setUp(self):

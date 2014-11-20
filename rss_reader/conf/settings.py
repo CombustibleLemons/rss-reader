@@ -44,6 +44,8 @@ DEFAULT_APPS = (
 THIRD_PARTY_APPS = (
     'djangular',
     'rest_framework',
+    'watson',
+    'rest_auth'
 )
 
 LOCAL_APPS = (
@@ -99,3 +101,12 @@ USE_TZ = True
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static/"),)
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
+

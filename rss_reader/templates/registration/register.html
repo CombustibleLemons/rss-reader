@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<!--Main Section -->
+<div class="container-fluid main-container" ng-controller="UserController">
+  <!--Navigation Section -->
+  <div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
+    <div class="col-sm-3 col-md-2">
+    </div>
+
+    <div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
+      <h1>Register with RSS Reader</h1>
+
+      {% if registered %}
+      <strong>Thank you for registering!</strong>
+      <a href="/">Return to the homepage.</a><br />
+      {% else %}
+
+      <form id="user_form" method="post" action="/accounts/register/"
+              enctype="multipart/form-data">
+
+          {% csrf_token %}
+
+          <!-- Display each form. The as_p method wraps each element in a paragraph
+               (<p>) element. This ensures each element appears on a new line,
+               making everything look neater. -->
+          {% for field in user_form %}
+            <p class="fieldWrapper">
+              {{ field.errors }}
+              {{ field.label_tag }} {{ field }} {{field.help_text}}
+            </p>
+          {% endfor %}
+
+          <!-- Provide a button to click to submit the form. -->
+          <input type="submit" name="submit" value="Register" />
+      </form>
+      <a href="/">Return to the homepage</a><br />
+    </div>
+  </div>
+</div>
+  
+  {% endif %}
+{% endblock %}
