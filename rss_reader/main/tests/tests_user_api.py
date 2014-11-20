@@ -22,7 +22,7 @@ import time
 import datetime
 import pytz
 import traceback
-from django.contrib.auth import authenticate
+
 class UserTests(APITestCase):
     @classmethod
     def setUpClass(self):

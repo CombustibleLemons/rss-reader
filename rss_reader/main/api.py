@@ -58,7 +58,7 @@ class TopicList(generics.ListCreateAPIView):
         queryset = super(TopicList, self).get_queryset()
         return queryset.filter(user=userID)
 
-class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
+class TopicDetail(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     # TODO! Add checks to make sure topic can only be accessed by an authenticated user
     model = Topic
     serializer_class = TopicSerializer
