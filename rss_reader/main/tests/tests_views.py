@@ -4,6 +4,29 @@ from django.test import Client, TestCase
 from django.contrib.auth.models import User, UserManager
 
 # from http://www.mechanicalgirl.com/view/testing-django-apps/
+
+class LoginTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Create a User
+        cls.user = User.objects.create_user(username="test", password="test")
+        cls.user.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.user.delete()
+
+    def test_call_view_denies_anonymous(self):
+        response = self.client.get('/', follow=True)
+        self.assertRedirects(response, '/accounts/login/?next=/')
+
+    def test_call_view_loads(self):
+        self.client.login(username='test', password='test')  # defined in fixture or with factory in setUp()
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'index.html')
+        self.client.logout()
+
 class RegisterTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -16,8 +39,9 @@ class RegisterTests(TestCase):
         self.assertContains(response, 'Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only.')
 
     def test_valid_user(self):
+        # This isn't right because the password will be hashed.
         response = self.client.post(self.url, {'username': 'Cherryh', 'password': 'downbelow'})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302) # 302 = URL redirection
         self.assertQuerysetEqual(User.objects.all(), ["<User: leGuin>", "<User: Cherryh>"], ordered=False)
 
     def test_repeat_user(self):
