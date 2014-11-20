@@ -275,14 +275,17 @@ describe("Topic controllers", function() {
     it("should add and remove feeds", function() {
         // add foofeed
         var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.whenGET('/feeds/12').respond(200, foofeed);
+        httpBackend.expectPUT('/topics/12').respond(200, '');
         topicScope.addFeedToTopic(foofeed);
+        dump('hey');
         httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
         expect(topicScope.feeds[0]).toEqual(foofeed);
         // check fetching feeds when there are feeds
+        httpBackend.expectGET('/feeds/12').respond(200, foofeed);
         var origTopic = topicScope.topic;
         topicScope.fetchFeeds();
+        dump('ho');
         httpBackend.flush();
         expect(topicScope.topic).toEqual(origTopic);
 
@@ -300,6 +303,7 @@ describe("Topic controllers", function() {
         httpBackend.expectPUT('topics/12', topicScope.topic).respond(200, '');
         topicScope.removeFeedFromTopic(12);
         httpBackend.flush();
+        dump(topicScope.feeds);
         expect(topicScope.feeds).toEqual([]);
     });
 
