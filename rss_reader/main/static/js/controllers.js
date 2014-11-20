@@ -64,6 +64,12 @@ angular.module('main.controllers', ['main.services'])
     $rootScope.$on("showSearchResults", function (event, message) {
         $scope.activeView = "searchResults";
     });
+
+    $rootScope.$on("clickFeed", function (event, message) {
+        $scope.activeView = "feedResults";
+    });
+
+
     // End Event handlers
 
     // Attributes
@@ -165,7 +171,6 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.search = function() { // formerly passed url as an argument
-      $rootScope.$broadcast("showSearchResults", {});
       $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
           // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("showSearchResults", {
@@ -281,7 +286,6 @@ angular.module('main.controllers', ['main.services'])
     $rootScope.$on("showSearchResults", function (event, message) {
         $scope.searchResults = message.searchResults;
     });
-
     
   })
 //*/
