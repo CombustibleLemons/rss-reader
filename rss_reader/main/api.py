@@ -41,6 +41,7 @@ class UserDetail(generics.RetrieveUpdateAPIView):
 class UserTopicList(generics.ListAPIView):
     model = Topic
     serializer_class = TopicSerializer
+    permission_classes = (permissions.IsAuthenticated,)
     def get_queryset(self):
         User_id = self.kwargs.get("pk")
         queryset = super(UserTopicList, self).get_queryset()
@@ -50,9 +51,7 @@ class UserTopicList(generics.ListAPIView):
 class TopicList(generics.ListCreateAPIView):
     model = Topic
     serializer_class = TopicSerializer
-    permission_classes = [
-        permissions.AllowAny
-    ]
+    permission_classes = (permissions.IsAuthenticated,)
     # Filter out Topics from other users that are not the requester
     def get_queryset(self):
         userID = User.objects.get(username=self.request.user)
@@ -63,6 +62,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     # TODO! Add checks to make sure topic can only be accessed by an authenticated user
     model = Topic
     serializer_class = TopicSerializer
+    permission_classes = (permissions.IsAuthenticated,)
     def create(self, request, *args, **kwargs):
         try:
             # Add the user to the data
@@ -120,6 +120,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
 class TopicFeedList(generics.ListAPIView):
     model = Feed
     serializer_class = FeedSerializer
+    permission_classes = (permissions.IsAuthenticated,)
     def get_queryset(self):
         Topic_id = self.kwargs.get("pk")
         queryset = super(TopicFeedList, self).get_queryset()
