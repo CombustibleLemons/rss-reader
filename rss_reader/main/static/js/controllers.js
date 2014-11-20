@@ -61,11 +61,22 @@ angular.module('main.controllers', ['main.services'])
       $scope.topics.push(message.topic);
     });
 
+    $rootScope.$on("showSearchResults", function (event, message) {
+        $scope.activeView = "searchResults";
+    });
+
+    $rootScope.$on("clickFeed", function (event, message) {
+        $scope.activeView = "feedResults";
+    });
+
+
     // End Event handlers
 
     // Attributes
     $scope.expandedIndex = -1;
     $scope.predicate = "";
+    $scope.activeView = "feedResults"
+    // End Attributes
 
     // Methods
     $scope.showPopup = function() {
@@ -85,13 +96,11 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addTopic = function(topicName) {
       $http.post('/topics/create', {"name" : topicName}).success(function(data) {
-
           $rootScope.$broadcast("addedTopic", {
                 topic: data,
           });
           $scope.hidePopup();
           $("#popupTopic input").val('');
-
         }).error(function(data, status, headers, config){
           console.log(status);
         });
@@ -158,6 +167,22 @@ angular.module('main.controllers', ['main.services'])
           }
         });
     };
+
+    $scope.search = function() { // formerly passed url as an argument
+      $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
+          // How do we figure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("showSearchResults", {
+                searchResults: data,
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
+          }
+        });
+    };
   })
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
@@ -170,22 +195,29 @@ angular.module('main.controllers', ['main.services'])
     $scope.addFeedToTopic = function(feed) {
       $scope.topic["feeds"].push(feed.id);
       $scope.feeds.push(feed);
-      $scope.fetchFeeds();
+      var destUrl = '/topics/' + $scope.topic["id"];
+      $http.put(destUrl, $scope.topic).error(function(data, status, headers, config) {
+          // Log the error
+          console.log(status);
+          // Try again
+          $scope.addFeedToTopic(feed);
+        });
     };
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
       $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
         return id != feedId;
       });
-      $http.put("topics/" + $scope.topic["id"], $scope.topic).success(function(data){
-        // If successful, trigger feed fetching to update the feed listing
-        $scope.fetchFeeds();
+      $http.put("topics/" + $scope.topic["id"], $scope.topic).success(function(data) {
+        $scope.feeds = $scope.feeds.filter(function(feed) {
+          return feed["id"] != feedId;
+        });
       }).error(function(data, status, headers, config){
-        // Log the error
-        console.log(status);
-        // Add the feed back since there was an error
-        $scope.topic["feeds"].push(feedId);
-      });;
+          // Log the error
+          console.log(status);
+          // Add the feed back since there was an error
+          $scope.topic["feeds"].push(feedId);
+      });
     };
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
@@ -247,10 +279,18 @@ angular.module('main.controllers', ['main.services'])
         }
         $scope.posts = data;
       });
-    };
+    }; 
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
     };
+  })
+
+  .controller('ResultsController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+    $scope.searchResults = [];
+    $rootScope.$on("showSearchResults", function (event, message) {
+        $scope.searchResults = message.searchResults;
+    });
+    
   })
 //*/

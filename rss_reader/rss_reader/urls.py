@@ -16,7 +16,8 @@ account_urls = patterns('',
 )
 
 user_urls = patterns('',
-    url(r'^/$', UserDetail.as_view(), name='user-list')
+    url(r'^/$', UserDetail.as_view(), name='user-list'),
+    url(r'^/settings/$', UserSettingsDetail.as_view(), name='settings-detail')
 )
 topic_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts$', TopicFeedList.as_view(), name='topicfeed-list'),
@@ -67,5 +68,4 @@ urlpatterns = patterns('',
 
     url(r'^about/', MainViews.about),
     url(r'^settings/', MainViews.settings),
-    url(r'^search/', MainViews.search),
    )

@@ -275,12 +275,13 @@ describe("Topic controllers", function() {
     it("should add and remove feeds", function() {
         // add foofeed
         var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.whenGET('/feeds/12').respond(200, foofeed);
+        httpBackend.expectPUT('/topics/12').respond(200, '');
         topicScope.addFeedToTopic(foofeed);
         httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
         expect(topicScope.feeds[0]).toEqual(foofeed);
         // check fetching feeds when there are feeds
+        httpBackend.expectGET('/feeds/12').respond(200, foofeed);
         var origTopic = topicScope.topic;
         topicScope.fetchFeeds();
         httpBackend.flush();
@@ -300,6 +301,7 @@ describe("Topic controllers", function() {
         httpBackend.expectPUT('topics/12', topicScope.topic).respond(200, '');
         topicScope.removeFeedFromTopic(12);
         httpBackend.flush();
+        dump(topicScope.feeds);
         expect(topicScope.feeds).toEqual([]);
     });
 
@@ -335,11 +337,13 @@ describe("Search controllers", function($rootScope) {
     });
 
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
-            'pretend this is feed data');
-        searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
+        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/example-rss.xml"}').respond(200, 'pretend this is feed data');
+        searchScope.query = 'http://home.uchicago.edu/~jharriman/example-rss.xml';
         var success;
-        searchScope.addFeed();
+
+        //searchScope.addFeed();
+        searchScope.search();
+
         searchScope.$on("addedFeed", function (event, message) {
             // check message
             success = true;
