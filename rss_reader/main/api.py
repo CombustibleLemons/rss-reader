@@ -309,9 +309,9 @@ def topic_rename(request):
 
 # Search
 import watson
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def search(request):
-    if request.method == "GET":
+    if request.method == "POST":
         # Create feed using input URL
         searchString = request.DATA.get("searchString")
         try:

@@ -61,11 +61,22 @@ angular.module('main.controllers', ['main.services'])
       $scope.topics.push(message.topic);
     });
 
+    $rootScope.$on("showSearchResults", function (event, message) {
+        $scope.activeView = "searchResults";
+    });
+
+    $rootScope.$on("clickFeed", function (event, message) {
+        $scope.activeView = "feedResults";
+    });
+
+
     // End Event handlers
 
     // Attributes
     $scope.expandedIndex = -1;
     $scope.predicate = "";
+    $scope.activeView = "feedResults"
+    // End Attributes
 
     // Methods
     $scope.showPopup = function() {
@@ -153,6 +164,22 @@ angular.module('main.controllers', ['main.services'])
         }).error(function(data, status, headers, config){
           if (status == 409) {
             $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
+        });
+    };
+
+    $scope.search = function() { // formerly passed url as an argument
+      $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
+          // How do we figure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("showSearchResults", {
+                searchResults: data,
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
           }
         });
     };
@@ -257,5 +284,13 @@ angular.module('main.controllers', ['main.services'])
       // Expand the post
       $scope.expandedPostIndex = index;
     };
+  })
+
+  .controller('ResultsController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+    $scope.searchResults = [];
+    $rootScope.$on("showSearchResults", function (event, message) {
+        $scope.searchResults = message.searchResults;
+    });
+    
   })
 //*/
