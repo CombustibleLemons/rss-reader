@@ -48,7 +48,7 @@ class TopicTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         # User
-        cls.u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        cls.u1 = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login', 120) """Last field is WPM?"""
 
         # Feed 1
         cls.f1 = Feed.createByURL("http://home.uchicago.edu/~jharriman/example-rss.xml")

@@ -428,6 +428,19 @@ describe("Speedtest controllers", function() {
         userScope.refreshUser();
         httpBackend.flush();
 
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          SpeedScope = navScope.$new();
+          var test = {"user":1, "id":12};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('SpeedtestController', {$scope: speedtestScope})
+        });
+
         userScope.$digest();
         navScope.$digest();
         topicScope.$digest();
