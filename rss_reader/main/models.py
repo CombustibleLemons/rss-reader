@@ -281,6 +281,9 @@ class Feed(models.Model):
                     # We've found a duplicate, but its fine if we've found a duplicate
                     pass
 
+class QueueFeed(Feed):
+    pass
+
 class Topic(models.Model):
     name = models.TextField()
     feeds = models.ManyToManyField(Feed, related_name = '+')
