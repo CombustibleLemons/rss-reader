@@ -335,11 +335,13 @@ describe("Search controllers", function($rootScope) {
     });
 
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
-            'pretend this is feed data');
-        searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
+        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/example-rss.xml"}').respond(200, 'pretend this is feed data');
+        searchScope.query = 'http://home.uchicago.edu/~jharriman/example-rss.xml';
         var success;
-        searchScope.addFeed();
+
+        //searchScope.addFeed();
+        searchScope.search();
+
         searchScope.$on("addedFeed", function (event, message) {
             // check message
             success = true;

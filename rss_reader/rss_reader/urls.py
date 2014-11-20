@@ -67,5 +67,4 @@ urlpatterns = patterns('',
 
     url(r'^about/', MainViews.about),
     url(r'^settings/', MainViews.settings),
-    url(r'^search/', MainViews.search),
    )
