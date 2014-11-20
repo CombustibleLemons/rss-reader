@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 # Model classes
-from main.models import Feed, Post, RSS, Atom, Topic
+from main.models import UserSettings, Feed, Post, RSS, Atom, Topic
 
 # Built in users
 from django.contrib.auth.models import User, UserManager
@@ -20,6 +20,24 @@ import datetime
 import pytz
 import traceback
 import feedparser
+
+#UserSettings tests
+class UserSettingsTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'login')
+        self.user.save()
+        self.settings = UserSettings(user=self.user)
+
+    def tearDown(self):
+        self.user.delete()
+        self.settings.delete()
+
+    def test_readtime_default(self):
+        self.assertEqual(self.user.settings.readtime, 300)
+
+    def change_readtime_exists(self):
+        self.user.settings.readTime = 400
+        self.assertEqual(self.user.settings.readtime, 400)
 
 #Topic tests
 class TopicTestCase(TestCase):

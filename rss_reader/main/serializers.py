@@ -1,11 +1,17 @@
 from rest_framework import serializers
-from .models import User, Topic, Feed, Post
+from .models import User, Topic, Feed, Post, UserSettings
 
 class UserSerializer(serializers.ModelSerializer):
     topics = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    settings = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name', 'last_name', 'topics', )
+
+class UserSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSettings
+        fields = ('readtime',)
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
