@@ -10,8 +10,8 @@ from rest_framework.test import APIRequestFactory, APITestCase
 from django.contrib.auth.models import User, UserManager
 
 # Models and Serializers
-from main.serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer
-from main.models import Topic, Feed, Post
+from main.serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer
+from main.models import Topic, Feed, Post, UserSettings
 from django.forms.models import model_to_dict
 
 ## Transaction Management
@@ -61,6 +61,21 @@ class UserTests(APITestCase):
         response = self.client.get('/topics/')
         self.assertEqual(response.status_code, 200)
         self.assertItemsEqual(response.data, [{u'id':self.u_uncat_id,'name':u'Uncategorized', 'user':self.u_id, 'feeds':[]}])
+
+    def test_settings_exist(self):
+        """Users should be created with settings"""
+        response = self.client.get('/user/settings/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'readtime':300})
+
+    def test_settings_update(self):
+        """readtimes in UserSettings can be changed"""
+        response = self.client.patch('/user/settings/', {'readtime':'400'})
+        self.assertEqual(response.status_code,200)
+
+        response = self.client.get('/user/settings/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'readtime': 400})
 
     # Old tests that are no longer needed
     # We no longer have a userlist model
