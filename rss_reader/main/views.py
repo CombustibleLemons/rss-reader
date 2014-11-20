@@ -70,7 +70,7 @@ def about(request):
 	return render(request, template, {})
 
 def settings(request):
-	template = "settings.html" 
+	template = "settings.html"
 	return render(request, template, {})
 
 def search(request):
