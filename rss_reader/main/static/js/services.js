@@ -37,7 +37,6 @@ angular.module('main.services', []).
                       // invalid response
                       return $q.reject(response.data);
                   }
-
               }, function(response) {
                   // something went wrong
                   return $q.reject(response.data);
@@ -74,6 +73,23 @@ angular.module('main.services', []).
               deferred.update(updates);
             });
           return deferred.promise;
+        },
+        // Topic functions
+        addTopic : function(topicName) {
+          var promise = $http.post('/topics/', {"name":topicName});
+          return promise;
+        },
+        renameTopic : function(newTopicName, topicID) {
+          var promise = $http.put('/topics/' + topicID, {"name":newTopicName, "index":topicID});
+          return promise;
+        },
+        removeTopic : function(topicID) {
+          var promise = $http.delete('/topics/' + topicID, {"index":topicID});
+          return promise;
+        },
+        updateTopic : function(topic) {
+          var promise = $http.put('/topics/' + topic["id"], topic);
+          return promise;
         }
     };
   })
