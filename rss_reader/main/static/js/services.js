@@ -74,11 +74,22 @@ angular.module('main.services', []).
             });
           return deferred.promise;
         },
+        // Topic functions
         addTopic : function(topicName) {
-          $http.post('/topics/', {"name":topicName}
-            ).then(function(data) {
-              return data;
-            });
+          var promise = $http.post('/topics/', {"name":topicName});
+          return promise;
+        },
+        renameTopic : function(newTopicName, topicID) {
+          var promise = $http.put('/topics/' + topicID, {"name":newTopicName, "index":topicID});
+          return promise;
+        },
+        removeTopic : function(topicID) {
+          var promise = $http.delete('/topics/' + topicID, {"index":topicID});
+          return promise;
+        },
+        updateTopic : function(topic) {
+          var promise = $http.put('/topics/' + topic["id"], topic);
+          return promise;
         }
     };
   })

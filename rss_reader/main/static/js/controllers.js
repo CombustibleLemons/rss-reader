@@ -95,42 +95,34 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.addTopic = function(topicName) {
-      var thing = false;
-      APIService.addTopic(topicName).success(function(data) {
-        console.log('it worked');
-        thing = true;
+      var promise = APIService.addTopic(topicName);
+      promise.success(function(data) {
         $rootScope.$broadcast("addedTopic", {
           topic: data,
         });
         $scope.hidePopup();
         $("#popupTopic input").val('');
       }).error(function(data, status, headers, config){
-        dump("it didn't work");
-        thing = true;
         console.log(status);
       });
-      if(thing == false) console.log('shit');
     };
 
     $scope.renameTopic = function(newTopicName, topicID) {
-      $http.post('/topics/rename', {"name" : newTopicName.name, "index" : topicID}).success(function(data) {
+      APIService.renameTopic(newTopicName, topicID).success(function(data) {
           $rootScope.$broadcast("renamedTopic", {
-                topic: data,
-                identifier: topicID,
+            topic: data,
+            identifier: topicID,
           });
-
         }).error(function(data, status, headers, config){
           console.log(status);
         });
     };
 
     $scope.removeTopic = function(topicID) {
-      $http.post('/topics/delete', {"index" : topicID}).success(function(data) {
-
+      APIService.removeTopic(topicID).success(function(data) {
           $rootScope.$broadcast("removedTopic", {
                 identifier: topicID,
           });
-
         }).error(function(data, status, headers, config){
           console.log(status);
         });
@@ -201,8 +193,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.addFeedToTopic = function(feed) {
       $scope.topic["feeds"].push(feed.id);
       $scope.feeds.push(feed);
-      var destUrl = '/topics/' + $scope.topic["id"];
-      $http.put(destUrl, $scope.topic).error(function(data, status, headers, config) {
+      APIService.updateTopic($scope.topic).error(function(data, status, headers, config) {
           // Log the error
           console.log(status);
           // Try again
@@ -214,7 +205,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
         return id != feedId;
       });
-      $http.put("topics/" + $scope.topic["id"], $scope.topic).success(function(data) {
+      APIService.updateTopic($scope.topic).success(function(data) {
         $scope.feeds = $scope.feeds.filter(function(feed) {
           return feed["id"] != feedId;
         });
