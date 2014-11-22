@@ -37,7 +37,6 @@ angular.module('main.services', []).
                       // invalid response
                       return $q.reject(response.data);
                   }
-
               }, function(response) {
                   // something went wrong
                   return $q.reject(response.data);
@@ -74,6 +73,12 @@ angular.module('main.services', []).
               deferred.update(updates);
             });
           return deferred.promise;
+        },
+        addTopic : function(topicName) {
+          $http.post('/topics/', {"name":topicName}
+            ).then(function(data) {
+              return data;
+            });
         }
     };
   })

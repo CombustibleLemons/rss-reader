@@ -78,8 +78,8 @@ describe("Navigation controllers", function() {
         navScope.fetchTopics();
 
         // should add a first topic
-        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
-        var success = false;;
+        httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
+        var success = false;
         expect(navScope.topics.length).toEqual(0);
         navScope.addTopic("topic1");
         navScope.$on("addedTopic", function (event, message) {
@@ -92,7 +92,7 @@ describe("Navigation controllers", function() {
 
         // should add a second topic
         success = false;
-        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
+        httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         expect(navScope.topics.length).toEqual(1);
         navScope.addTopic("topic2");
         httpBackend.flush();
@@ -105,7 +105,7 @@ describe("Navigation controllers", function() {
 
         // shouldn't add a topic that already exists
         success = false;
-        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(409, '');
+        httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(409, '');
         navScope.addTopic("topic2");
         httpBackend.flush();
         expect(success).toBe(false);
@@ -115,10 +115,10 @@ describe("Navigation controllers", function() {
     it("should rename topics", function() {
         // need to initialize some variables to mimic things
         navScope.fetchTopics();
-        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
+        httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
         navScope.addTopic("topic1");
         httpBackend.flush();
-        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
+        httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         navScope.addTopic("topic2");
         httpBackend.flush();
 
@@ -136,10 +136,10 @@ describe("Navigation controllers", function() {
     it("should remove topics", function() {
         // need to initialize some variables to mimic things
         navScope.fetchTopics();
-        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
+        httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
         navScope.addTopic("topic1");
         httpBackend.flush();
-        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
+        httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         navScope.addTopic("topic2");
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
@@ -170,10 +170,10 @@ describe("Navigation controllers", function() {
     it("should expand and minimize topics", function() {
         // need to initialize some variables to mimic things
         navScope.fetchTopics();
-        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
+        httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
         navScope.addTopic("topic1");
         httpBackend.flush();
-        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
+        httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         navScope.addTopic("topic2");
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
@@ -201,7 +201,7 @@ describe("Navigation controllers", function() {
         topicScope2.$parent.topics.push(topic2);
         topicScope2.$parent.$index = 1;
         $controller('TopicController', {$scope: topicScope2});
-        dump('moving feeds tests not fully implemented');
+        dump('moving feeds tests not fully implemented, because moving feeds not fully implemented');
 /*
         // need to initialize some variables to mimic things
         navScope.fetchTopics();
@@ -413,12 +413,3 @@ describe("Feed controllers", function() {
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
 });
-/*
-    it("should fetch posts", function() {
-        var posts = scope.fetchPosts(validFeed);
-        expect(posts).toBe(true);
-        expect(scope.foofeed.post_set.length).toBeGreaterThan(0);
-        expect(scope.view.div.ul['posts']).toBeGreaterThan(0); // syntax???
-    });
-});
-*/

@@ -84,15 +84,21 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.addTopic = function(topicName) {
-      $http.post('/topics/create', {"name" : topicName}).success(function(data) {
-          $rootScope.$broadcast("addedTopic", {
-                topic: data,
-          });
-          $scope.hidePopup();
-          $("#popupTopic input").val('');
-        }).error(function(data, status, headers, config){
-          console.log(status);
+      var thing = false;
+      APIService.addTopic(topicName).success(function(data) {
+        console.log('it worked');
+        thing = true;
+        $rootScope.$broadcast("addedTopic", {
+          topic: data,
         });
+        $scope.hidePopup();
+        $("#popupTopic input").val('');
+      }).error(function(data, status, headers, config){
+        dump("it didn't work");
+        thing = true;
+        console.log(status);
+      });
+      if(thing == false) console.log('shit');
     };
 
     $scope.renameTopic = function(newTopicName, topicID) {
