@@ -45,7 +45,8 @@ THIRD_PARTY_APPS = (
     'djangular',
     'rest_framework',
     'watson',
-    'rest_auth'
+    'rest_auth',
+    'django_extensions'
 )
 
 LOCAL_APPS = (
@@ -108,5 +109,3 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
-
-

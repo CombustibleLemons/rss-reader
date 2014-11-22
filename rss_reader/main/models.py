@@ -490,20 +490,18 @@ class Atom(Post):
         atom.save()
         return atom
 
-class FeedRead(models.Model):
+class PostsRead(models.Model):
     posts = models.ManyToManyField(Post, related_name="+", blank=True)
     feed = models.ForeignKey(Feed, related_name="+")
     user = models.ForeignKey(User, related_name="readFeedPosts")
 
-    def unreadPosts(self):
+    def getUnreadPostsByNum(self, n):
+        return self.getUnreadPosts()[:n]
+
+    def getUnreadPosts(self):
         feedPosts = self.feed.posts.all()
-        if self.posts:
-            for post in self.posts.all():
-                try:
-                    feedPosts.remove(post)
-                except ValueError:
-                    # ValueErrors indicate the element is not in the list, which is fine
-                    pass
+        if self.posts.all():
+            return feedPosts.exclude(id__in=self.posts.all())
         return feedPosts
 
 # Create 'Uncategorized' Topic to put stuff in on user creation

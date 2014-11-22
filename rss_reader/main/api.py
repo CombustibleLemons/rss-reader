@@ -158,6 +158,15 @@ class FeedPostList(generics.ListAPIView):
         queryset = super(FeedPostList, self).get_queryset()
         return queryset.filter(feed__pk=feed_id)
 
+class UnreadFeedPostList(generics.ListAPIView):
+    model = Post
+    serializer_class = PostSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    def get_queryset(self):
+        feed_id = self.kwargs.get("pk")
+        queryset = super(UnreadFeedPostList, self).get_queryset()
+        return queryset.filter(feed__pk=feed_id)
+
 from django.db import IntegrityError
 @api_view(['GET','POST'])
 def feed_create(request):
