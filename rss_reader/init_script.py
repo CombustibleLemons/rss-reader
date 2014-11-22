@@ -1,6 +1,6 @@
 from main.models import *
 
-lemon = User.objects.create_user('lemon')
+lemon = User.objects.create_user('lemon', password='lemon')
 
 comics = Topic(name='Comics', user=User.objects.all()[0])
 comics.save()
