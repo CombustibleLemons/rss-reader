@@ -51,9 +51,31 @@ class ListField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
-# User class exists in Django, with email, username attributes; and
-# User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
-# user.topics.create(name="topicname")
+# class IntDictField(models.TextField):
+#     __metaclass__ = models.SubfieldBase
+#     description = "Stores a python list"
+#
+#     def __init__(self, *args, **kwargs):
+#         super(IntDictField, self).__init__(*args, **kwargs)
+#
+#     def to_python(self, value):
+#         if not value:
+#             value = {}
+#
+#         if isinstance(value, dict):
+#             return value
+#
+#         return ast.literal_eval(value)
+#
+#     def get_prep_value(self, value):
+#         if value is None:
+#             return value
+#
+#         return unicode(value)
+#
+#     def value_to_string(self, obj):
+#         value = self._get_val_from_obj(obj)
+#         return self.get_db_prep_value(value)
 
 class UserSettings(models.Model):
 
@@ -467,6 +489,22 @@ class Atom(Post):
         # Save before we exit
         atom.save()
         return atom
+
+class FeedRead(models.Model):
+    posts = models.ManyToManyField(Post, related_name="+", blank=True)
+    feed = models.ForeignKey(Feed, related_name="+")
+    user = models.ForeignKey(User, related_name="readFeedPosts")
+
+    def unreadPosts(self):
+        feedPosts = self.feed.posts.all()
+        if self.posts:
+            for post in self.posts.all():
+                try:
+                    feedPosts.remove(post)
+                except ValueError:
+                    # ValueErrors indicate the element is not in the list, which is fine
+                    pass
+        return feedPosts
 
 # Create 'Uncategorized' Topic to put stuff in on user creation
 @receiver(post_save, sender=User)

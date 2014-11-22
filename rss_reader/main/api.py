@@ -72,7 +72,6 @@ class TopicList(generics.ListCreateAPIView):
         return queryset.filter(user=userID)
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
-    # TODO! Add checks to make sure topic can only be accessed by an authenticated user
     model = Topic
     serializer_class = TopicSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -170,21 +169,6 @@ def feed_create(request):
             f = Feed.createByURL(url)
             f.save()
 
-            # We don't care about adding this to topics /here/ in iteration-2
-            # # Add feed to uncategorized Topic
-            # user = User.objects.get(username=request.user)
-            # try:
-            #     # If uncategorized already exists
-            #     t = user.topics.get(name="Uncategorized")
-            # except Topic.DoesNotExist as e:
-            #     # If it doesn't create it
-            #     t = Topic(name="Uncategorized", user=user)
-            #     t.save()
-
-            # Add the Feed to the Topic
-            # t.addFeed(f)
-            # t.save()
-
             # Serialize the Feed so it can be sent back
             fs = FeedSerializer(f)
             return Response(fs.data, status=status.HTTP_200_OK)
@@ -232,6 +216,7 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
         permissions.AllowAny
     ]
 
+# TODO: These functions are deprecated and will be removed as soon as the rest of the system does not require them
 @api_view(['POST'])
 def topic_create(request):
     if request.method == "POST":
@@ -340,3 +325,18 @@ def search(request):
             print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+# Get unread posts
+@api_view(['GET'])
+def unreadPosts(request):
+    if request.method == "GET":
+        # Create feed using input URL
+        feedID = request.DATA.get("feedID")
+        try:
+            user = User.objects.get(username=request.DATA.get(request.user))
+            readPostObj = user.readFeedPosts.get(feed=feedID)
+            unreadPosts = readPostObj.unreadPosts()
+            return Response(unreadPosts, status=status.HTTP_200_OK)
+        except Exception as e:
+            # Return bad request if we get a general exception
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
