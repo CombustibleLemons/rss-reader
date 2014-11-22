@@ -23,7 +23,13 @@ Array.prototype.equals = function (array) {
         }
     }
     return true;
-}   
+}
 
 // Declare app level module which depends on filters, and services
-angular.module('main', ['main.filters', 'main.services', 'main.directives', 'main.controllers', 'ngSanitize'])
+angular.module('main', ['main.filters', 'main.services', 'main.directives', 'main.controllers', 'ngSanitize', 'ngCookies'])
+  .run(['$http', '$cookies', function($http, $cookies) {
+    /* Add the csrftoken to our post requests as well as our get requests
+     * should remove the issues we were having with angular asking for credentials
+     */
+    $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
+  }]);
