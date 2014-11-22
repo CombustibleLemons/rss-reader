@@ -12,8 +12,8 @@ from django.contrib.auth.models import User, UserManager
 from django.shortcuts import get_object_or_404
 
 # Models and Serializers
-from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer
-from .models import Topic, Feed, Post
+from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer
+from .models import Topic, Feed, Post, UserSettings
 
 from pprint import pprint
 
@@ -38,6 +38,19 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
 
+class UserSettingsDetail(generics.RetrieveUpdateAPIView):
+    model = UserSettings
+    serializer_class = UserSettingsSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        # Force username to be from the requesting user
+        filter = {"user" : User.objects.get(username = self.request.user)}
+        obj = get_object_or_404(queryset, **filter)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
 class UserTopicList(generics.ListAPIView):
     model = Topic
     serializer_class = TopicSerializer
@@ -58,7 +71,7 @@ class TopicList(generics.ListCreateAPIView):
         queryset = super(TopicList, self).get_queryset()
         return queryset.filter(user=userID)
 
-class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
+class TopicDetail(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     # TODO! Add checks to make sure topic can only be accessed by an authenticated user
     model = Topic
     serializer_class = TopicSerializer
@@ -296,9 +309,9 @@ def topic_rename(request):
 
 # Search
 import watson
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def search(request):
-    if request.method == "GET":
+    if request.method == "POST":
         # Create feed using input URL
         searchString = request.DATA.get("searchString")
         try:

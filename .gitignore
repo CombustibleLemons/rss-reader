@@ -1,3 +1,6 @@
 env
 *.DS_Store
 *.pyc
+rss_reader/main/rss_project.sublime-project
+rss_reader/main/rss_project.sublime-workspace
+node_modules

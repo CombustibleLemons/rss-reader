@@ -59,3 +59,30 @@ class RegisterTests(TestCase):
         response = self.client.get(self.url, {'username' : 'Lois McMaster Bujold', 'password' : 'Vorkosigan'})
         #self.assertEqual(response.status_code, 400)
         self.assertQuerysetEqual(User.objects.all(), ["<User: leGuin>"], ordered=False)
+
+class LoginTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = '/accounts/login/'
+        self.user = User.objects.create_user("leGuin", "lefthand")
+        self.user.save()
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_login_user(self):
+        response = self.client.post(self.url, {'username':'leGuin', 'password':'lefthand'})
+        self.assertEqual(response.status_code, 200)
+
+    def test_wrong_password(self):
+        response = self.client.post(self.url, {'username':'leGuin','password':'electricsheep'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_login_nonexistent_user(self):
+        response = self.client.post(self.url, {'username':'Atwood', 'password':'handmaid'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_already_logged_in(self):
+        self.client.login(username="leGuin", password="lefthand")
+        response = response = self.client.post(self.url, {'username':'leGuin', 'password':'lefthand'})
+        self.assertEqual(response.status_code, 400)

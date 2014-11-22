@@ -27,7 +27,7 @@ class TopicAddTests(APITestCase):
     @classmethod
     def setUpClass(cls):
         # Create User
-        cls.user = User.objects.create_user(username="shakespeare", password="shakespeare")
+        cls.user = User.objects.create_user(username="shakespeare", password="anne")
         cls.user.save()
         cls.u_id = cls.user.id
 
@@ -49,7 +49,7 @@ class TopicAddTests(APITestCase):
         cls.user.delete()
 
     def setUp(self):
-        self.client.login(username="shakespeare", password="shakespeare")
+        self.client.login(username="shakespeare", password="anne")
 
     def tearDown(self):
         self.client.logout()
@@ -94,7 +94,7 @@ class TopicTests(APITestCase):
     @classmethod
     def setUpClass(cls):
         # Create User
-        cls.user = User.objects.create_user(username="shakespeare", password="shakespeare")
+        cls.user = User.objects.create_user(username="shakespeare", password="anne")
         cls.user.save()
         cls.u_id = cls.user.id
 
@@ -123,7 +123,7 @@ class TopicTests(APITestCase):
         cls.user.delete()
 
     def setUp(self):
-        self.client.login(username="shakespeare", password="shakespeare")
+        self.client.login(username="shakespeare", password="anne")
 
     def tearDown(self):
         self.client.logout()

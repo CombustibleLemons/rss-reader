@@ -126,7 +126,6 @@ class FeedCreateTests(APITestCase):
         cls.f1_id = cls.f1.id
         cls.f1.delete()
 
-
 class FeedTests(APITestCase):
     @classmethod
     def setUpClass(cls):

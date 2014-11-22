@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
+
+<button onclick="getTime1()">Test 1</button>
+<!-- <button onclick="getTime2()">Test 2</button>
+<button onclick="getTime3()">Test 3</button> -->
+
+<p id = "time1"></p>
+<!-- <p id = "time2"></p>
+<p id = "time3"></p> -->
+
+<script>
+function getTime1() {
+    var startTime = new Date();
+    var x;
+    var endTime, elapsed;
+    var wordcount1 = 125;
+    if (confirm("We are nothing. We are the dirt beneath your feet. And no one cared who I was until I put on the mask... \n\nWho we are does not matter. What matters is our plan. \n\nIf I pull this off, will you die? \n\nIt would be extremely painful. \n\nYou're a big guy - \n\nFor you. \n\nWas being caught part of your plan? \n\nOf course. Dr. Pavel refused our offer in favor of yours. We had to know what he told you about us. \n\nNothing! I said nothing! \n\nWhy not just ask him? \n\nHe would not have told us. \n\nYou have methods. \n\nHim, I need healthy. You present no such problem. \n\nWell congratulations, you got yourselves caught. What's the next step of your master plan? \n\nCrashing this plane...") == true) {
+        endTime = new Date();
+        elapsed = (endTime - startTime) / 1000;
+        var wpm = Math.round(wordcount1 / elapsed * 60);
+    }
+    document.getElementById("time1").innerHTML = "You read at " + wpm + " words per minute";
+}
+
+// function getTime2() {
+//     var startTime = new Date();
+//     var x;
+//     var endTime, elapsed;
+//     if (confirm("Press a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button!") == true) {
+//         endTime = new Date();
+//         elapsed = endTime - startTime;
+//     }
+//     document.getElementById("time2").innerHTML = elapsed;
+// }
+
+// function getTime3() {
+//     var startTime = new Date();
+//     var x;
+//     var endTime, elapsed;
+//     if (confirm("Press a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button!") == true) {
+//         endTime = new Date();
+//         elapsed = endTime - startTime;
+//     }
+//     document.getElementById("time3").innerHTML = elapsed;
+// }
+
+
+</script>
+
+</body>
+</html>

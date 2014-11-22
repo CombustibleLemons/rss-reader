@@ -55,6 +55,15 @@ class ListField(models.TextField):
 # User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
 # user.topics.create(name="topicname")
 
+class UserSettings(models.Model):
+
+    def __unicode__(self):
+        return self.readtime
+
+    user = models.OneToOneField(User, primary_key=True, related_name = "settings")
+
+    readtime = models.IntegerField(default = 300) #words per minute
+
 class FeedURLInvalid(Exception):
     pass
 
@@ -272,6 +281,9 @@ class Feed(models.Model):
                     # We've found a duplicate, but its fine if we've found a duplicate
                     pass
 
+class QueueFeed(Feed):
+    pass
+
 class Topic(models.Model):
     name = models.TextField()
     feeds = models.ManyToManyField(Feed, related_name = '+')
@@ -464,7 +476,11 @@ def createUncategorized(sender, instance, **kwargs):
     except Topic.DoesNotExist:
         uncat = Topic(name="Uncategorized", user=instance)
         uncat.save()
-
+    try:
+        instance.settings
+    except:
+        settings = UserSettings(user = instance)
+        settings.save()
 # Register classes that we want to be able to search
 # We will only be returning information about the Feed.
 watson.register(Topic)

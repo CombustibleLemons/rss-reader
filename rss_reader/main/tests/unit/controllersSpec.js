@@ -337,11 +337,13 @@ describe("Search controllers", function($rootScope) {
     });
 
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 
-            'pretend this is feed data');
+        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 'pretend this is feed data');
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
-        searchScope.addFeed();
+
+        //searchScope.addFeed();
+        searchScope.search();
+
         searchScope.$on("addedFeed", function (event, message) {
             // check message
             success = true;
@@ -412,4 +414,68 @@ describe("Feed controllers", function() {
         httpBackend.flush();
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
+
+describe("Speedtest controllers", function() {
+    beforeEach(module("main.controllers"));
+    var userScope, navScope, topicScope, httpBackend;
+
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend.whenGET('/speedtest/').respond(200, {"test": []});
+        userScope.refreshUser();
+        httpBackend.flush();
+
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          SpeedScope = navScope.$new();
+          var test = {"user":1, "id":12};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('SpeedtestController', {$scope: speedtestScope})
+        });
+
+        userScope.$digest();
+        navScope.$digest();
+        topicScope.$digest();
+    }));
+
+    afterEach(function() {
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
+    });
+
+
+    it("should test that the expand feed signal is properly sent", function() {
+        var success = false;
+        topicScope.$on("clickTest", function (event, message) {
+            if(message.identifier == 2) {
+                success = true;
+            }
+        });
+        userScope.expandTest(1);
+        expect(success).toBe(false);
+        userScope.expandFeed(2);
+        expect(success).toBe(true);
+    });
+    // This is all that can be done, as it exists since js stops running if you
+    // have a confirm box. Or so I've been told
+    // Actually if the user stuff moved, then maybe we should test setting
+    // the wpm variable here
+
 });
+/*
+    it("should fetch posts", function() {
+        var posts = scope.fetchPosts(validFeed);
+        expect(posts).toBe(true);
+        expect(scope.foofeed.post_set.length).toBeGreaterThan(0);
+        expect(scope.view.div.ul['posts']).toBeGreaterThan(0); // syntax???
+    });
+});
+*/
