@@ -24,7 +24,6 @@ from datetime import datetime
 import ast
 import traceback #prints errors
 
-# do we still need this ?
 class ListField(models.TextField):
     __metaclass__ = models.SubfieldBase
     description = "Stores a python list"
@@ -50,10 +49,6 @@ class ListField(models.TextField):
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
-
-# User class exists in Django, with email, username attributes; and
-# User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
-# user.topics.create(name="topicname")
 
 class UserSettings(models.Model):
 
@@ -467,6 +462,20 @@ class Atom(Post):
         # Save before we exit
         atom.save()
         return atom
+
+class PostsRead(models.Model):
+    posts = models.ManyToManyField(Post, related_name="+", blank=True)
+    feed = models.ForeignKey(Feed, related_name="+")
+    user = models.ForeignKey(User, related_name="readPosts")
+
+    def getUnreadPostsByNum(self, n):
+        return self.getUnreadPosts()[:n]
+
+    def getUnreadPosts(self):
+        feedPosts = self.feed.posts.all()
+        if self.posts.all():
+            return feedPosts.exclude(id__in=self.posts.all())
+        return feedPosts
 
 # Create 'Uncategorized' Topic to put stuff in on user creation
 @receiver(post_save, sender=User)
