@@ -1,5 +1,5 @@
 # REST Framework
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, mixins
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,8 +12,8 @@ from django.contrib.auth.models import User, UserManager
 from django.shortcuts import get_object_or_404
 
 # Models and Serializers
-from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer
-from .models import Topic, Feed, Post, UserSettings
+from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer, PostsReadSerializer
+from .models import Topic, Feed, Post, UserSettings, PostsRead
 
 from pprint import pprint
 
@@ -81,13 +81,18 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView)
             user = User.objects.get(username=request.user)
             data = request.data
             data.update({"user" : user.id})
-            serializer = self.get_serializer(data=data)
+            serializer = self.get_serializer(data=data, files=request.FILES)
 
-            # Continue as normal
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            if serializer.is_valid():
+                self.pre_save(serializer.object)
+                self.object = serializer.save(force_insert=True)
+                self.post_save(self.object, created=True)
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED,
+                                headers=headers)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         except IntegrityError as e:
             # Return 409 if the url already exist
             return Response(status=status.HTTP_409_CONFLICT)
@@ -156,15 +161,6 @@ class FeedPostList(generics.ListAPIView):
     def get_queryset(self):
         feed_id = self.kwargs.get("pk")
         queryset = super(FeedPostList, self).get_queryset()
-        return queryset.filter(feed__pk=feed_id)
-
-class UnreadFeedPostList(generics.ListAPIView):
-    model = Post
-    serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-    def get_queryset(self):
-        feed_id = self.kwargs.get("pk")
-        queryset = super(UnreadFeedPostList, self).get_queryset()
         return queryset.filter(feed__pk=feed_id)
 
 from django.db import IntegrityError
@@ -335,17 +331,48 @@ def search(request):
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+# Posts read are never destroyed, users will always have access to this data.
+class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
+    model = PostsRead
+    serializer_class = PostsReadSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    def create(self, request, *args, **kwargs):
+        # Add the user to the data
+        user = User.objects.get(username=request.user)
+        feedId = self.kwargs.get("pk")
+        data = request.DATA
+        data.update({"user" : user.id})
+        data.update({"feed" : feedId})
+        serializer = self.get_serializer(data=data, files=request.FILES)
+
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        feed_id = self.kwargs.get("pk")
+        queryset = super(PostsReadDetail, self).get_queryset()
+        return queryset.filter(feed__pk=feed_id)
+
+
 # Get unread posts
 @api_view(['GET'])
-def unreadPosts(request):
+def unread_posts(request, **kwargs):
     if request.method == "GET":
         # Create feed using input URL
-        feedID = request.DATA.get("feedID")
+        feedID = kwargs.pop("pk")
         try:
-            user = User.objects.get(username=request.DATA.get(request.user))
-            readPostObj = user.readFeedPosts.get(feed=feedID)
-            unreadPosts = readPostObj.unreadPosts()
-            return Response(unreadPosts, status=status.HTTP_200_OK)
+            user = User.objects.get(username=request.user)
+            readPostObj = user.readPosts.get(feed=feedID)
+            unreadPosts = readPostObj.getUnreadPosts()
+            serialized_list = [PostSerializer(x).data for x in unreadPosts]
+            return Response(serialized_list, status=status.HTTP_200_OK)
         except Exception as e:
             # Return bad request if we get a general exception
             return Response(e, status=status.HTTP_400_BAD_REQUEST)

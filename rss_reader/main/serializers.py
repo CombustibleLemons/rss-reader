@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import User, Topic, Feed, Post, UserSettings
+from .models import User, Topic, Feed, Post, UserSettings, PostsRead
 
 class UserSerializer(serializers.ModelSerializer):
     topics = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     settings = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'topics', )
+        fields = ('id', 'username', 'first_name', 'last_name', 'topics', 'readPosts' )
 
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,3 +33,9 @@ class PostSerializer(serializers.ModelSerializer):
         # fields = ("feedURL", "author", "category", "rights", "title",
         #     "subtitle", "content", "generator", "guid", "url", "contributor",
         #     "pubDate", "updated", "ackDate", )
+
+class PostsReadSerializer(serializers.ModelSerializer):
+    # posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = PostsRead
+        #fields = ('id', 'user', 'feed', 'posts' )
