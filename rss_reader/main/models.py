@@ -483,6 +483,6 @@ def createUncategorized(sender, instance, **kwargs):
         settings.save()
 # Register classes that we want to be able to search
 # We will only be returning information about the Feed.
-watson.register(Topic)
-watson.register(Feed)
-watson.register(Post)
+#watson.register(Topic)
+#watson.register(Feed)
+#watson.register(Post)
