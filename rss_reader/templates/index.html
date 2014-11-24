@@ -11,18 +11,16 @@
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
 				<!-- Search Section -->
-				<div ng-controller="SearchController">
-					<form id="searchForm">
-						<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
-						
-						<a href='/settings' class="settings-btn">
+				
+					
+						<a class="settings-btn" ng-click="expandSettings" style="float:right;">
 							<img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 						</a>
-						<a href='/search' class="settings-btn">
+						<a class="settings-btn" ng-click="expandSearch($index)" style="float:left;">
 							<img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
 						</a>
-					</form> 
-				</div>
+					<br>
+	
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
@@ -54,24 +52,45 @@
 				</div>
 			</div>
 			<div class="dropbox">
-				<ul>
-					<li class="dropdown">
-						<a href="/#" ng-click="predicate=''" class="dropdown-toggle" data-toggle="dropdown">Sort by<span class="caret"></span></a>
+				<span class="dropdown">
+						<a href="/#" ng-click="predicate=''" class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 							<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
 							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li> 
 							<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
 							<li><a href="">Length</a></li>
 							<li><a href="">Rating</a></li>
-							<li><a href="">Queue</a></li>
-							<li><a href="">Autodelete?</a></li>
+							<li><a href="">Unread</a></li>
 						</ul>
-					</li>
-				</ul>
+					</span>
+					<span class="dropdown">
+						<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">&nbsp;&nbsp;Settings<span class="caret"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href="" ng-click="expandedFeedSettingIndex == $index">Queue</a></li>
+							<li><a href="" ng-click="expandedFeedSettingIndex == $index">Autodelete</a></li> 
+						</ul>
+					</span>
+				
 			</div>
+
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
-				<div ng-controller="ResultsController" ng-show="activeView == 'searchResults'">
-					<div class="row-fluid post" ng-repeat="result in searchResults">
+
+				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
+							<div id="popupQueueWrapper">
+								<div id="popupQueue">
+										<form action="#" id="form" name="form">
+										<h3>Do you want to add this feed to the queue?</h3>
+										<hr>
+										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
+										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
+									
+								</div>
+							</div>
+					<form id="searchForm">
+							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" onsubmit="showQueuePopup() && search($index)">
+					</form>
+					
+					<div class="row-fluid post" ng-show="showingResults == $index" ng-repeat="result in searchResults">
 						<a id="feed{{result.id}}">
 							<div class="mini">
 								<h3>{{result.title}}</h3>
@@ -80,9 +99,11 @@
 						</a>
 					</div>
 				</div>
+			
+				
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-						<a ng-click="expandPost($index)">
+						<a ng-click="expandPost()">
 							<div class="mini" ng-hide="expandedPostIndex == $index">
 								<h3>{{post.title}}</h3>
 							</div>
@@ -95,6 +116,89 @@
 						</div>
 					</div>
 				</div>
+				
+
+				<div ng-controller="SettingsController" ng-show="activeView == 'settingsGroups'">
+					<div class="row-fluid post">
+						<a ng-model="clickedUserS" ng-init="clickedUserS=false">
+							<div class="mini">
+								<h3>User Settings</h3>
+							</div>
+						</a>
+						<div class="full" ng-if="clickedUserS">
+							<h3>User Settings</h3>
+							<form id="chancePasswordForm">
+								<input type="text" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
+							</form>
+						</div>
+						<a ng-model="clickedFeedS" ng-init="clickedFeedS=false">
+							<div class="mini">
+								<h3>Feed Settings</h3>
+							</div>
+						</a>
+						<div class="full" ng-if="clickedFeedS">
+							<h3>Feed Settings</h3>
+						</div>
+						<a ng-model="clickedReadingT" ng-init="clickedReadingT=false">
+							<div class="mini">
+								<h3>Reading Test</h3>
+							</div>
+						</a>
+						<div class="full" ng-if="clickedReadingT">
+							<h3>Reading Test</h3>
+								<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
+
+									<button onclick="getTime1()">Test 1</button> 
+									<!-- <button onclick="getTime2()">Test 2</button>
+									<button onclick="getTime3()">Test 3</button> -->
+
+									<p id = "time1"></p>
+									<!-- <p id = "time2"></p>
+									<p id = "time3"></p> -->
+
+									<script>
+									function getTime1() {
+									    var startTime = new Date();
+									    var x;
+									    var endTime, elapsed;
+									    var wordcount1 = 125;
+									    if (confirm("We are nothing. We are the dirt beneath your feet. And no one cared who I was until I put on the mask... \n\nWho we are does not matter. What matters is our plan. \n\nIf I pull this off, will you die? \n\nIt would be extremely painful. \n\nYou're a big guy - \n\nFor you. \n\nWas being caught part of your plan? \n\nOf course. Dr. Pavel refused our offer in favor of yours. We had to know what he told you about us. \n\nNothing! I said nothing! \n\nWhy not just ask him? \n\nHe would not have told us. \n\nYou have methods. \n\nHim, I need healthy. You present no such problem. \n\nWell congratulations, you got yourselves caught. What's the next step of your master plan? \n\nCrashing this plane...") == true) {
+									        endTime = new Date();
+									        elapsed = (endTime - startTime) / 1000;
+									        var wpm = Math.round(wordcount1 / elapsed * 60);
+									    }
+									    document.getElementById("time1").innerHTML = "You read at " + wpm + " words per minute";
+									}
+
+									// function getTime2() {
+									//     var startTime = new Date();
+									//     var x;
+									//     var endTime, elapsed;
+									//     if (confirm("Press a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button!") == true) {
+									//         endTime = new Date();
+									//         elapsed = endTime - startTime;
+									//     }
+									//     document.getElementById("time2").innerHTML = elapsed;
+									// }
+
+									// function getTime3() {
+									//     var startTime = new Date();
+									//     var x;
+									//     var endTime, elapsed;
+									//     if (confirm("Press a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button!") == true) {
+									//         endTime = new Date();
+									//         elapsed = endTime - startTime;
+									//     }
+									//     document.getElementById("time3").innerHTML = elapsed;
+									// }
+
+
+									</script>
+						</div>
+					</div>
+				</div>
+
+			</div>
 			</div>
 			<div id="popupWrapper">
 				<div id="popupTopic">
@@ -107,6 +211,10 @@
 					</form>
 				</div>
 			</div>
+
+
+
+			
 		</div>
 	</div>
 

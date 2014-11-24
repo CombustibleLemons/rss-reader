@@ -38,9 +38,9 @@ class SearchTests(APITestCase):
         for model in cls.registered_models:
             watson.unregister(model)
         # Register the test models.
-        watson.register(Feed)
-        watson.register(Post)
-        watson.register(Topic)
+        #watson.register(Feed)
+        #watson.register(Post)
+        #watson.register(Topic)
 
         # init user
         cls.user = User.objects.create_user(username = "Lucia", email = "pokey@penguin.com", password = "cumberbumberwumbers")
