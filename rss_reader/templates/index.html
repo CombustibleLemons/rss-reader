@@ -53,7 +53,7 @@
 			</div>
 			<div class="dropbox">
 				<span class="dropdown">
-						<a href="/#" ng-click="predicate=''" class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
+						<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 							<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
 							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li> 
@@ -66,8 +66,8 @@
 					<span class="dropdown">
 						<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">&nbsp;&nbsp;Settings<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
-							<li><a href="" ng-click="expandedFeedSettingIndex == $index">Queue</a></li>
-							<li><a href="" ng-click="expandedFeedSettingIndex == $index">Autodelete</a></li> 
+							<li><a href="" ng-click="expandSettings() && expandedSettingIndex == 2">Queue</a></li>
+							<li><a href="" ng-click="expandSettings() && expandedSettingIndex == 2">Autodelete</a></li> 
 						</ul>
 					</span>
 				
@@ -76,21 +76,38 @@
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
 
 				
+				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
+					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
+						<a ng-click="expandPost($index)">
+							<div class="mini" ng-hide="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedPostIndex == $index">
+							<h3>{{post.title}}</h3>
+							<p ng-bind-html="post.content" >{{post.content}}</p>
+							<p><a href="{{post.url}}" target="_blank">View source</a></p>
+							<p style="display:none">{{post.pub}}</p>
+						</div>
+					</div>
+				</div>
+
 				<div ng-controller="ResultsController" ng-show="activeView == 'settingsGroups'">
 					<div class="row-fluid post">
-						<a ng-click="expandSettingsPart1()">
+						<a ng-click="expandSettingsUser()">
 
 							<div class="mini" ng-hide="expandedSettingIndex == 1">
 								<h3>User Settings</h3>
 							</div>
 						</a>
 						<div class="full" ng-show="expandedSettingIndex == 1">
-							<h3>User Settings</h3>
+							<h3>User Settings</h3><br>
+							<h5>Enter a new password to change your current password:</h5>
 							<form id="chancePasswordForm">
 								<input type="text" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
 							</form>
 						</div>
-						<a ng-click="expandSettingsPart2()">
+						<a ng-click="expandSettingsFeed()">
 							<div class="mini" ng-hide="expandedSettingIndex == 2">
 								<h3>Feed Settings</h3>
 							</div>
@@ -98,7 +115,7 @@
 						<div class="full" ng-show="expandedSettingIndex == 2">
 							<h3>Feed Settings</h3>
 						</div>
-						<a ng-click="expandSettingsPart3()">
+						<a ng-click="expandSettingsReading()">
 							<div class="mini" ng-hide="expandedSettingIndex == 3">
 								<h3>Reading Test</h3>
 							</div>
@@ -108,12 +125,12 @@
 								<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
 
 									<button onclick="getTime1()">Test 1</button> 
-									<!-- <button onclick="getTime2()">Test 2</button>
-									<button onclick="getTime3()">Test 3</button> -->
+									<button onclick="getTime2()">Test 2</button>
+									<button onclick="getTime3()">Test 3</button>
 
 									<p id = "time1"></p>
-									<!-- <p id = "time2"></p>
-									<p id = "time3"></p> -->
+									<p id = "time2"></p>
+									<p id = "time3"></p>
 
 									<script>
 									function getTime1() {
@@ -129,27 +146,33 @@
 									    document.getElementById("time1").innerHTML = "You read at " + wpm + " words per minute";
 									}
 
-									// function getTime2() {
-									//     var startTime = new Date();
-									//     var x;
-									//     var endTime, elapsed;
-									//     if (confirm("Press a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button!") == true) {
-									//         endTime = new Date();
-									//         elapsed = endTime - startTime;
-									//     }
-									//     document.getElementById("time2").innerHTML = elapsed;
-									// }
+									function getTime2() {
+									    var startTime = new Date();
+									    var x;
+									    var endTime, elapsed;
+									    var wordcount2 = 61;
+									    if (confirm("In the moment when I truly understand my enemy, understand him well enough to defeat him, then in that very moment I also love him. I think it’s impossible to really understand somebody, what they want, what they believe, and not love them the way they love themselves. And then, in that very moment when I love them.... I destroy them.") == true) {
+									        endTime = new Date();
+									        elapsed = (endTime - startTime) / 1000;
+									        var wpm = Math.round(wordcount2 / elapsed * 60);
+									    }
+									    document.getElementById("time2").innerHTML = "You read at " + wpm + " words per minute";
+									}
 
-									// function getTime3() {
-									//     var startTime = new Date();
-									//     var x;
-									//     var endTime, elapsed;
-									//     if (confirm("Press a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button\nPress a button!") == true) {
-									//         endTime = new Date();
-									//         elapsed = endTime - startTime;
-									//     }
-									//     document.getElementById("time3").innerHTML = elapsed;
-									// }
+									function getTime3() {
+									    var startTime = new Date();
+									    var x;
+									    var endTime, elapsed;
+									    var wordcount3 = 119;
+									    if (confirm("Home was a condominium on the fifteenth floor of a high-rise, a sort of filing cabinet for widows and young professionals. The marketing brochure promised a foot of concrete floor, ceiling, and wall between me and any adjacent stereo or turn-up television... a foot of concrete was important when your next-door neighbour lets the battery on her hearing aid go and has to watch her game shows at full blast. Or when a volcanic blast of burning gas and debris that used to be your living-room set and personal effects blows out your floor to ceiling windows and sails down flaming to leave just your condo, only yours, a gutted charred concrete hole in the cliffside of the building. ") == true) {
+									        endTime = new Date();
+									        elapsed = (endTime - startTime) / 1000;
+									        var wpm = Math.round(wordcount3 / elapsed * 60);
+									    }
+									    document.getElementById("time3").innerHTML = "You read at " + wpm + " words per minute";
+									}
+
+									
 
 
 									</script>
@@ -158,21 +181,7 @@
 				</div>
 			
 				
-				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
-					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-						<a ng-click="expandPost()">
-							<div class="mini" ng-hide="expandedPostIndex == $index">
-								<h3>{{post.title}}</h3>
-							</div>
-						</a>
-						<div class="full" ng-show="expandedPostIndex == $index">
-							<h3>{{post.title}}</h3>
-							<p ng-bind-html="post.content" >{{post.content}}</p>
-							<p><a href="{{post.url}}" target="_blank">View source</a></p>
-							<p style="display:none">{{post.pub}}</p>
-						</div>
-					</div>
-				</div>
+				
 				
 
 				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">

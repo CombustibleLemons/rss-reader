@@ -233,7 +233,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.refreshTopic();
     $scope.fetchFeeds();
   })
-
+/*
 .controller('SettingsController', function($scope, $http, $root, FeedService) {
       $scope.expandedSettingIndex = -1;
 
@@ -254,52 +254,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandSettingsPart3 = function() {
         $scope.expandedSettingIndex = 3;
       };
-  })
-
-  .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
-    $scope.expandedPostIndex = -1;
-    
-
-    $rootScope.$on("clickFeed", function (event, message) {
-        $scope.feedID = message.identifier;
-        $scope.fetchPosts();
-        $scope.expandedPostIndex = -1;
-    });
-
-    $scope.fetchPosts = function() {
-      $http.get('feeds/' + $scope.feedID + "/posts").success(function(data) {
-
-        // This for loop removes unnecessary line breaks
-        // TESTED WITH NYT US FEED
-        // TODO: TEST THIS WITH OTHER FEEDS
-        for(var i=0; i<data.length; i++){
-          //create dummy div
-          var tmp = document.createElement('div');
-
-          // console.log(data[i])
-
-          // Populate dummy div with post content
-          $(tmp).html(data[i].content);
-
-          // Get list of line breaks
-          var breakList = $(tmp).find("br");
-
-          // If more than 5 line breaks
-          if (breakList.length >= 5) {
-            //remove all of them
-            $(tmp).find("br").remove();
-          }
-          // Put cleaned post content back into data array
-          data[i].content = $(tmp).html();
-        }
-        $scope.posts = data;
-      });
-    }; 
-    $scope.expandPost = function(index) {
-      // Expand the post
-      $scope.expandedPostIndex = index;
-    };
-  })
+  })*/
 
   .controller('ResultsController', function($scope, $http, $rootScope) { //scope is an angular template, from base.html, index.html
     $scope.searchResults = [];
@@ -356,27 +311,74 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-$scope.expandedSettingIndex = -1;
+      $scope.expandedSettingIndex = -1;
 
       $rootScope.$on("clickSetting", function (event, message) {
               $scope.expandedPostIndex = -1;
           });
 
       
-      $scope.expandSettingsPart1 = function() {
+      $scope.expandSettingsUser = function() {
       // Expand the post
       $scope.expandedSettingIndex = 1;
     };
 
-      $scope.expandSettingsPart2 = function() {
+      $scope.expandSettingsFeed = function() {
         $scope.expandedSettingIndex = 2;
       };
 
-      $scope.expandSettingsPart3 = function() {
+      $scope.expandSettingsReading = function() {
         $scope.expandedSettingIndex = 3;
       };
     
   })
+
+  .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+    $scope.expandedPostIndex = -1;
+    
+
+    $rootScope.$on("clickFeed", function (event, message) {
+        $scope.feedID = message.identifier;
+        $scope.fetchPosts();
+        $scope.expandedPostIndex = -1;
+    });
+
+    $scope.fetchPosts = function() {
+      $http.get('feeds/' + $scope.feedID + "/posts").success(function(data) {
+
+        // This for loop removes unnecessary line breaks
+        // TESTED WITH NYT US FEED
+        // TODO: TEST THIS WITH OTHER FEEDS
+        for(var i=0; i<data.length; i++){
+          //create dummy div
+          var tmp = document.createElement('div');
+
+          // console.log(data[i])
+
+          // Populate dummy div with post content
+          $(tmp).html(data[i].content);
+
+          // Get list of line breaks
+          var breakList = $(tmp).find("br");
+
+          // If more than 5 line breaks
+          if (breakList.length >= 5) {
+            //remove all of them
+            $(tmp).find("br").remove();
+          }
+          // Put cleaned post content back into data array
+          data[i].content = $(tmp).html();
+        }
+        $scope.posts = data;
+      });
+    }; 
+    $scope.expandPost = function(index) {
+      // Expand the post
+      $scope.expandedPostIndex = index;
+    };
+  })
+
+
 
 
 
