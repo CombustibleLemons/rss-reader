@@ -75,7 +75,7 @@ angular.module('main.controllers', ['main.services'])
     });
     
     $rootScope.$on("clickSettings", function (event, message) {
-        $scope.activeView = 'settingsGroups';
+        $scope.activeView = "settingsGroups";
 
     });
     
@@ -174,27 +174,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.fetchTopics();
   })
 
- .controller('SettingsController', function($scope, $http, $root, FeedService) {
-      $scope.expandedSettingIndex = -1;
-
-      $rootScope.$on("clickSetting", function (event, message) {
-              $scope.expandedPostIndex = -1;
-          });
-
-      
-      $scope.expandSettingsPart1 = function() {
-      // Expand the post
-      $scope.expandedSettingIndex = 1;
-    };
-
-      $scope.expandSettingsPart2 = function() {
-        $scope.expandedSettingIndex = 2;
-      };
-
-      $scope.expandSettingsPart3 = function() {
-        $scope.expandedSettingIndex = 3;
-      };
-  })
+ 
 
 
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
@@ -252,6 +232,28 @@ angular.module('main.controllers', ['main.services'])
     };
     $scope.refreshTopic();
     $scope.fetchFeeds();
+  })
+
+.controller('SettingsController', function($scope, $http, $root, FeedService) {
+      $scope.expandedSettingIndex = -1;
+
+      $rootScope.$on("clickSetting", function (event, message) {
+              $scope.expandedPostIndex = -1;
+          });
+
+      
+      $scope.expandSettingsPart1 = function() {
+      // Expand the post
+      $scope.expandedSettingIndex = 1;
+    };
+
+      $scope.expandSettingsPart2 = function() {
+        $scope.expandedSettingIndex = 2;
+      };
+
+      $scope.expandSettingsPart3 = function() {
+        $scope.expandedSettingIndex = 3;
+      };
   })
 
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
@@ -354,8 +356,29 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
+$scope.expandedSettingIndex = -1;
+
+      $rootScope.$on("clickSetting", function (event, message) {
+              $scope.expandedPostIndex = -1;
+          });
+
+      
+      $scope.expandSettingsPart1 = function() {
+      // Expand the post
+      $scope.expandedSettingIndex = 1;
+    };
+
+      $scope.expandSettingsPart2 = function() {
+        $scope.expandedSettingIndex = 2;
+      };
+
+      $scope.expandSettingsPart3 = function() {
+        $scope.expandedSettingIndex = 3;
+      };
     
   })
+
+
 
  
 //*/

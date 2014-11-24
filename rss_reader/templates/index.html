@@ -13,10 +13,10 @@
 				<!-- Search Section -->
 				
 					
-						<a class="settings-btn" ng-click="expandSettings" style="float:right;">
+						<a class="settings-btn" ng-click="expandSettings()" style="float:right;">
 							<img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 						</a>
-						<a class="settings-btn" ng-click="expandSearch($index)" style="float:left;">
+						<a class="search-btn" ng-click="expandSearch($index)" style="float:left;">
 							<img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
 						</a>
 					<br>
@@ -75,76 +75,35 @@
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
 
-				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
-							<div id="popupQueueWrapper">
-								<div id="popupQueue">
-										<form action="#" id="form" name="form">
-										<h3>Do you want to add this feed to the queue?</h3>
-										<hr>
-										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
-										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
-									
-								</div>
-							</div>
-					<form id="searchForm">
-							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" onsubmit="showQueuePopup() && search($index)">
-					</form>
-					
-					<div class="row-fluid post" ng-show="showingResults == $index" ng-repeat="result in searchResults">
-						<a id="feed{{result.id}}">
-							<div class="mini">
-								<h3>{{result.title}}</h3>
-								<p>{{result.description}}</p>
-							</div>
-						</a>
-					</div>
-				</div>
-			
 				
-				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
-					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-						<a ng-click="expandPost()">
-							<div class="mini" ng-hide="expandedPostIndex == $index">
-								<h3>{{post.title}}</h3>
-							</div>
-						</a>
-						<div class="full" ng-show="expandedPostIndex == $index">
-							<h3>{{post.title}}</h3>
-							<p ng-bind-html="post.content" >{{post.content}}</p>
-							<p><a href="{{post.url}}" target="_blank">View source</a></p>
-							<p style="display:none">{{post.pub}}</p>
-						</div>
-					</div>
-				</div>
-				
-
-				<div ng-controller="SettingsController" ng-show="activeView == 'settingsGroups'">
+				<div ng-controller="ResultsController" ng-show="activeView == 'settingsGroups'">
 					<div class="row-fluid post">
-						<a ng-model="clickedUserS" ng-init="clickedUserS=false">
-							<div class="mini">
+						<a ng-click="expandSettingsPart1()">
+
+							<div class="mini" ng-hide="expandedSettingIndex == 1">
 								<h3>User Settings</h3>
 							</div>
 						</a>
-						<div class="full" ng-if="clickedUserS">
+						<div class="full" ng-show="expandedSettingIndex == 1">
 							<h3>User Settings</h3>
 							<form id="chancePasswordForm">
 								<input type="text" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
 							</form>
 						</div>
-						<a ng-model="clickedFeedS" ng-init="clickedFeedS=false">
-							<div class="mini">
+						<a ng-click="expandSettingsPart2()">
+							<div class="mini" ng-hide="expandedSettingIndex == 2">
 								<h3>Feed Settings</h3>
 							</div>
 						</a>
-						<div class="full" ng-if="clickedFeedS">
+						<div class="full" ng-show="expandedSettingIndex == 2">
 							<h3>Feed Settings</h3>
 						</div>
-						<a ng-model="clickedReadingT" ng-init="clickedReadingT=false">
-							<div class="mini">
+						<a ng-click="expandSettingsPart3()">
+							<div class="mini" ng-hide="expandedSettingIndex == 3">
 								<h3>Reading Test</h3>
 							</div>
 						</a>
-						<div class="full" ng-if="clickedReadingT">
+						<div class="full" ng-show="expandedSettingIndex == 3">
 							<h3>Reading Test</h3>
 								<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
 
@@ -197,6 +156,51 @@
 						</div>
 					</div>
 				</div>
+			
+				
+				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
+					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
+						<a ng-click="expandPost()">
+							<div class="mini" ng-hide="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedPostIndex == $index">
+							<h3>{{post.title}}</h3>
+							<p ng-bind-html="post.content" >{{post.content}}</p>
+							<p><a href="{{post.url}}" target="_blank">View source</a></p>
+							<p style="display:none">{{post.pub}}</p>
+						</div>
+					</div>
+				</div>
+				
+
+				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
+							<div id="popupQueueWrapper">
+								<div id="popupQueue">
+										<form action="#" id="form" name="form">
+										<h3>Do you want to add this feed to the queue?</h3>
+										<hr>
+										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
+										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
+									
+								</div>
+							</div>
+					<form id="searchForm">
+							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" onsubmit="showQueuePopup() && search($index)">
+					</form>
+					
+					<div class="row-fluid post" ng-show="showingResults == $index" ng-repeat="result in searchResults">
+						<a id="feed{{result.id}}">
+							<div class="mini">
+								<h3>{{result.title}}</h3>
+								<p>{{result.description}}</p>
+							</div>
+						</a>
+					</div>
+				</div>
+
+
 
 			</div>
 			</div>
