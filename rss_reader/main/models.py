@@ -478,6 +478,7 @@ class PostsRead(models.Model):
         return feedPosts
 
 # Create 'Uncategorized' Topic to put stuff in on user creation
+# Create Settings for each User
 @receiver(post_save, sender=User)
 def createUncategorized(sender, instance, **kwargs):
     try:
