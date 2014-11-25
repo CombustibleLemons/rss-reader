@@ -285,6 +285,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.search = function(index) { // formerly passed url as an argument
+      console.log($scope.query);
       APIService.search($scope.query).then(function(data){
         // How do we figure out where to put it if this creates a new feed?
         $rootScope.$broadcast("showSearchResults", {
@@ -304,6 +305,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.showQueuePopup = function() {
       $("#popupQueueWrapper").show();
       $("#dimmer").show();
+      return true;
     };
 
     $scope.hidePopup = function() {

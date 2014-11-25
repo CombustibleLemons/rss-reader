@@ -220,7 +220,7 @@
 								</div>
 							</div>
 					<form id="searchForm">
-							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && showQueuePopup() && search($index)"/><!--<onsubmit="-->
+							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && (showQueuePopup() && search($index))"/><!--<onsubmit="-->
 					</form>
 
 					<div class="row-fluid post" ng-show="showingResults == $index" ng-repeat="result in searchResults">

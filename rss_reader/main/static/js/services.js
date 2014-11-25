@@ -91,8 +91,8 @@ angular.module('main.services', []).
           var promise = $http.put('/topics/' + topic["id"], topic);
           return promise;
         },
-        search : function(params) {
-          var promise = $http.get('/search/', {"params" : params});
+        search : function(searchString) {
+          var promise = $http.get('/search/', {"params" : {"searchString" : searchString}});
           return promise;
         }
     };
