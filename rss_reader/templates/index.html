@@ -11,8 +11,20 @@
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
 				<!-- Search Section -->
-				
-					
+
+        <!--<div ng-controller="ResultsController">
+          <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
+
+            <a href='/settings' class="settings-btn">
+              <img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
+            </a>
+            <a href='/search' class="settings-btn">
+              <img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
+            </a>
+          </form>
+        </div> -->
+
 						<a class="settings-btn" ng-click="expandSettings()" style="float:right;">
 							<img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 						</a>
@@ -20,7 +32,7 @@
 							<img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
 						</a>
 					<br>
-	
+
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
@@ -32,11 +44,11 @@
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 			      			</a>
 			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
-			      			
+
 			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
-			      			
+
 			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
-			      			
+
 			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 
 							<div ng-controller="TopicController"><br><br>
@@ -56,7 +68,7 @@
 						<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 							<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
-							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li> 
+							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li>
 							<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
 							<li><a href="">Length</a></li>
 							<li><a href="">Rating</a></li>
@@ -67,15 +79,15 @@
 						<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">&nbsp;&nbsp;Settings<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Queue</a></li>
-							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li> 
+							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li>
 						</ul>
 					</span>
-				
+
 			</div>
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
 
-				
+
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
 					<span ng-model = "unread" ng-init="unread=true">
@@ -136,7 +148,7 @@
 							<h3>Reading Test</h3>
 								<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
 
-									<button onclick="getTime1()">Test 1</button> 
+									<button onclick="getTime1()">Test 1</button>
 									<button onclick="getTime2()">Test 2</button>
 									<button onclick="getTime3()">Test 3</button>
 
@@ -184,17 +196,17 @@
 									    document.getElementById("time3").innerHTML = "You read at " + wpm + " words per minute";
 									}
 
-									
+
 
 
 									</script>
 						</div>
 					</div>
 				</div>
-			
-				
-				
-				
+
+
+
+
 
 				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
 							<div id="popupQueueWrapper">
@@ -204,13 +216,13 @@
 										<hr>
 										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
 										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
-									
+
 								</div>
 							</div>
 					<form id="searchForm">
-							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" onsubmit="showQueuePopup() && search($index)">
+							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && showQueuePopup() && search($index)"/><!--<onsubmit="-->
 					</form>
-					
+
 					<div class="row-fluid post" ng-show="showingResults == $index" ng-repeat="result in searchResults">
 						<a id="feed{{result.id}}">
 							<div class="mini">
@@ -239,7 +251,7 @@
 
 
 
-			
+
 		</div>
 	</div>
 
