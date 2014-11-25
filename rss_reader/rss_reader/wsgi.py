@@ -13,11 +13,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rss_reader.settings")
 # DB update loop
 import threading
 import time
-from main.models import Feed
+from main.models import Feed, PostsRead
 def feedUpdater(feed):
     feed.update()
 
-def postsReadUpdate(postsRead):
+def postsReadUpdater(postsRead):
     postsRead.update()
 
 def worker():
@@ -30,7 +30,7 @@ def worker():
         print "Updating PostsRead"
         for postsRead in PostsRead.objects.all():
             t = threading.Thread(target=postsReadUpdater, args=(postsRead,))
-            t.start()    
+            t.start()
         print "PostsRead Updated"
         # Update every 5 minutes
         time.sleep(300)
