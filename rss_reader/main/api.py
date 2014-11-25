@@ -66,20 +66,11 @@ class TopicList(generics.ListCreateAPIView):
     serializer_class = TopicSerializer
     permission_classes = (permissions.IsAuthenticated,)
     # Filter out Topics from other users that are not the requester
-    def get_queryset(self):
-        userID = User.objects.get(username=self.request.user)
-        queryset = super(TopicList, self).get_queryset()
-        return queryset.filter(user=userID)
-
-class TopicDetail(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
-    model = Topic
-    serializer_class = TopicSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     def create(self, request, *args, **kwargs):
         try:
             # Add the user to the data
             user = User.objects.get(username=request.user)
-            data = request.data
+            data = request.DATA
             data.update({"user" : user.id})
             serializer = self.get_serializer(data=data, files=request.FILES)
 
@@ -100,6 +91,17 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView)
             print e
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        print self.request.user
+        userID = User.objects.get(username=self.request.user)
+        queryset = super(TopicList, self).get_queryset()
+        return queryset.filter(user=userID)
+
+class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
+    model = Topic
+    serializer_class = TopicSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
