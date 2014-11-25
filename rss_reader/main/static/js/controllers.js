@@ -73,12 +73,12 @@ angular.module('main.controllers', ['main.services'])
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.activeView = "feedResults";
     });
-    
+
     $rootScope.$on("clickSettings", function (event, message) {
         $scope.activeView = "settingsGroups";
 
     });
-    
+
     $rootScope.$on("search", function (event, message) {
       $scope.activeView = "searchResult";
     })
@@ -166,7 +166,7 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {
-       
+
         });
     };
 
@@ -174,7 +174,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.fetchTopics();
   })
 
- 
+
 
 
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
@@ -241,7 +241,7 @@ angular.module('main.controllers', ['main.services'])
               $scope.expandedPostIndex = -1;
           });
 
-      
+
       $scope.expandSettingsPart1 = function() {
       // Expand the post
       $scope.expandedSettingIndex = 1;
@@ -285,20 +285,20 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.search = function(index) { // formerly passed url as an argument
-      $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
-          // How do we figure out where to put it if this creates a new feed?
-          $rootScope.$broadcast("showSearchResults", {
-                searchResults: data,
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-        }).error(function(data, status, headers, config){
+      APIService.search($scope.query).then(function(data){
+        // How do we figure out where to put it if this creates a new feed?
+        $rootScope.$broadcast("showSearchResults", {
+              searchResults: data,
+        });
+        if ($("#searchForm").find(".error")) {
+          $("#searchForm").find(".error").remove();
+        }
+      }).error(function(data, status, headers, config){
           if (status == 409) {
             $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
           }
-        });
-        $scope.showingResults = index;
+      });
+      $scope.showingResults = index;
     };
 
     $scope.showQueuePopup = function() {
@@ -317,7 +317,7 @@ angular.module('main.controllers', ['main.services'])
               $scope.expandedPostIndex = -1;
           });
 
-      
+
       $scope.expandSettingsUser = function() {
       // Expand the post
       $scope.expandedSettingIndex = 1;
@@ -330,12 +330,12 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandSettingsReading = function() {
         $scope.expandedSettingIndex = 3;
       };
-    
+
   })
 
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
-    
+
 
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
@@ -371,7 +371,7 @@ angular.module('main.controllers', ['main.services'])
         }
         $scope.posts = data;
       });
-    }; 
+    };
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
@@ -382,5 +382,5 @@ angular.module('main.controllers', ['main.services'])
 
 
 
- 
+
 //*/
