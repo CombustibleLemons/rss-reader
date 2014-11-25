@@ -272,7 +272,6 @@ class Feed(models.Model):
                     elif res["version"] == "atom10":
                         Atom.createByEntry(entry, self.URL, self)
                 except IntegrityError as e:
-                    print "Integrity Error"
                     # We've found a duplicate, but its fine if we've found a duplicate
                     pass
 
