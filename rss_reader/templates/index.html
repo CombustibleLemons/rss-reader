@@ -66,8 +66,8 @@
 					<span class="dropdown">
 						<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">&nbsp;&nbsp;Settings<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
-							<li><a href="" ng-click="expandSettings() && expandedSettingIndex == 2">Queue</a></li>
-							<li><a href="" ng-click="expandSettings() && expandedSettingIndex == 2">Autodelete</a></li> 
+							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Queue</a></li>
+							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li> 
 						</ul>
 					</span>
 				
@@ -78,24 +78,36 @@
 				
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-						<a ng-click="expandPost($index)">
+					<span ng-model = "unread" ng-init="unread=true">
+						<a ng-click="expandPost($index); unread=false">
+								<div class="onoffswitch">
+								    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+								    <label class="onoffswitch-label" for="myonoffswitch">
+								        <span class="onoffswitch-inner">
+								            <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
+								            <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+								        </span>
+								    </label>
+								</div>
 							<div class="mini" ng-hide="expandedPostIndex == $index">
 								<h3>{{post.title}}</h3>
 							</div>
 						</a>
 						<div class="full" ng-show="expandedPostIndex == $index">
-							<h3>{{post.title}}</h3>
+							<h3>{{post.title}}<span ng-if="unread==true">Read</span></h3>
 							<p ng-bind-html="post.content" >{{post.content}}</p>
 							<p><a href="{{post.url}}" target="_blank">View source</a></p>
 							<p style="display:none">{{post.pub}}</p>
+							<p ng-if="unread==false">I am read</p>
 						</div>
+						</span>
+
 					</div>
 				</div>
 
 				<div ng-controller="ResultsController" ng-show="activeView == 'settingsGroups'">
 					<div class="row-fluid post">
 						<a ng-click="expandSettingsUser()">
-
 							<div class="mini" ng-hide="expandedSettingIndex == 1">
 								<h3>User Settings</h3>
 							</div>
