@@ -297,15 +297,55 @@ def topic_rename(request):
             # Return bad request if we get a general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+import re
+def search_helper(searchString):
+    results = list()
+    if "http" in searchString:
+        r = re.compile("(http://)(([a-zA-Z0-9\-]*\.)*)(\w*(:[0-9]*/|/)?)([\w\/]*)(.*)")
+        ret = r.match(searchString)
+        #print "matched"
+        #print ret.group(2)
+        words = ret.group(2).split(".")
+        #print words
+        g6 = ret.group(6).split("/")
+        #print g6
+        words.extend(g6)
+        #print words
+    else:
+        words = searchString.split()
+    #print words
+    for word in words:
+        results.extend(watson.search(word))
+    results = sorted(results, key = lambda SearchEntry : SearchEntry.watson_rank)
+    #print results
+    return list(set(results))
+
+#from http://stackoverflow.com/questions/7973933/removing-duplicate-elements-from-a-python-list-containing-unhashable-elements-wh
+from bisect import bisect_left, insort
+def remove_repeats(seq):
+    result = []
+    seen = []
+    for x in seq:
+        i = bisect_left(seen, x)
+        if i == len(seen) or seen[i] != x:
+            seen.insert(i, x)
+            result.append(x)
+    return result
+
 # Search
 import watson
 @api_view(['GET', 'POST'])
 def search(request):
+    #print "entered search"
     if request.method == "POST":
         # Create feed using input URL
+        #print "getting search string"
         searchString = request.DATA.get("searchString")
+        #print searchString
         try:
-            results = watson.search(searchString)
+            #print "entering helper"
+            results = search_helper(searchString)
+            #print results
             # Results can contain Feeds, Topics, Posts, you name it
             # Get at the feed for each post and then uniq the data
             feeds = list()
@@ -313,18 +353,23 @@ def search(request):
             for result in results:
                 obj = result.object
                 if type(obj) == Topic:
-                    topicFeeds = map(lambda x: FeedSerializer(x).data, obj.feeds)
+                    #print "got topic"
+                    topicFeeds = map(lambda x: FeedSerializer(x).data, obj.feeds.all())
                     feeds.extend(topicFeeds)
                 elif type(obj) == Post:
+                    #print "got post"
                     fs = FeedSerializer(obj.feed)
                     feeds.append(fs.data)
                 elif type(obj) == Feed:
+                    #print "got feed"
                     fs = FeedSerializer(obj)
                     feeds.append(fs.data)
                 else:
                     # We do nothing if the search object is a User
                     pass
             # TODO: Verify feed relevancy is in the right order
+            feeds = remove_repeats(feeds)
+            #print feeds
             return Response(feeds, status=status.HTTP_200_OK)
         except Exception as e:
             print e

@@ -492,6 +492,14 @@ def createUncategorized(sender, instance, **kwargs):
         settings.save()
 # Register classes that we want to be able to search
 # We will only be returning information about the Feed.
-watson.register(Topic)
+# from https://github.com/etianen/django-watson/wiki/registering-models
 watson.register(Feed)
-watson.register(Post)
+watson.register(Topic)
+#watson.register(Post.objects.all(), fields = ("title", "subtitle", "author", "content",))
+
+from django.db.models.signals import post_save
+def update_post_index(instance, **kwargs):
+    for post in instance.posts.all():
+        watson.default_search_engine.update_obj_index(post)
+
+post_save.connect(update_post_index, Feed)
