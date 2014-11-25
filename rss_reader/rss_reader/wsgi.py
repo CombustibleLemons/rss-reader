@@ -17,6 +17,9 @@ from main.models import Feed
 def feedUpdater(feed):
     feed.update()
 
+def postsReadUpdate(postsRead):
+    postsRead.update()
+
 def worker():
     while True:
         print "Updating Feeds"
@@ -24,6 +27,11 @@ def worker():
             t = threading.Thread(target=feedUpdater, args=(feed,))
             t.start()
         print "Feeds updated"
+        print "Updating PostsRead"
+        for postsRead in PostsRead.objects.all():
+            t = threading.Thread(target=postsReadUpdater, args=(postsRead,))
+            t.start()    
+        print "PostsRead Updated"
         # Update every 5 minutes
         time.sleep(300)
 
