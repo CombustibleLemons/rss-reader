@@ -140,7 +140,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
             self.post_save(self.object, created=False)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ValidationError as e:
-            return Response({"error" : e.message}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error" : e.message}, status=status.HTTP_409_CONFLICT)
 
 class TopicFeedList(generics.ListAPIView):
     model = Feed
