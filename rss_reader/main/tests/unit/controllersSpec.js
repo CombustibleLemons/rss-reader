@@ -301,7 +301,6 @@ describe("Topic controllers", function() {
         httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
         topicScope.removeFeedFromTopic(12);
         httpBackend.flush();
-        dump(topicScope.feeds);
         expect(topicScope.feeds).toEqual([]);
     });
 
@@ -360,17 +359,18 @@ describe("Search controllers", function($rootScope) {
     });
 
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 'pretend this is feed data');
+        httpBackend.expectPOST('/feeds/create/', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, {'id':42});
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
 
-        httpBackend.expectPUT('/topics/12', {"name":"Uncategorized", "id":12, "user":1, "feeds":[null]}).respond(200, '');
+        httpBackend.expectPUT('/topics/12', {"name":"Uncategorized", "id":12, "user":1, "feeds":[42]}).respond(200, '');
         searchScope.addFeed();
         searchScope.$on("addedFeed", function (event, message) {
             success = true;
         });
         httpBackend.flush();
         expect(success).toBe(true);
+        expect(topicScope.topic).toEqual({"name":'Uncategorized',"id":12,"user":1,"feeds":[42]});
     });
 });
 
@@ -422,17 +422,18 @@ describe("Feed controllers", function() {
 
     it("should fetch posts", function() {
         // feed has no posts
-        httpBackend.expectGET('feeds/12/posts').respond(200, []);
+        httpBackend.expectGET('/feeds/12/posts/').respond(200, []);
         topicScope.expandFeed(12);
         httpBackend.flush();
         expect(feedScope.posts).toEqual([]);
         var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
-        httpBackend.expectGET('feeds/12/posts').respond(200, fake_post_array);
+        httpBackend.expectGET('/feeds/12/posts/').respond(200, fake_post_array);
         topicScope.expandFeed(12);
         httpBackend.flush();
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
 });
+
 /*
 describe("Speedtest controllers", function() {
     beforeEach(module("main.controllers"));
@@ -488,13 +489,5 @@ describe("Speedtest controllers", function() {
     // Actually if the user stuff moved, then maybe we should test setting
     // the wpm variable here
 
-});
-/*
-    it("should fetch posts", function() {
-        var posts = scope.fetchPosts(validFeed);
-        expect(posts).toBe(true);
-        expect(scope.foofeed.post_set.length).toBeGreaterThan(0);
-        expect(scope.view.div.ul['posts']).toBeGreaterThan(0); // syntax???
-    });
 });
 */
