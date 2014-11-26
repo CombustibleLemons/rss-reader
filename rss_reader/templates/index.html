@@ -11,18 +11,28 @@
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
 				<!-- Search Section -->
-				<div ng-controller="SearchController">
-					<form id="searchForm">
-						<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
-						
-						<a href='/settings' class="settings-btn">
+
+        <!--<div ng-controller="ResultsController">
+          <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
+
+            <a href='/settings' class="settings-btn">
+              <img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
+            </a>
+            <a href='/search' class="settings-btn">
+              <img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
+            </a>
+          </form>
+        </div> -->
+
+						<a class="settings-btn" ng-click="expandSettings()" style="float:right;">
 							<img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 						</a>
-						<a href='/search' class="settings-btn">
+						<a class="search-btn" ng-click="expandSearch($index)" style="float:left;">
 							<img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
 						</a>
-					</form> 
-				</div>
+					<br>
+
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
@@ -34,11 +44,11 @@
 		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 			      			</a>
 			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
-			      			
+
 			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
-			      			
+
 			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
-			      			
+
 			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 
 							<div ng-controller="TopicController"><br><br>
@@ -54,24 +64,166 @@
 				</div>
 			</div>
 			<div class="dropbox">
-				<ul>
-					<li class="dropdown">
-						<a href="/#" ng-click="predicate=''" class="dropdown-toggle" data-toggle="dropdown">Sort by<span class="caret"></span></a>
+				<span class="dropdown">
+						<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 							<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
-							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li> 
+							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li>
 							<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
 							<li><a href="">Length</a></li>
 							<li><a href="">Rating</a></li>
-							<li><a href="">Queue</a></li>
-							<li><a href="">Autodelete?</a></li>
+							<li><a href="">Unread</a></li>
 						</ul>
-					</li>
-				</ul>
+					</span>
+					<span class="dropdown">
+						<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">&nbsp;&nbsp;Settings<span class="caret"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Queue</a></li>
+							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li>
+						</ul>
+					</span>
+
 			</div>
+
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
-				<div ng-controller="ResultsController" ng-show="activeView == 'searchResults'">
-					<div class="row-fluid post" ng-repeat="result in searchResults">
+
+
+				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
+					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
+					<span ng-model = "unread" ng-init="unread=true">
+						<a ng-click="expandPost($index); unread=false">
+								<div class="onoffswitch">
+								    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+								    <label class="onoffswitch-label" for="myonoffswitch">
+								        <span class="onoffswitch-inner">
+								            <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
+								            <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+								        </span>
+								    </label>
+								</div>
+							<div class="mini" ng-hide="expandedPostIndex == $index">
+								<h3>{{post.title}}</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedPostIndex == $index">
+							<h3>{{post.title}}<span ng-if="unread==true">Read</span></h3>
+							<p ng-bind-html="post.content" >{{post.content}}</p>
+							<p><a href="{{post.url}}" target="_blank">View source</a></p>
+							<p style="display:none">{{post.pub}}</p>
+							<p ng-if="unread==false">I am read</p>
+						</div>
+						</span>
+
+					</div>
+				</div>
+
+				<div ng-controller="ResultsController" ng-show="activeView == 'settingsGroups'">
+					<div class="row-fluid post">
+						<a ng-click="expandSettingsUser()">
+							<div class="mini" ng-hide="expandedSettingIndex == 1">
+								<h3>User Settings</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedSettingIndex == 1">
+							<h3>User Settings</h3><br>
+							<h5>Enter a new password to change your current password:</h5>
+							<form id="chancePasswordForm">
+								<input type="text" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
+							</form>
+						</div>
+						<a ng-click="expandSettingsFeed()">
+							<div class="mini" ng-hide="expandedSettingIndex == 2">
+								<h3>Feed Settings</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedSettingIndex == 2">
+							<h3>Feed Settings</h3>
+						</div>
+						<a ng-click="expandSettingsReading()">
+							<div class="mini" ng-hide="expandedSettingIndex == 3">
+								<h3>Reading Test</h3>
+							</div>
+						</a>
+						<div class="full" ng-show="expandedSettingIndex == 3">
+							<h3>Reading Test</h3>
+								<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
+
+									<button onclick="getTime1()">Test 1</button>
+									<button onclick="getTime2()">Test 2</button>
+									<button onclick="getTime3()">Test 3</button>
+
+									<p id = "time1"></p>
+									<p id = "time2"></p>
+									<p id = "time3"></p>
+
+									<script>
+									function getTime1() {
+									    var startTime = new Date();
+									    var x;
+									    var endTime, elapsed;
+									    var wordcount1 = 125;
+									    if (confirm("We are nothing. We are the dirt beneath your feet. And no one cared who I was until I put on the mask... \n\nWho we are does not matter. What matters is our plan. \n\nIf I pull this off, will you die? \n\nIt would be extremely painful. \n\nYou're a big guy - \n\nFor you. \n\nWas being caught part of your plan? \n\nOf course. Dr. Pavel refused our offer in favor of yours. We had to know what he told you about us. \n\nNothing! I said nothing! \n\nWhy not just ask him? \n\nHe would not have told us. \n\nYou have methods. \n\nHim, I need healthy. You present no such problem. \n\nWell congratulations, you got yourselves caught. What's the next step of your master plan? \n\nCrashing this plane...") == true) {
+									        endTime = new Date();
+									        elapsed = (endTime - startTime) / 1000;
+									        var wpm = Math.round(wordcount1 / elapsed * 60);
+									    }
+									    document.getElementById("time1").innerHTML = "You read at " + wpm + " words per minute";
+									}
+
+									function getTime2() {
+									    var startTime = new Date();
+									    var x;
+									    var endTime, elapsed;
+									    var wordcount2 = 61;
+									    if (confirm("In the moment when I truly understand my enemy, understand him well enough to defeat him, then in that very moment I also love him. I think it’s impossible to really understand somebody, what they want, what they believe, and not love them the way they love themselves. And then, in that very moment when I love them.... I destroy them.") == true) {
+									        endTime = new Date();
+									        elapsed = (endTime - startTime) / 1000;
+									        var wpm = Math.round(wordcount2 / elapsed * 60);
+									    }
+									    document.getElementById("time2").innerHTML = "You read at " + wpm + " words per minute";
+									}
+
+									function getTime3() {
+									    var startTime = new Date();
+									    var x;
+									    var endTime, elapsed;
+									    var wordcount3 = 119;
+									    if (confirm("Home was a condominium on the fifteenth floor of a high-rise, a sort of filing cabinet for widows and young professionals. The marketing brochure promised a foot of concrete floor, ceiling, and wall between me and any adjacent stereo or turn-up television... a foot of concrete was important when your next-door neighbour lets the battery on her hearing aid go and has to watch her game shows at full blast. Or when a volcanic blast of burning gas and debris that used to be your living-room set and personal effects blows out your floor to ceiling windows and sails down flaming to leave just your condo, only yours, a gutted charred concrete hole in the cliffside of the building. ") == true) {
+									        endTime = new Date();
+									        elapsed = (endTime - startTime) / 1000;
+									        var wpm = Math.round(wordcount3 / elapsed * 60);
+									    }
+									    document.getElementById("time3").innerHTML = "You read at " + wpm + " words per minute";
+									}
+
+
+
+
+									</script>
+						</div>
+					</div>
+				</div>
+
+
+
+
+
+				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
+							<div id="popupQueueWrapper">
+								<div id="popupQueue">
+										<form action="#" id="form" name="form">
+										<h3>Do you want to add this feed to the queue?</h3>
+										<hr>
+										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
+										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
+
+								</div>
+							</div>
+					<form id="searchForm">
+							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && (showQueuePopup() && search($index))"/><!--<onsubmit="-->
+					</form>
+
+					<div class="row-fluid post" ng-show="showingResults == $index" ng-repeat="result in searchResults">
 						<a id="feed{{result.id}}">
 							<div class="mini">
 								<h3>{{result.title}}</h3>
@@ -80,21 +232,10 @@
 						</a>
 					</div>
 				</div>
-				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
-					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-						<a ng-click="expandPost($index)">
-							<div class="mini" ng-hide="expandedPostIndex == $index">
-								<h3>{{post.title}}</h3>
-							</div>
-						</a>
-						<div class="full" ng-show="expandedPostIndex == $index">
-							<h3>{{post.title}}</h3>
-							<p ng-bind-html="post.content" >{{post.content}}</p>
-							<p><a href="{{post.url}}" target="_blank">View source</a></p>
-							<p style="display:none">{{post.pub}}</p>
-						</div>
-					</div>
-				</div>
+
+
+
+			</div>
 			</div>
 			<div id="popupWrapper">
 				<div id="popupTopic">
@@ -107,6 +248,10 @@
 					</form>
 				</div>
 			</div>
+
+
+
+
 		</div>
 	</div>
 

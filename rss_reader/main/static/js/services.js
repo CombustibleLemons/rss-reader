@@ -90,6 +90,10 @@ angular.module('main.services', []).
         updateTopic : function(topic) {
           var promise = $http.put('/topics/' + topic["id"], topic);
           return promise;
+        },
+        search : function(searchString) {
+          var promise = $http.get('/search/', {"params" : {"searchString" : searchString}});
+          return promise;
         }
     };
   })
