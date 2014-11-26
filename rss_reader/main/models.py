@@ -284,7 +284,7 @@ class QueueFeed(Feed):
 
 class Topic(models.Model):
     name = models.TextField()
-    feeds = models.ManyToManyField(Feed, related_name = '+')
+    _feeds = models.ManyToManyField(Feed, related_name = '+')
     user = models.ForeignKey(User, null=True, related_name="topics")
 
     def __unicode__(self):
@@ -310,18 +310,23 @@ class Topic(models.Model):
     # - addFeed (feed : Feed)
     # - will take advantage of ManytoMany relationships
     # - must check that Feed is not already owned in Topic or in User
-    def addFeed(self, feed):
+    def get_feeds(self):
+        return self._feeds
+
+    def set_feeds(self, feed):
+        # import pdb; pdb.set_trace()
         # Remember to exclude self from the checking!
         for t in self.user.topics.all().exclude(id=self.id):
             # Check if the feed is in any other topic
             if t.feeds.filter(id=feed.id).exists():
                 raise FeedExistsInTopic
         # Check if feed is in this Topic's feed list
-        if self.feeds.all().filter(id=feed.id).exists():
+        if self._feeds.all().filter(id=feed.id).exists():
             # Fail to add silently, it's okay if a feed is already in a topic and we add it
             return
-        self.feeds.add(feed)
+        self._feeds.add(feed)
         self.save()
+    feeds = property(get_feeds, set_feeds)
 
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
