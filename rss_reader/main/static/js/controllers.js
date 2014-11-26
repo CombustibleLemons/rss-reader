@@ -335,7 +335,16 @@ angular.module('main.controllers', ['main.services'])
         }).error(function(data, status, headers, config){
           //if user already subscribed
           if (status == 409) {
-            $("#topicsForm").append("<div class='error'>You are already subscribed to that feed</div>");
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><span class='sr-only'>Error:</span>You are already subscribed to that feed.</div>");
+            $scope.hidePopup();            
+
+            // fade out the alert
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                  $(this).remove();
+              });
+            }, 3500);
           }
         });
     };
