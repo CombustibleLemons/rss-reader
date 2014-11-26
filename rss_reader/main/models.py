@@ -1,7 +1,7 @@
 # Django
 
 ## Models
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User, UserManager
 import watson
 
@@ -19,6 +19,9 @@ from django import forms
 import feedparser
 import time
 from datetime import datetime
+from django.utils import timezone
+import timedelta
+import math
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
@@ -279,38 +282,75 @@ class QueueFeed(Feed):
     #QueueFeeds, unlike other Feeds, are unique to a User
     user = models.ForeignKey(User, null=True, related_name="queues")
     feed = models.ForeignKey(Feed, null=True, related_name = "feed")
-    qposts = list()
 
+    #update data
     postNum = models.IntegerField()
     interval = timedelta.fields.TimedeltaField()
-    initTime = models.DateTimeField()
+    lastUpdate = models.DateTimeField()
 
-    def create(self, feed, posts, interval):
-        # interval constraints?
-        feed.save()
+    #posts accessible to user
+    qPosts = list()
+    #static attribute - if static is True, the number of unread posts will not exceed postNum
+    static = False
+
+    def create(self, feed, postnum, interval):
+        # interval constraints - at smallest, will be hours
+        if not(feed.pk):
+            feed.save()
+
         q = QueueFeed()
+
         q.feed = feed
-        q.postNum = posts
+        posts = feed.posts.all().order_by('pubDate')
+        #print posts
+        q.qPosts = posts[:postnum]
+        #print q.qPosts
+
+        q.postNum = postnum
         q.interval = interval
-        q.initTime = datetime.datetime.now()
+        q.lastUpdate = timezone.now()
         return q
 
     def getPosts(self):
-        f = self.feeds
-        t = datetime.datetime.now() - self.initTime
-        n = math.ciel(t/self.qTime) * self.postNum
+        #returns list of posts that should be added to qPosts
 
-        #no posts
-        if (not(f.posts.all().exists()) or (n==0)):
-            return list(f.posts.none())
+        user = self.user
+        qfeed = self.feed
+        qPosts = self.qPosts
 
-        #entire list of available posts returned
-        ascending_posts = self.posts.all().order_by('pubDate')
-        return list(ascending_posts[:(n-1)])
+        #calculate timePassed, convert interval from timedelta to hours
+        timePassed = (datetime.datetime.now() - self.lastUpdate).total_seconds() / 3600
+        print "time passed is %d" % (timePassed,)
+        currInt = self.interval.total_seconds() / 3600
+        print "interval is %d" % (currInt,)
+
+        #no posts added if not enough time has passed
+        if (timePassed<=currInt):
+            return list()
+
+        #interval time has passed
+
+        #get entire list of available posts
+        ascending_posts = qfeed.posts.all().order_by('pubDate')
+
+        #length of list of current qPosts; how far along Feed's Postlist the QueueFeed has gone
+        qPostsLen = len(self.qPosts)
+
+        if (self.static):
+            #return list of postNum posts after last Post grabbed
+            return list(ascending_posts[qPostsLen:(qPostsLen+self.postNum)])
+        else:
+            #get number of unread posts in qPosts
+            unreadNum = len(qPosts.exclude(id__in=user.readPosts.posts.all()))
+            #determine number of Posts that need to be added so that there are postNum unread Posts
+            diff = self.postNum - unreadNum
+            truncPostNum = diff if (diff < 0) else 0
+            return list(ascending_posts[qPostsLen:(qPostsLen+truncPostNum)])
 
     def update(self):
-        q.feed.update()
-        self.qposts = self.getPosts()
+        with transaction.atomic():
+            self.feed.update()
+        self.qPosts = qPosts.extend(self.getPosts())
 
 class Topic(models.Model):
     name = models.TextField()
@@ -545,6 +585,7 @@ def createUncategorized(sender, instance, **kwargs):
 # from https://github.com/etianen/django-watson/wiki/registering-models
 watson.register(Feed)
 watson.register(Topic)
+watson.register(Post)
 #watson.register(Post.objects.all(), fields = ("title", "subtitle", "author", "content",))
 
 from django.db.models.signals import post_save
