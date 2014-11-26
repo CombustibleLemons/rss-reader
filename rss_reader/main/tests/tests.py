@@ -2,7 +2,8 @@
 from django.test import TestCase
 
 # Model classes
-from main.models import UserSettings, Feed, QueueFeed, Post, RSS, Atom, Topic
+from main.models import *
+#UserSettings, Feed, QueueFeed, Post, RSS, Atom, Topic
 
 # Built in users
 from django.contrib.auth.models import User, UserManager
@@ -286,33 +287,53 @@ class FeedTestCase(TestCase):
         feed = Feed()
         self.assertEqual(feed.getSize(), 0)
 
-class CreateQueueFeedTestCase(TestCase):
-    def setUp(self):
-        self.f1 = Feed.createByURL("http://xkcd.com/rss.xml")
-        self.postNum = 2
-        self.interval = '2 days'
-
-    def test_create_queue(self):
-        q = QueueFeed.create(QueueFeed(), self.f1, self.postNum, self.interval)
-        q.save()
-        self.assertEqual(q.postNum, self.postNum)
-        self.assertEqual(q.interval, datetime.timedelta(days = 2))
-        self.assertEqual(q.feed, self.f1)
-        fPosts = self.f1.posts.all().order_by('pubDate')
-        self.assertItemsEqual(q.qPosts, [fPosts[0], fPosts[1]])
-        q.delete()
-
-    def test_long_postNum(self):
-        """Should return as many posts as possible if postNum is larger than Feed Postlist length"""
-        pNum = len(self.f1.posts.all()) + 1
-        q = QueueFeed.create(QueueFeed(), self.f1, pNum, self.interval)
-        q.save()
-        self.assertEqual(q.postNum, pNum)
-        self.assertEqual(q.interval, datetime.timedelta(days = 2))
-        self.assertEqual(q.feed, self.f1)
-        fPosts = self.f1.posts.all().order_by('pubDate')
-        self.assertItemsEqual(q.qPosts, fPosts)
-        q.delete()
+# class CreateQueueFeedTestCase(TestCase):
+#     def setUp(self):
+#         self.f1 = Feed.createByURL("http://xkcd.com/rss.xml")
+#         self.postNum = 2
+#         self.interval = '2 days'
+#
+#     def tearDown(self):
+#         for p in self.f1.posts.all():
+#             p.delete()
+#         self.f1.delete()
+#
+#     def test_create_queue(self):
+#         """Creates Queue with correct number of posts, correct posts, correct interval and postNum"""
+#         #make feed
+#         q = QueueFeed.create(self.f1, self.postNum, self.interval)
+#         q.save()
+#
+#         #test postNum, interval, feed
+#         self.assertEqual(q.postNum, self.postNum)
+#         self.assertEqual(q.interval, datetime.timedelta(days = 2))
+#         self.assertEqual(q.feed, self.f1)
+#
+#         #test qPosts
+#         fPosts = self.f1.posts.all().order_by('pubDate')
+#         self.assertItemsEqual(idsToPosts(q.qPosts), [fPosts[0], fPosts[1]])
+#
+#         q.delete()
+#
+#     def test_long_postNum(self):
+#         """Should return as many posts as possible if postNum is larger than Feed Postlist length"""
+#         #postNum 5 greater than size of Feed postlist
+#         pNum = len(self.f1.posts.all()) + 5
+#
+#         #make QueueFeed with pNum as postNum
+#         q = QueueFeed.create(self.f1, pNum, self.interval)
+#         q.save()
+#
+#         #check accuracy of postNum, interval, feed
+#         self.assertEqual(q.postNum, pNum)
+#         self.assertEqual(q.interval, datetime.timedelta(days = 2))
+#         self.assertEqual(q.feed, self.f1)
+#
+#         #check that qPosts contains all posts in Feed
+#         fPosts = self.f1.posts.all().order_by('pubDate')
+#         self.assertItemsEqual(idsToPosts(q.qPosts), fPosts)
+#
+#         q.delete()
 
 class QueueFeedTestCase(TestCase):
     def setUp(self):
@@ -328,11 +349,13 @@ class QueueFeedTestCase(TestCase):
         #create QueueFeed
         self.postNum = 3
         self.interval = '1 hour'
-        self.q1 = QueueFeed.create(QueueFeed(), self.f1, self.postNum, self.interval)
+        self.q1 = QueueFeed.create(self.f1, self.postNum, self.interval)
         self.q1.save()
 
         #in the interest of testing, set lastUpdated
         self.q1.lastUpdated = timezone.now() - datetime.timedelta(hours = 1)
+        print self.q1.lastUpdated
+        print timezone.now()
 
     def tearDown(self):
         self.user.delete()
@@ -341,9 +364,9 @@ class QueueFeedTestCase(TestCase):
 
     def test_update(self):
         """update should update the qPosts accurately"""
-        self.assertItemsEqual(self.q1.qPosts, self.fPosts[:3])
+        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.fPosts[:3])
         self.q1.update()
-        self.assertItemsEqual(self.q1.qPosts, fPosts[:6])
+        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.fPosts[:6])
 
 class PostTestCase(TestCase):
     def setUp(self):

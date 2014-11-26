@@ -288,38 +288,42 @@ class QueueFeed(Feed):
     interval = timedelta.fields.TimedeltaField()
     lastUpdate = models.DateTimeField()
 
-    #posts accessible to user
+    #list of posts accessible to user, by post.id (posts shoudl be unique to Feeds, cannot be added to QueueFeed directly)
     qPosts = list()
+
     #static attribute - if static is True, the number of unread posts will not exceed postNum
     static = False
 
-    def create(self, feed, postnum, interval):
+    @classmethod
+    def create(cls, feed, postnum, interval):
         # interval constraints - at smallest, will be hours
         if not(feed.pk):
             feed.save()
 
-        q = QueueFeed()
+        q = cls.objects.create(postNum = postnum, interval = interval, lastUpdate = timezone.now())
 
         q.feed = feed
-        posts = feed.posts.all().order_by('pubDate')
+        fposts = feed.posts.all().order_by('pubDate')
         #print posts
-        q.qPosts = posts[:postnum]
+        for p in fposts[:postnum]:
+            #print p.id
+            q.qPosts.append(p.id)
         #print q.qPosts
-
-        q.postNum = postnum
-        q.interval = interval
-        q.lastUpdate = timezone.now()
         return q
 
     def getPosts(self):
-        #returns list of posts that should be added to qPosts
+        #returns list of Posts that's ids should be added to qPosts
 
         user = self.user
         qfeed = self.feed
         qPosts = self.qPosts
 
         #calculate timePassed, convert interval from timedelta to hours
-        timePassed = (datetime.datetime.now() - self.lastUpdate).total_seconds() / 3600
+        print "getPosts says:"
+        print timezone.now()
+        print self.lastUpdated
+        print (timezone.now() - self.lastUpdate).seconds()
+        timePassed = (timezone.now() - self.lastUpdate).seconds() / 3600
         print "time passed is %d" % (timePassed,)
         currInt = self.interval.total_seconds() / 3600
         print "interval is %d" % (currInt,)
@@ -348,9 +352,19 @@ class QueueFeed(Feed):
             return list(ascending_posts[qPostsLen:(qPostsLen+truncPostNum)])
 
     def update(self):
-        with transaction.atomic():
-            self.feed.update()
-        self.qPosts = qPosts.extend(self.getPosts())
+        # with transaction.atomic():
+        #     self.feed.update()
+        for p in self.getPosts():
+            self.qPosts.extend(p.id)
+
+#debugging, takes qPosts and returns list of Posts
+def idsToPosts(qlist):
+    #print qlist
+    ret_list = list()
+    for qp_id in qlist:
+        post = Post.objects.get(pk=qp_id)
+        ret_list.append(post)
+    return ret_list
 
 class Topic(models.Model):
     name = models.TextField()
