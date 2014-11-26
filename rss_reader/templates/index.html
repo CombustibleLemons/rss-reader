@@ -103,15 +103,15 @@
 				</div>
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-					<span ng-model="post.unread" ng-init="post.unread=true">
+					<span>
 						<div style="width:100%">
-                  <a ng-click="expandPost($index); unread=false">
+                  <a ng-click="expandPost($index); post.unread=false; updatePostsRead()">
                   <div class="mini" ng-hide="expandedPostIndex == $index" >
                     <h3 class="post-header">{{post.title}}</h3>
                   </div>
                   </a>
                 <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" ng-click="post.unread = !post.unread; updatePostsRead()" class="onoffswitch-checkbox" id="readunread{{$index}}" checked>
+                    <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead()" class="onoffswitch-checkbox" id="readunread{{$index}}">
                     <label class="onoffswitch-label" for="readunread{{$index}}">
                         <span class="onoffswitch-inner">
                             <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>

@@ -261,7 +261,6 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.fetchPosts = function() {
       APIService.fetchPosts($scope.feedID).success(function(data) {
-
         // This for loop removes unnecessary line breaks
         // TESTED WITH NYT US FEED
         // TODO: TEST THIS WITH OTHER FEEDS
@@ -286,13 +285,24 @@ angular.module('main.controllers', ['main.services'])
           data[i].content = $(tmp).html();
         }
         $scope.posts = data;
+        /* Grab the PostsRead object from the server */
+        APIService.getPostsRead($scope.feedID).success(function(data){
+          console.log(data);
+          $scope.postsRead = data;
+          angular.forEach($scope.posts, function(post){
+            if (data["posts"].indexOf(post.id) == -1){
+              post.unread = true;
+            }
+            else{
+              post.unread = false;
+            }
+          });
+          /* Update the 'unread' field of the posts */
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
       });
-      APIService.getPostsRead($scope.feedID).success(function(data){
-        console.log(data);
-        $scope.postsRead = data;
-      }).error(function(data, status, headers, config){
-        console.log(status);
-      });
+
     };
     $scope.expandPost = function(index) {
       // Expand the post
