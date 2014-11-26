@@ -30,11 +30,6 @@ angular.module('main.controllers', ['main.services'])
         return deferred.promise;
       }
     };
-
-    $scope.expandSettingsPart = function(index) {
-      // Expand the post
-      $scope.expandedSettingIndex = index;
-    };
   })
   .controller('NavigationController', function($scope, $rootScope, $http, $timeout, APIService) {
     $scope.topics = [];
@@ -74,14 +69,6 @@ angular.module('main.controllers', ['main.services'])
         $scope.activeView = "feedResults";
     });
 
-    $rootScope.$on("clickSettings", function (event, message) {
-        $scope.activeView = "settingsGroups";
-
-    });
-
-    $rootScope.$on("search", function (event, message) {
-      $scope.activeView = "searchResult";
-    })
 
     // End Event handlers
 
@@ -156,27 +143,45 @@ angular.module('main.controllers', ['main.services'])
     };
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index;
-    }
-//searchID does not currently exist, need to fix
-    $scope.expandSearch = function(index) {
-      $rootScope.$broadcast("search", {
-            identifier: index
-        });
-    };
-
-    $scope.expandSettings = function() {
-      $rootScope.$broadcast("clickSettings", {
-
-        });
     };
 
     //End Methods
     $scope.fetchTopics();
   })
+  .controller('SearchController', function($scope, $rootScope, $http) {
+    $scope.addFeed = function() { // formerly passed url as an argument
+      $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
+          // How do we figure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("addedFeed", {
+                feed: data,
+                topicName: "Uncategorized"
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
+        });
+    };
 
-
-
-
+    $scope.search = function() { // formerly passed url as an argument
+      $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
+          // How do we figure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("showSearchResults", {
+                searchResults: data,
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
+          }
+        });
+    };
+  })
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
     $rootScope.$on("addedFeed", function (event, message) {
@@ -233,111 +238,9 @@ angular.module('main.controllers', ['main.services'])
     $scope.refreshTopic();
     $scope.fetchFeeds();
   })
-/*
-.controller('SettingsController', function($scope, $http, $root, FeedService) {
-      $scope.expandedSettingIndex = -1;
-
-      $rootScope.$on("clickSetting", function (event, message) {
-              $scope.expandedPostIndex = -1;
-          });
-
-
-      $scope.expandSettingsPart1 = function() {
-      // Expand the post
-      $scope.expandedSettingIndex = 1;
-    };
-
-      $scope.expandSettingsPart2 = function() {
-        $scope.expandedSettingIndex = 2;
-      };
-
-      $scope.expandSettingsPart3 = function() {
-        $scope.expandedSettingIndex = 3;
-      };
-  })*/
-
-  .controller('ResultsController', function($scope, $http, $rootScope) { //scope is an angular template, from base.html, index.html
-    $scope.searchResults = [];
-
-    $rootScope.$on("showSearchResults", function (event, message) {
-        $scope.searchResults = message.searchResults;
-    });
-
-    $rootScope.$on("search", function (event, message) {
-    });
-
-
-    $scope.addFeed = function() { // formerly passed url as an argument
-      $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
-          // How do we figure out where to put it if this creates a new feed?
-          $rootScope.$broadcast("addedFeed", {
-                feed: data,
-                topicName: "Uncategorized"
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-        }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
-          }
-        });
-    };
-
-    $scope.search = function(index) { // formerly passed url as an argument
-      console.log($scope.query);
-      APIService.search($scope.query).then(function(data){
-        // How do we figure out where to put it if this creates a new feed?
-        $rootScope.$broadcast("showSearchResults", {
-              searchResults: data,
-        });
-        if ($("#searchForm").find(".error")) {
-          $("#searchForm").find(".error").remove();
-        }
-      }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
-          }
-      });
-      $scope.showingResults = index;
-    };
-
-    $scope.showQueuePopup = function() {
-      $("#popupQueueWrapper").show();
-      $("#dimmer").show();
-      return true;
-    };
-
-    $scope.hidePopup = function() {
-      $("#popupQueueWrapper").hide();
-      $("#dimmer").hide();
-    };
-
-      $scope.expandedSettingIndex = -1;
-
-      $rootScope.$on("clickSetting", function (event, message) {
-              $scope.expandedPostIndex = -1;
-          });
-
-
-      $scope.expandSettingsUser = function() {
-      // Expand the post
-      $scope.expandedSettingIndex = 1;
-    };
-
-      $scope.expandSettingsFeed = function() {
-        $scope.expandedSettingIndex = 2;
-      };
-
-      $scope.expandSettingsReading = function() {
-        $scope.expandedSettingIndex = 3;
-      };
-
-  })
-
   .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
-
+    
 
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
@@ -373,16 +276,38 @@ angular.module('main.controllers', ['main.services'])
         }
         $scope.posts = data;
       });
-    };
+    }; 
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
     };
   })
 
+  .controller('ResultsController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+    $scope.searchResults = [];
+    $scope.numResults = 0;
+    $rootScope.$on("showSearchResults", function (event, message) {
+        console.log(message.searchResults);
+        $scope.searchResults = message.searchResults;
+        $scope.numResults = message.searchResults.length;
+    });
 
-
-
-
-
+    $scope.addFeed = function(feedURL) { // formerly passed url as an argument
+      $http.post('/feeds/create', {"url" : feedURL}).success(function(data) {
+          // How do we figure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("addedFeed", {
+                feed: data,
+                topicName: "Uncategorized"
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
+        });
+    };
+    
+  })
 //*/
