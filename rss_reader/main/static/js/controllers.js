@@ -192,7 +192,6 @@ angular.module('main.controllers', ['main.services'])
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
     $rootScope.$on("addedFeed", function (event, message) {
-        console.log(message);
         if ($scope.topic.name == message.topicName){
           $scope.addFeedToTopic(message.feed);
         }
@@ -200,9 +199,10 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addFeedToTopic = function(feed) {
       // Add the feed to the local side of things
-      $scope.topic["feeds"].push(feed.id);
-      $scope.feeds.push(feed);
-      APIService.updateTopic($scope.topic).error(function(data, status, headers, config) {
+      if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
+        $scope.topic["feeds"].push(feed.id);
+        $scope.feeds.push(feed);
+        APIService.updateTopic($scope.topic).error(function(data, status, headers, config) {
           // Log the error
           console.log(status);
           // Remove the feed
@@ -211,6 +211,9 @@ angular.module('main.controllers', ['main.services'])
           // Try again
           $scope.addFeedToTopic(feed);
         });
+      } else {
+        $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+      }
     };
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
@@ -301,9 +304,9 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
-    $scope.showTopicOptions = function(feedURL) { 
-      $scope.topics = ($scope.$parent.topics);
-      $scope.showPopup(feedURL);
+    $scope.showTopicOptions = function(feedID) { 
+      $scope.topics = $scope.$parent.topics;
+      $scope.showPopup(feedID);
     };
 
     $scope.showPopup = function(feedURL) {
@@ -317,22 +320,23 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeed = function() { // formerly passed url as an argument
-      var feedURL = $(".feedURL").attr("value");
-      var topic = $('input[name=selectedTopic]:checked', '#topicsForm').val()
-      APIService.addFeedByUrl(feedURL).success(function(data) {
-          $rootScope.$broadcast("addedFeed", {
-              feed: data,
-              topicName: topic
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $scope.hidePopup();
+    $scope.addFeedObject = function() { // formerly passed url as an argument
+      var feedID = $(".feedID").attr("value");
+      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
+      topic.feeds.push(feedID);
+      APIService.updateTopic(topic).success(function(data) {
+          console.log(data);
+          // $rootScope.$broadcast("addedFeed", {
+          //     feed: data,
+          //     topicName: topic
+          // });
+          // if ($("#searchForm").find(".error")) {
+          //   $("#searchForm").find(".error").remove();
+          // }
+          // $scope.hidePopup();
+          // $("#topicsForm")[0].reset();
         }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
-          }
+          console.log(data);
         });
     };
     
