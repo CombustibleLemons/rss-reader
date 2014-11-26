@@ -318,16 +318,39 @@ describe("Topic controllers", function() {
         expect(success).toBe(true);
     });
 });
-/* Commented to facilitate me fixing other tests - Devon
+
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
-    var searchScope, httpBackend;
+    var httpBackend, userScope, navScope, topicScope, searchScope;
 
-    beforeEach(inject(function($controller, $rootScope, $httpBackend) {
-        searchScope = $rootScope.$new();
-        $controller('SearchController', {$scope: searchScope});
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
         httpBackend = $httpBackend;
 
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        userScope.refreshUser();
+        httpBackend.flush();
+
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          topicScope = navScope.$new();
+          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope});
+          
+          searchScope = $rootScope.$new();
+          $controller('SearchController', {$scope: searchScope});
+        });
+
+        userScope.$digest();
+        navScope.$digest();
+        topicScope.$digest();
         searchScope.$digest();
     }));
 
@@ -337,25 +360,20 @@ describe("Search controllers", function($rootScope) {
     });
 
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 'pretend this is feed data');
+        httpBackend.expectPOST('/feeds/', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 'pretend this is feed data');
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
 
-        //searchScope.addFeed();
-        searchScope.search();
-
+        httpBackend.expectPUT('/topics/12', {"name":"Uncategorized", "id":12, "user":1, "feeds":[null]}).respond(200, '');
+        searchScope.addFeed();
         searchScope.$on("addedFeed", function (event, message) {
-            // check message
             success = true;
         });
         httpBackend.flush();
         expect(success).toBe(true);
-        // var newFeedSet = scope.user.topic_set['uncategorized']; // yet again
-        // expect(originalFeedSet.length).toEqual(newFeedSet.length + 1);
-        // expect feed to be in uncategorized topic, uncertain of syntax at this time
     });
 });
-*/
+
 describe("Feed controllers", function() {
     beforeEach(module("main.controllers"));
     var userScope, navScope, topicScope, feedScope, httpBackend;

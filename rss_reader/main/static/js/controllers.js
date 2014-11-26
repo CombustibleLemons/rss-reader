@@ -95,8 +95,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.addTopic = function(topicName) {
-      var promise = APIService.addTopic(topicName);
-      promise.success(function(data) {
+      APIService.addTopic(topicName).success(function(data) {
         $rootScope.$broadcast("addedTopic", {
           topic: data,
         });
@@ -148,9 +147,9 @@ angular.module('main.controllers', ['main.services'])
     //End Methods
     $scope.fetchTopics();
   })
-  .controller('SearchController', function($scope, $rootScope, $http) {
+  .controller('SearchController', function($scope, $rootScope, $http, APIService) {
     $scope.addFeed = function() { // formerly passed url as an argument
-      $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
+      APIService.addFeed($scope.query).success(function(data) {
           // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
                 feed: data,
@@ -167,8 +166,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.search = function() { // formerly passed url as an argument
-      $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
-          // How do we figure out where to put it if this creates a new feed?
+      APIService.search($scope.query).success(function(data) {
           $rootScope.$broadcast("showSearchResults", {
                 searchResults: data,
           });
@@ -186,6 +184,7 @@ angular.module('main.controllers', ['main.services'])
     // Dispatch addFeed message to a Topic
     $rootScope.$on("addedFeed", function (event, message) {
         if ($scope.topic.name == message.topicName){
+          dump(message.feed);
           $scope.addFeedToTopic(message.feed);
         }
     });
