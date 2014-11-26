@@ -89,14 +89,6 @@ body {
 .settings-btn {
 	max-height: 10%;
 	max-width: 10%;
-	float: right;
-	padding-left: 5px;
-}
-
-.settings-btn {
-	max-height: 10%;
-	max-width: 10%;
-	float: right;
 	padding-left: 5px;
 }
 .navbar-default .navbar-nav>.login-btn>a {
@@ -150,8 +142,7 @@ body {
 	color:#f00;
 }
 .dropbox {
-	float:right;
-	padding-right: 28px;
+	padding-left: 40px;
 	padding-top: 10px;
 	}
 
@@ -164,7 +155,7 @@ body {
 
 #searchInput {
 	height: 30%;
-	width: 100%;
+	width: 90%;
 }
 
 #popupQueueWrapper{
