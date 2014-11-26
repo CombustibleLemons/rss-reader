@@ -276,7 +276,41 @@ class Feed(models.Model):
                     pass
 
 class QueueFeed(Feed):
-    pass
+    #QueueFeeds, unlike other Feeds, are unique to a User
+    user = models.ForeignKey(User, null=True, related_name="queues")
+    feed = models.ForeignKey(Feed, null=True, related_name = "feed")
+    qposts = list()
+
+    postNum = models.IntegerField()
+    interval = timedelta.fields.TimedeltaField()
+    initTime = models.DateTimeField()
+
+    def create(self, feed, posts, interval):
+        # interval constraints?
+        feed.save()
+        q = QueueFeed()
+        q.feed = feed
+        q.postNum = posts
+        q.interval = interval
+        q.initTime = datetime.datetime.now()
+        return q
+
+    def getPosts(self):
+        f = self.feeds
+        t = datetime.datetime.now() - self.initTime
+        n = math.ciel(t/self.qTime) * self.postNum
+
+        #no posts
+        if (not(f.posts.all().exists()) or (n==0)):
+            return list(f.posts.none())
+
+        #entire list of available posts returned
+        ascending_posts = self.posts.all().order_by('pubDate')
+        return list(ascending_posts[:(n-1)])
+
+    def update(self):
+        q.feed.update()
+        self.qposts = self.getPosts()
 
 class Topic(models.Model):
     name = models.TextField()
@@ -494,7 +528,6 @@ class PostsRead(models.Model):
         return feedPosts
 
 # Create 'Uncategorized' Topic to put stuff in on user creation
-# Create Settings for each User
 @receiver(post_save, sender=User)
 def createUncategorized(sender, instance, **kwargs):
     try:
