@@ -69,7 +69,9 @@ angular.module('main.controllers', ['main.services'])
         $scope.activeView = "feedResults";
     });
 
-
+    $rootScope.$on("clickSettings", function (event, message) {   
+        $scope.activeView = "settingsGroups";       
+    });
     // End Event handlers
 
     // Attributes
@@ -141,6 +143,7 @@ angular.module('main.controllers', ['main.services'])
       });
       //$timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
     };
+   
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index;
     };
@@ -149,6 +152,11 @@ angular.module('main.controllers', ['main.services'])
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, $http) {
+    $scope.expandSettings = function() {   
+      $rootScope.$broadcast("clickSettings", {   
+   
+        });    
+     };
     $scope.addFeed = function() { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
           // How do we figure out where to put it if this creates a new feed?
@@ -332,5 +340,23 @@ angular.module('main.controllers', ['main.services'])
         });
     };
     
+    $scope.expandedSettingIndex = -1;
+    $rootScope.$on("clickSettings", function (event, message) {   
+            $scope.expandedPostIndex = -1;   
+        });    
+   
+   
+      $scope.expandSettingsUser = function() {   
+      // Expand the post   
+      $scope.expandedSettingIndex = 1;   
+    };   
+   
+      $scope.expandSettingsFeed = function() {   
+        $scope.expandedSettingIndex = 2;   
+      };   
+   
+      $scope.expandSettingsReading = function() {    
+        $scope.expandedSettingIndex = 3;   
+      };
   })
 //*/

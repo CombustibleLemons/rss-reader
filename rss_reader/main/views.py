@@ -72,9 +72,6 @@ def about(request):
 	template = "about.html"
 	return render(request, template, {})
 
-def settings(request):
-	template = "settings.html"
-	return render(request, template, {})
 
 def search(request):
 	template = "search.html"
