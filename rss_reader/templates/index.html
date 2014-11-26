@@ -18,7 +18,7 @@
 						<a href='/settings' class="settings-btn">
 							<img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 						</a>
-						<a href='/search' class="settings-btn">
+						<a ng-click="search()" class="settings-btn">
 							<img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
 						</a>
 					</form> 
@@ -71,6 +71,7 @@
 			</div>
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
 				<div ng-controller="ResultsController" ng-show="activeView == 'searchResults'">
+					{{numResults}} results found:<br/>
 					<div class="row-fluid post" ng-repeat="result in searchResults">
 						<a id="feed{{result.id}}">
 							<div class="mini">
@@ -78,6 +79,7 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
+						<a href="" ng-click="addFeed(result.url)">+</a>
 					</div>
 				</div>
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
