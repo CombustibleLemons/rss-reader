@@ -3,7 +3,7 @@
 /* Controllers */
 
 angular.module('main.controllers', ['main.services'])
-  .controller('UserController', function($scope, $rootScope, $http, $timeout, $q, APIService) {
+  .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
     $scope.refreshInterval = 5;
     $scope.refreshUser = function(){
       // Return a function that will keep refreshing the feeds
@@ -31,7 +31,7 @@ angular.module('main.controllers', ['main.services'])
       }
     };
   })
-  .controller('NavigationController', function($scope, $rootScope, $http, $timeout, APIService) {
+  .controller('NavigationController', function($scope, $rootScope, $timeout, APIService) {
     $scope.topics = [];
     $scope.topicIds = [];
 
@@ -97,8 +97,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.addTopic = function(topicName) {
-      var promise = APIService.addTopic(topicName);
-      promise.success(function(data) {
+      APIService.addTopic(topicName).success(function(data) {
         $rootScope.$broadcast("addedTopic", {
           topic: data,
         });
@@ -151,14 +150,15 @@ angular.module('main.controllers', ['main.services'])
     //End Methods
     $scope.fetchTopics();
   })
-  .controller('SearchController', function($scope, $rootScope, $http) {
+
+  .controller('SearchController', function($scope, $rootScope, APIService) {
+
     $scope.expandSettings = function() {   
-      $rootScope.$broadcast("clickSettings", {   
-   
-        });    
-     };
+      $rootScope.$broadcast("clickSettings", {});    
+    };
+
     $scope.addFeed = function() { // formerly passed url as an argument
-      $http.post('/feeds/create', {"url" : $scope.query}).success(function(data) {
+      APIService.addFeedByUrl($scope.query).success(function(data) {
           // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
                 feed: data,
@@ -175,8 +175,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.search = function() { // formerly passed url as an argument
-      $http.post('/search/', {"searchString" : $scope.query}).success(function(data) {
-          // How do we figure out where to put it if this creates a new feed?
+      APIService.search($scope.query).success(function(data) {
           $rootScope.$broadcast("showSearchResults", {
                 searchResults: data,
           });
@@ -190,7 +189,7 @@ angular.module('main.controllers', ['main.services'])
         });
     };
   })
-  .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
+  .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
     $rootScope.$on("addedFeed", function (event, message) {
         console.log(message);
@@ -200,11 +199,15 @@ angular.module('main.controllers', ['main.services'])
     });
 
     $scope.addFeedToTopic = function(feed) {
+      // Add the feed to the local side of things
       $scope.topic["feeds"].push(feed.id);
       $scope.feeds.push(feed);
       APIService.updateTopic($scope.topic).error(function(data, status, headers, config) {
           // Log the error
           console.log(status);
+          // Remove the feed
+          $scope.topic["feeds"].pop();
+          $scope.feeds.pop();
           // Try again
           $scope.addFeedToTopic(feed);
         });
@@ -235,8 +238,6 @@ angular.module('main.controllers', ['main.services'])
       APIService.getFeedsByIds(feed_ids).then(function(data){
         $scope.feeds = data;
       });
-      // Poll for feeds every $scope.refreshInterval so that we can get new feed info
-      //$timeout(function(){$scope.fetchFeeds($scope, $http);}, $scope.refreshInterval * 1000);
     };
     //this just updates the feedService which the feedController pulls from
     $scope.expandFeed = function(feedID) {
@@ -247,7 +248,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.refreshTopic();
     $scope.fetchFeeds();
   })
-  .controller('FeedController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+  .controller('FeedController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
     
 
@@ -258,7 +259,7 @@ angular.module('main.controllers', ['main.services'])
     });
 
     $scope.fetchPosts = function() {
-      $http.get('feeds/' + $scope.feedID + "/posts").success(function(data) {
+      APIService.fetchPosts($scope.feedID).success(function(data) {
 
         // This for loop removes unnecessary line breaks
         // TESTED WITH NYT US FEED
@@ -291,8 +292,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedPostIndex = index;
     };
   })
-
-  .controller('ResultsController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
+  .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
     $scope.searchResults = [];
     $scope.numResults = 0;
     $scope.topics = [];
@@ -323,8 +323,8 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeed = function(feedURL, topic) { // formerly passed url as an argument
-      $http.post('/feeds/create', {"url" : feedURL}).success(function(data) {
+    $scope.addFeed = function(feedURL,topic) { // formerly passed url as an argument
+      APIService.addFeedByUrl(feedURL).success(function(data) {
           // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
                 feed: data,
@@ -358,5 +358,6 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandSettingsReading = function() {    
         $scope.expandedSettingIndex = 3;   
       };
-  })
+  });
+
 //*/

@@ -91,8 +91,18 @@ angular.module('main.services', []).
           var promise = $http.put('/topics/' + topic["id"], topic);
           return promise;
         },
+    		// Search controller functions
+        addFeedByUrl : function(url) {
+          var promise = $http.post('/feeds/create/', {"url":url});
+          return promise;
+        },
         search : function(searchString) {
           var promise = $http.get('/search/', {"params" : {"searchString" : searchString}});
+          return promise;
+        },
+        // Feed controller functions
+        fetchPosts : function(feedID) {
+          var promise = $http.get('/feeds/' + feedID + '/posts/');
           return promise;
         }
     };
