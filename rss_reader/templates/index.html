@@ -88,6 +88,19 @@
 						</a>
 						<a href="" ng-click="addFeed(result.URL)">+</a>
 					</div>
+					<div id="popupWrapperResults">
+						<div id="popupTopicResults">
+							<form action="#" id="form" name="form">
+								<h3>Select a topic</h3>
+								<hr>
+								<form ng-repeat="topic in topics">
+									<input type="radio" name="selectedTopic">{{topic.name}}
+								</form>
+								<a href="#" class="addTopicBtn" ng-click="">Add Topic</a>
+								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+							</form>
+						</div>
+					</div>
 				</div>
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
@@ -201,16 +214,16 @@
 					</div>
 				</div>
 				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
-							<div id="popupQueueWrapper">
-								<div id="popupQueue">
-										<form action="#" id="form" name="form">
-										<h3>Do you want to add this feed to the queue?</h3>
-										<hr>
-										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
-										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
-
-								</div>
-							</div>
+					<div id="popupQueueWrapper">
+						<div id="popupQueue">
+							<form action="#" id="form" name="form">
+								<h3>Do you want to add this feed to the queue?</h3>
+								<hr>
+								<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
+								<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
+							</form>
+						</div>
+					</div>
 					<form id="searchForm">
 							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && (showQueuePopup() && search($index))"/><!--<onsubmit="-->
 					</form>
@@ -224,7 +237,6 @@
 						</a>
 					</div>
 				</div>
-			</div>
 			</div>
 			<div id="popupWrapper">
 				<div id="popupTopic">

@@ -286,11 +286,32 @@ angular.module('main.controllers', ['main.services'])
   .controller('ResultsController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.searchResults = [];
     $scope.numResults = 0;
+    $scope.topics = [];
     $rootScope.$on("showSearchResults", function (event, message) {
-        console.log(message.searchResults);
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
     });
+
+    $scope.showTopicOptions = function() { // formerly passed url as an argument
+      $http.get('/topics', {}).success(function(data) {
+          // show popup with topic options
+          $scope.topics = data;
+          $scope.showPopup();
+        }).error(function(data, status, headers, config){
+            console.log(status);
+            console.log(data);
+        });
+    };
+
+    $scope.showPopup = function() {
+      $("#popupWrapperResults").show();
+      $("#dimmer").show();
+    };
+
+    $scope.hidePopup = function() {
+      $("#popupWrapperResults").hide();
+      $("#dimmer").hide();
+    };
 
     $scope.addFeed = function(feedURL) { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : feedURL}).success(function(data) {
