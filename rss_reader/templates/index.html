@@ -106,11 +106,11 @@
 					<span ng-model = "unread" ng-init="unread=true">
 						<a ng-click="expandPost($index); unread=false">
 								<div class="onoffswitch">
-								    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+								    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" ng-model="checked" ng-change="toggleMarkAsRead($index)" id="myonoffswitch" checked>
 								    <label class="onoffswitch-label" for="myonoffswitch">
 								        <span class="onoffswitch-inner">
-								            <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
-								            <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+								            <span ng-class="checked ? 'onoffswitch-active' : 'onoffswitch-inactive'"><span class="onoffswitch-switch">Unread</span></span>
+								            <span ng-class="checked ? 'onoffswitch-inactive': 'onoffswitch-active'"><span class="onoffswitch-switch">Read</span></span>
 								        </span>
 								    </label>
 								</div>
