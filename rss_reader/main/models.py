@@ -24,7 +24,6 @@ from datetime import datetime
 import ast
 import traceback #prints errors
 
-# do we still need this ?
 class ListField(models.TextField):
     __metaclass__ = models.SubfieldBase
     description = "Stores a python list"
@@ -205,7 +204,7 @@ class Feed(models.Model):
 
     # Methods
     def getPosts(self, n):
-        #empty list, or n is 0
+        # Empty list, or n is 0
         if (not(self.posts.all().exists()) or (n==0)):
             return list(self.posts.none())
 
@@ -277,7 +276,6 @@ class Feed(models.Model):
                     elif res["version"] == "atom10":
                         Atom.createByEntry(entry, self.URL, self)
                 except IntegrityError as e:
-                    print "Integrity Error"
                     # We've found a duplicate, but its fine if we've found a duplicate
                     pass
 
@@ -468,6 +466,37 @@ class Atom(Post):
         atom.save()
         return atom
 
+import timedelta
+import datetime
+import pytz
+class PostsRead(models.Model):
+    # Model Attributes
+    posts = models.ManyToManyField(Post, related_name="+", blank=True)
+    feed = models.ForeignKey(Feed, related_name="+")
+    user = models.ForeignKey(User, related_name="readPosts")
+    # Date after which to auto mark as read (TODO: Need a way to handle users marking something as unread
+    # and then not just obliterating it everytime this update function is called)
+    # dateCutoff defaults to null = True since we do not require posts to be auto-marked-as-read
+    dateCutoff = timedelta.fields.TimedeltaField(null=True)
+
+    def update(self):
+        # Auto-update the posts read according to the setting for feed ranges
+        if self.dateCutoff:
+            now = datetime.datetime.now(pytz.utc)
+            for post in self.feed.posts.all():
+                if now - self.dateCutoff >= post.pubDate:
+                    # Datetime is outside of the acceptable range, remove it from the list.
+                    self.posts.add(post)
+
+    def getUnreadPostsByNum(self, n):
+        return self.getUnreadPosts()[:n]
+
+    def getUnreadPosts(self):
+        feedPosts = self.feed.posts.all()
+        if self.posts.all():
+            return feedPosts.exclude(id__in=self.posts.all())
+        return feedPosts
+
 # Create 'Uncategorized' Topic to put stuff in on user creation
 @receiver(post_save, sender=User)
 def createUncategorized(sender, instance, **kwargs):
@@ -483,6 +512,7 @@ def createUncategorized(sender, instance, **kwargs):
         settings.save()
 # Register classes that we want to be able to search
 # We will only be returning information about the Feed.
+# from https://github.com/etianen/django-watson/wiki/registering-models
 watson.register(Topic)
 watson.register(Feed)
 watson.register(Post)

@@ -91,13 +91,13 @@ angular.module('main.services', []).
           var promise = $http.put('/topics/' + topic["id"], topic);
           return promise;
         },
-        // Search controller functions
+		// Results controller functions
         addFeed : function(url) {
           var promise = $http.post('/feeds/', {"url":url});
           return promise;
         },
         search : function(searchString) {
-          var promise = $http.post('/search/', {"searchString":searchString});
+          var promise = $http.get('/search/', {"params" : {"searchString" : searchString}});
           return promise;
         }
     };

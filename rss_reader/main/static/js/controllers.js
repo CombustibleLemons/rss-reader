@@ -284,9 +284,29 @@ angular.module('main.controllers', ['main.services'])
 
   .controller('ResultsController', function($scope, $http, $rootScope,FeedService) { //scope is an angular template, from base.html, index.html
     $scope.searchResults = [];
+    $scope.numResults = 0;
     $rootScope.$on("showSearchResults", function (event, message) {
+        console.log(message.searchResults);
         $scope.searchResults = message.searchResults;
+        $scope.numResults = message.searchResults.length;
     });
+
+    $scope.addFeed = function(feedURL) { // formerly passed url as an argument
+      $http.post('/feeds/create', {"url" : feedURL}).success(function(data) {
+          // How do we figure out where to put it if this creates a new feed?
+          $rootScope.$broadcast("addedFeed", {
+                feed: data,
+                topicName: "Uncategorized"
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
+        });
+    };
     
   })
 //*/
