@@ -75,7 +75,7 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Attributes
-    $scope.expandedIndex = -1;
+    $scope.expandedIndex = [-1];
     $scope.predicate = "";
     $scope.activeView = "feedResults"
     // End Attributes
@@ -94,6 +94,38 @@ angular.module('main.controllers', ['main.services'])
     $scope.toggleEdit = function(topicID) {
       $(".editTopic"+topicID).show();
       $(".editBtn"+topicID).hide();
+    };
+
+    $scope.toggleEditMode = function() {
+      if($(".nav-sidebar").hasClass("sortable")) {
+        $(".nav-sidebar").removeClass("sortable");
+        $(".nav-sidebar").removeClass("ui-sortable");
+        $(".nav li a[class^='removeTopic']").hide(); 
+        $(".nav li a[class^='editBtn']").hide();
+
+        $scope.expandedIndex = [];
+
+        $(".nav-sidebar").nestedSortable('destroy');
+        $(".toggleEdit").text("Edit");
+      } else {
+        $(".nav-sidebar").addClass("sortable");
+        $(".nav li a[class^='removeTopic']").show(); 
+        $(".nav li a[class^='editBtn']").show();
+
+        for (var i = 0; i <= $(".nav li").length; i++) {
+            $scope.expandedIndex.push(i);
+        }
+
+        $('.sortable').nestedSortable({
+            handle: 'div',
+            items: 'li',
+            toleranceElement: '> div',
+            listType: 'ul',
+            protectRoot: true,
+            maxLevels: 2,
+        });
+        $(".toggleEdit").text("Exit edit mode");
+      }
     };
 
     $scope.addTopic = function(topicName) {
@@ -144,7 +176,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.expandTopic = function(index) {
-      $scope.expandedIndex = index;
+      $scope.expandedIndex = [index];
     };
 
     //End Methods

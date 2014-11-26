@@ -12,29 +12,31 @@
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
-					<a href="#" ng-click="showPopup()">Add a topic</a>
-					<ul class="nav nav-sidebar sortable">
+					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;
+					<a href="#" ng-click="toggleEditMode()" class="toggleEdit">Edit</a>
+					<ul class="nav nav-sidebar">
 						<li ng-repeat="topic in topics">
 							<div>
-								<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
+								<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" >
 			        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 			        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 				      			</a>
 				      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
 
-				      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
+				      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
 
 				      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
 
-				      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
+				      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 				      		</div>
-				      		<br/>
-							<!--<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show="expandedIndex == $parent.$index">
+							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1">
 								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
-									<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
-									<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+									<div>
+										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
+										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+									</div>
 								</li>
-							</ul>-->
+							</ul>
 						</li>
 						<br/>
 					</ul>
@@ -262,19 +264,6 @@
 			</div>
 		</div>
 	</div>
-
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-	        $('.sortable').nestedSortable({
-	            handle: 'div',
-	            items: 'li',
-	            toleranceElement: '> div',
-	            listType: 'ul',
-	        });
-
-	    });
-	</script>
 
 {% endverbatim %}
 
