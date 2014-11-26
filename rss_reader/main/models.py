@@ -50,6 +50,10 @@ class ListField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
+# User class exists in Django, with email, username attributes; and
+# User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
+# user.topics.create(name="topicname")
+
 class UserSettings(models.Model):
 
     def __unicode__(self):
@@ -509,13 +513,6 @@ def createUncategorized(sender, instance, **kwargs):
 # Register classes that we want to be able to search
 # We will only be returning information about the Feed.
 # from https://github.com/etianen/django-watson/wiki/registering-models
-watson.register(Feed)
 watson.register(Topic)
-#watson.register(Post.objects.all(), fields = ("title", "subtitle", "author", "content",))
-
-from django.db.models.signals import post_save
-def update_post_index(instance, **kwargs):
-    for post in instance.posts.all():
-        watson.default_search_engine.update_obj_index(post)
-
-post_save.connect(update_post_index, Feed)
+watson.register(Feed)
+watson.register(Post)
