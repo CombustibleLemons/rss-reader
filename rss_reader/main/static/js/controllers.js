@@ -185,6 +185,7 @@ angular.module('main.controllers', ['main.services'])
   .controller('TopicController', function($scope, $http, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
     $rootScope.$on("addedFeed", function (event, message) {
+        console.log(message);
         if ($scope.topic.name == message.topicName){
           $scope.addFeedToTopic(message.feed);
         }
@@ -292,18 +293,19 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
-    $scope.showTopicOptions = function() { // formerly passed url as an argument
+    $scope.showTopicOptions = function(feedURL) { // formerly passed url as an argument
       $http.get('/topics', {}).success(function(data) {
           // show popup with topic options
           $scope.topics = data;
-          $scope.showPopup();
+          $scope.showPopup(feedURL);
         }).error(function(data, status, headers, config){
             console.log(status);
             console.log(data);
         });
     };
 
-    $scope.showPopup = function() {
+    $scope.showPopup = function(feedURL) {
+      $(".feedURL").attr("value", feedURL);
       $("#popupWrapperResults").show();
       $("#dimmer").show();
     };
@@ -313,12 +315,12 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeed = function(feedURL) { // formerly passed url as an argument
+    $scope.addFeed = function(feedURL, topic) { // formerly passed url as an argument
       $http.post('/feeds/create', {"url" : feedURL}).success(function(data) {
           // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
                 feed: data,
-                topicName: "Uncategorized"
+                topicName: topic
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();

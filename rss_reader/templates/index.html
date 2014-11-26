@@ -2,7 +2,6 @@
 {% load staticfiles %}
 {% block content %}
 
-
 {% verbatim %}
 
 	<!--Main Section -->
@@ -86,17 +85,18 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
-						<a href="" ng-click="addFeed(result.URL)">+</a>
+						<a href="" ng-click="showTopicOptions(result.URL)">+</a>
 					</div>
 					<div id="popupWrapperResults">
 						<div id="popupTopicResults">
-							<form action="#" id="form" name="form">
+							<form action="#" id="topicsForm" name="form">
 								<h3>Select a topic</h3>
 								<hr>
-								<form ng-repeat="topic in topics">
-									<input type="radio" name="selectedTopic">{{topic.name}}
-								</form>
-								<a href="#" class="addTopicBtn" ng-click="">Add Topic</a>
+								<div ng-repeat="topic in topics">
+									<input type="radio" name="selectedTopic">{{topic.name}}<br/>
+								</div>
+								<input class="feedURL" type="hidden" value="">
+								<a href="#" class="addTopicBtn" ng-click="addFeed()">Subscribe</a>
 								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
 						</div>
