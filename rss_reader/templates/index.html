@@ -91,7 +91,7 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
-						<a href="" ng-click="showTopicOptions(result.id)">+</a>
+						<a href="" ng-click="showTopicOptions(result)">+</a>
 					</div>
 					<div id="popupWrapperResults">
 						<div id="popupTopicResults">
@@ -101,7 +101,7 @@
 								<div ng-repeat="topic in topics">
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
-								<input class="feedID" type="hidden" value="">
+								<input class="feedObj" type="hidden" value="">
 								<a href="#" class="addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
 								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>

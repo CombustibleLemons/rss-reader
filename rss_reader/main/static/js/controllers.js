@@ -199,9 +199,9 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("addedFeedObject", function (event, message) {
         if ($scope.topic.name == message.topic.name){
-          //somehow refresh the topics
+          console.log($scope.feeds);
           $scope.topic = message.topic;
-          //$scope.fetchFeeds();
+          $scope.feeds.push(message.feed);
         }
     });
 
@@ -303,13 +303,13 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
-    $scope.showTopicOptions = function(feedID) {
+    $scope.showTopicOptions = function(feed) {
       $scope.topics = $scope.$parent.topics;
-      $scope.showPopup(feedID);
+      $scope.showPopup(feed);
     };
 
-    $scope.showPopup = function(feedID) {
-      $(".feedID").attr("value", feedID);
+    $scope.showPopup = function(feed) {
+      $(".feedObj").attr("value", JSON.stringify(feed));
       $("#popupWrapperResults").show();
       $("#dimmer").show();
     };
@@ -320,12 +320,13 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.addFeedObject = function() { // formerly passed url as an argument
-      var feedID = parseInt($(".feedID").attr("value"));
+      var feed = $.parseJSON($(".feedObj").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feedID);
+      topic.feeds.push(feed.id);
       APIService.updateTopic(topic).success(function(data) {
           $rootScope.$broadcast("addedFeedObject", {
               topic: data,
+              feed: feed
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
