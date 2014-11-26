@@ -285,6 +285,19 @@ class FeedTestCase(TestCase):
         self.assertEqual(feed.getSize(), 0)
 
 class QueueFeedTestCase(TestCase):
+    def setUp(self):
+        f1 = Feed.createByURL("http://xkcd.com/rss.xml")
+        postNum = 3
+        interval = '2 days'
+
+    def test_create_queue(self):
+        q = QueueFeed.create(f1, postNum, interval)
+        assertEqual(q.postNum = postNum)
+        assertEqual(q.interval = interval)
+        assertEqual(q.feed, f1)
+        qPosts = q.getPosts()
+        fPosts = f1.posts.all().order_by('pubDate')
+        self.assertEqual(qPosts, [fPosts[0], fPosts[1]])
 
     #test creating a queuefeed from url, with posts per time unit, starting post date
 
