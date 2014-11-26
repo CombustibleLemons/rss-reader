@@ -1,6 +1,6 @@
 #! /bin/sh
 sudo -u postgres -H sh -c "psql -f flush_database.postgresql"
-cd rss_reader
+#cd rss_reader
 ./manage.py migrate
 ./manage.py installwatson
 ./manage.py buildwatson

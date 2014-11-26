@@ -169,7 +169,6 @@ angular.module('main.controllers', ['main.services'])
           }
         }).error(function(data, status, headers, config){
           if (status == 409) {
-            console.log("made it here")
             $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
           }
         });
@@ -202,7 +201,7 @@ angular.module('main.controllers', ['main.services'])
         if ($scope.topic.name == message.topic.name){
           //somehow refresh the topics
           $scope.topic = message.topic;
-          $scope.fetchFeeds();
+          //$scope.fetchFeeds();
         }
     });
 
@@ -323,7 +322,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.addFeedObject = function() { // formerly passed url as an argument
       var feedID = parseInt($(".feedID").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feedID)
+      topic.feeds.push(feedID);
       APIService.updateTopic(topic).success(function(data) {
           $rootScope.$broadcast("addedFeedObject", {
               topic: data,

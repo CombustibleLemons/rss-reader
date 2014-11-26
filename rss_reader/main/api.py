@@ -115,9 +115,9 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        self.object = self.get_object_or_none()
         try:
-            partial = kwargs.pop('partial', False)
-            self.object = self.get_object_or_none()
             # Check to make sure this is not an uncategorized Topic
             if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -135,7 +135,6 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
                 self.object = serializer.save(force_insert=True)
                 self.post_save(self.object, created=True)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-
             self.object = serializer.save(force_update=True)
             self.post_save(self.object, created=False)
             return Response(serializer.data, status=status.HTTP_200_OK)
