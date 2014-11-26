@@ -11,6 +11,9 @@ from django.contrib.auth.models import User, UserManager
 # For overriding response when a User is requested
 from django.shortcuts import get_object_or_404
 
+# Exceptions to handle
+from django.core.exceptions import ValidationError
+
 # Models and Serializers
 from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer, PostsReadSerializer
 from .models import Topic, Feed, Post, UserSettings, PostsRead
@@ -112,29 +115,32 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        self.object = self.get_object_or_none()
-        # Check to make sure this is not an uncategorized Topic
-        if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(self.object, data=request.DATA,
-                                        files=request.FILES, partial=partial)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            self.pre_save(serializer.object)
-        except ValidationError as err:
-            # full_clean on model instance may be called in pre_save,
-            # so we have to handle eventual errors.
-            return Response(err.message_dict, status=status.HTTP_400_BAD_REQUEST)
-        if self.object is None:
-            self.object = serializer.save(force_insert=True)
-            self.post_save(self.object, created=True)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            partial = kwargs.pop('partial', False)
+            self.object = self.get_object_or_none()
+            # Check to make sure this is not an uncategorized Topic
+            if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serializer = self.get_serializer(self.object, data=request.DATA,
+                                            files=request.FILES, partial=partial)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                self.pre_save(serializer.object)
+            except ValidationError as err:
+                # full_clean on model instance may be called in pre_save,
+                # so we have to handle eventual errors.
+                return Response(err.message_dict, status=status.HTTP_400_BAD_REQUEST)
+            if self.object is None:
+                self.object = serializer.save(force_insert=True)
+                self.post_save(self.object, created=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        self.object = serializer.save(force_update=True)
-        self.post_save(self.object, created=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            self.object = serializer.save(force_update=True)
+            self.post_save(self.object, created=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({"error" : e.message}, status=status.HTTP_400_BAD_REQUEST)
 
 class TopicFeedList(generics.ListAPIView):
     model = Feed

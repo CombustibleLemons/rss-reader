@@ -284,7 +284,7 @@ class QueueFeed(Feed):
 
 class Topic(models.Model):
     name = models.TextField()
-    _feeds = models.ManyToManyField(Feed, related_name = '+')
+    feeds = models.ManyToManyField(Feed, related_name = '+')
     user = models.ForeignKey(User, null=True, related_name="topics")
 
     def __unicode__(self):
@@ -310,29 +310,48 @@ class Topic(models.Model):
     # - addFeed (feed : Feed)
     # - will take advantage of ManytoMany relationships
     # - must check that Feed is not already owned in Topic or in User
-    def get_feeds(self):
-        return self._feeds
-
-    def set_feeds(self, feed):
-        # import pdb; pdb.set_trace()
-        # Remember to exclude self from the checking!
-        for t in self.user.topics.all().exclude(id=self.id):
-            # Check if the feed is in any other topic
-            if t.feeds.filter(id=feed.id).exists():
-                raise FeedExistsInTopic
-        # Check if feed is in this Topic's feed list
-        if self._feeds.all().filter(id=feed.id).exists():
-            # Fail to add silently, it's okay if a feed is already in a topic and we add it
-            return
-        self._feeds.add(feed)
-        self.save()
-    feeds = property(get_feeds, set_feeds)
+    # def get_feeds(self):
+    #     # import pdb; pdb.set_trace()
+    #     return self._feeds.all()
+    #
+    # def set_feeds(self, feed):
+    #     # import pdb; pdb.set_trace()
+    #     # Remember to exclude self from the checking!
+    #     for t in self.user.topics.all().exclude(id=self.id):
+    #         # Check if the feed is in any other topic
+    #         if t.feeds.filter(id=feed.id).exists():
+    #             raise FeedExistsInTopic
+    #     # Check if feed is in this Topic's feed list
+    #     if self._feeds.all().filter(id=feed.id).exists():
+    #         # Fail to add silently, it's okay if a feed is already in a topic and we add it
+    #         return
+    #     self._feeds.add(feed)
+    #     self.save()
+    # feeds = property(get_feeds, set_feeds)
 
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
     def deleteFeed(self, feed):
             self.feeds.remove(feed)
             self.save()
+
+# Enforces validation of feeds that are to be added
+from django.core.exceptions import ValidationError
+from django.db.models.signals import m2m_changed
+def topicFeedsChanged(sender, instance, **kwargs):
+    # Remember to exclude self from the checking!
+    if kwargs['action'] == 'pre_add':
+        for pk in kwargs.get("pk_set"):
+            for t in instance.user.topics.all().exclude(id=instance.id):
+                # Check if the feed is in any other topic
+                if t.feeds.filter(id=pk).exists():
+                    raise ValidationError("Feed already exists in another topic")
+            # Check if feed is in this Topic's feed list
+            if instance.feeds.all().filter(id=pk).exists():
+                # Fail to add silently, it's okay if a feed is already in a topic and we add it
+                pass
+
+m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
 
 class Post(models.Model):
     # Attributes
