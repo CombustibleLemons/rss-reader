@@ -20,7 +20,7 @@ user_urls = patterns('',
     url(r'^/settings/$', UserSettingsDetail.as_view(), name='settings-detail')
 )
 topic_urls = patterns('',
-    url(r'^/(?P<pk>[0-9]+)/posts$', TopicFeedList.as_view(), name='topicfeed-list'),
+    url(r'^/(?P<pk>[0-9]+)/posts/$', TopicFeedList.as_view(), name='topicfeed-list'),
     url(r'^/(?P<pk>[0-9]+)$', TopicDetail.as_view(), name='topic-detail'),
     url(r'^/$', TopicList.as_view(), name='topic-list'),
     url(r'^/create$', topic_create, name='topic-create'),
@@ -31,7 +31,7 @@ topic_urls = patterns('',
 feed_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/read_posts$', PostsReadDetail.as_view(), name='topic-readPosts-list'),
     url(r'^/(?P<pk>[0-9]+)/posts/unread$', unread_posts, name='topicfeed-unread-list'),
-    url(r'^/(?P<pk>[0-9]+)/posts$', FeedPostList.as_view(), name='feedpost-list'),
+    url(r'^/(?P<pk>[0-9]+)/posts/$', FeedPostList.as_view(), name='feedpost-list'),
     url(r'^/(?P<pk>[0-9]+)$', FeedDetail.as_view(), name='feed-detail'),
     url(r'^/create$', feed_create, name='feed-create'),
     url(r'^/$', FeedList.as_view(), name='feed-list')
