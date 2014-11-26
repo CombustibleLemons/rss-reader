@@ -2,7 +2,6 @@
 {% load staticfiles %}
 {% block content %}
 
-
 {% verbatim %}
 
 	<!--Main Section -->
@@ -15,8 +14,7 @@
 		        <div ng-controller="SearchController">
 		          <form id="searchForm">
 		            <input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
-
-		            <a href='/settings' class="settings-btn">
+		            <a href="" class="settings-btn" ng-click="expandSettings()" style="float:right;">
 		              <img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 		            </a>
 		            <a href="" ng-click="search()" class="settings-btn">
@@ -86,7 +84,21 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
-						<a href="" ng-click="addFeed(result.URL)">+</a>
+						<a href="" ng-click="showTopicOptions(result.id)">+</a>
+					</div>
+					<div id="popupWrapperResults">
+						<div id="popupTopicResults">
+							<form action="#" id="topicsForm" name="form">
+								<h3>Select a topic</h3>
+								<hr>
+								<div ng-repeat="topic in topics">
+									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
+								</div>
+								<input class="feedID" type="hidden" value="">
+								<a href="#" class="addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
+								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+							</form>
+						</div>
 					</div>
 				</div>
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
@@ -201,16 +213,16 @@
 					</div>
 				</div>
 				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
-							<div id="popupQueueWrapper">
-								<div id="popupQueue">
-										<form action="#" id="form" name="form">
-										<h3>Do you want to add this feed to the queue?</h3>
-										<hr>
-										<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
-										<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
-
-								</div>
-							</div>
+					<div id="popupQueueWrapper">
+						<div id="popupQueue">
+							<form action="#" id="form" name="form">
+								<h3>Do you want to add this feed to the queue?</h3>
+								<hr>
+								<a href="#" class="addTopicBtn" ng-click="expandSettings($index)">Yes</a>
+								<a href="#" class="cancelBtn" ng-click="hidePopup()">No</a>
+							</form>
+						</div>
+					</div>
 					<form id="searchForm">
 							<input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && (showQueuePopup() && search($index))"/><!--<onsubmit="-->
 					</form>
@@ -224,7 +236,6 @@
 						</a>
 					</div>
 				</div>
-			</div>
 			</div>
 			<div id="popupWrapper">
 				<div id="popupTopic">

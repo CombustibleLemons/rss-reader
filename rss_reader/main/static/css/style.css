@@ -106,11 +106,13 @@ body {
 	color: #fff;
 }
 
-#popupWrapper{
+#popupWrapper,
+#popupWrapperResults {
 	display: none;
 }
 
-#popupTopic {
+#popupTopic,
+#popupTopicResults {
 	position:absolute;
 	left:50%;
 	top:17%;
@@ -118,7 +120,8 @@ body {
 	z-index:1031;
 
 }
-#popupTopic form {
+#popupTopic form,
+#popupTopicResults form {
 	max-width:300px;
 	min-width:250px;
 	padding:10px 50px;
