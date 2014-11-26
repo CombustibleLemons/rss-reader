@@ -287,6 +287,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.searchResults = [];
     $scope.numResults = 0;
     $rootScope.$on("showSearchResults", function (event, message) {
+        console.log(message.searchResults);
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
     });
