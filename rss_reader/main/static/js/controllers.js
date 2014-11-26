@@ -4,17 +4,14 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
-    $scope.refreshInterval = 5;
+    // Methods
     $scope.refreshUser = function(){
-      // Return a function that will keep refreshing the feeds
       var promise = APIService.getUser().then(function(user){
         $scope.user = user;
       });
-      //$timeout(function(){$scope.refreshUser();}, $scope.refreshInterval * 1000);
-      // I have no idea where this returns to when the function calls itself, and what
-      // Angular does to garbage collect. But it works.
       return promise;
     };
+
     $scope.getTopicIds = function(){
       if (this.user == null){
         // Force a refresh
@@ -30,13 +27,18 @@ angular.module('main.controllers', ['main.services'])
         return deferred.promise;
       }
     };
+    // End Methods
   })
   .controller('NavigationController', function($scope, $rootScope, $timeout, APIService) {
+    // Attributes
     $scope.topics = [];
     $scope.topicIds = [];
+    $scope.expandedIndex = -1;
+    $scope.predicate = "";
+    $scope.activeView = "feedResults"
+    // End Attributes
 
     // Event handlers
-
     // when addedTopic event is fired
     $rootScope.$on("addedTopic", function (event, message) {
       $scope.topicIds.push(message.topic.id);
@@ -73,12 +75,6 @@ angular.module('main.controllers', ['main.services'])
         $scope.activeView = "settingsGroups";       
     });
     // End Event handlers
-
-    // Attributes
-    $scope.expandedIndex = -1;
-    $scope.predicate = "";
-    $scope.activeView = "feedResults"
-    // End Attributes
 
     // Methods
     $scope.showPopup = function() {
@@ -128,11 +124,11 @@ angular.module('main.controllers', ['main.services'])
           console.log(status);
         });
     };
+
     $scope.fetchTopics = function() {
       // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
       // Ask the UserController if it has data yet
       $scope.$parent.getTopicIds().then(function(topic_ids){
-        // TODO: Compare ids to see if we need to update the topics set
         if ($scope.topicIds != topic_ids){
           $scope.topicIds = topic_ids;
           APIService.getTopicsByIds(topic_ids).then(function(topics){
@@ -140,14 +136,14 @@ angular.module('main.controllers', ['main.services'])
           });
         }
       });
-      //$timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
     };
    
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index;
     };
-
     //End Methods
+
+    // Must be called to populate topics
     $scope.fetchTopics();
   })
 
@@ -265,8 +261,6 @@ angular.module('main.controllers', ['main.services'])
       APIService.fetchPosts($scope.feedID).success(function(data) {
 
         // This for loop removes unnecessary line breaks
-        // TESTED WITH NYT US FEED
-        // TODO: TEST THIS WITH OTHER FEEDS
         for(var i=0; i<data.length; i++){
           //create dummy div
           var tmp = document.createElement('div');
@@ -320,7 +314,7 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeedObject = function() { // formerly passed url as an argument
+    $scope.addFeedObject = function() {
       var feedID = $(".feedID").attr("value");
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
       topic.feeds.push(feedID);
@@ -342,22 +336,22 @@ angular.module('main.controllers', ['main.services'])
     
     $scope.expandedSettingIndex = -1;
     $rootScope.$on("clickSettings", function (event, message) {   
-            $scope.expandedPostIndex = -1;   
-        });    
+      $scope.expandedPostIndex = -1;   
+    });    
    
    
-      $scope.expandSettingsUser = function() {   
+    $scope.expandSettingsUser = function() {   
       // Expand the post   
       $scope.expandedSettingIndex = 1;   
     };   
    
-      $scope.expandSettingsFeed = function() {   
-        $scope.expandedSettingIndex = 2;   
-      };   
-   
-      $scope.expandSettingsReading = function() {    
-        $scope.expandedSettingIndex = 3;   
-      };
+    $scope.expandSettingsFeed = function() {   
+      $scope.expandedSettingIndex = 2;   
+    };   
+
+    $scope.expandSettingsReading = function() {    
+      $scope.expandedSettingIndex = 3;   
+    };
   });
 
 //*/
