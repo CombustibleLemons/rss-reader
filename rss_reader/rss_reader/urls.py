@@ -29,7 +29,7 @@ topic_urls = patterns('',
 )
 
 feed_urls = patterns('',
-    url(r'^/(?P<pk>[0-9]+)/read_posts$', PostsReadDetail.as_view(), name='topic-readPosts-list'),
+    url(r'^/(?P<pk>[0-9]+)/posts/read$', PostsReadDetail.as_view(), name='topic-readPosts-list'),
     url(r'^/(?P<pk>[0-9]+)/posts/unread$', unread_posts, name='topicfeed-unread-list'),
     url(r'^/(?P<pk>[0-9]+)/posts/$', FeedPostList.as_view(), name='feedpost-list'),
     url(r'^/(?P<pk>[0-9]+)$', FeedDetail.as_view(), name='feed-detail'),

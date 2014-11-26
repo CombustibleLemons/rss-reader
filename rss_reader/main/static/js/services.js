@@ -104,6 +104,13 @@ angular.module('main.services', []).
         fetchPosts : function(feedID) {
           var promise = $http.get('/feeds/' + feedID + '/posts/');
           return promise;
+        },
+        updatePostsRead : function(feedID, postsRead){
+          return $http.put("/feeds/" + feedID + "/posts/read", postsRead);
+        },
+        getPostsRead : function(feedID){
+          var promise = $http.get("/feeds/" + feedID + "/posts/read");
+          return promise;
         }
     };
   })

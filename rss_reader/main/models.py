@@ -338,6 +338,9 @@ class Topic(models.Model):
 # Enforces validation of feeds that are to be added
 from django.core.exceptions import ValidationError
 from django.db.models.signals import m2m_changed
+# TODO: This workaround using Django signals will still add feeds that are correct if we are adding
+# multiple feeds at once. We don't do this in the controller code, but that behavior is not
+# well defined elsewhere
 def topicFeedsChanged(sender, instance, **kwargs):
     # Remember to exclude self from the checking!
     if kwargs['action'] == 'pre_add':
@@ -360,6 +363,18 @@ def topicFeedsChanged(sender, instance, **kwargs):
         # Since we are forced to use Django signals, put the data into the object and remove it later
         instance.failed = failed
     elif kwargs['action'] == 'post_add':
+        # Make sure each added feed is given a PostsRead object to associate with a User
+        user = instance.user
+        for pk in kwargs["pk_set"]:
+            try:
+                feed = Feed.objects.get(id=pk)
+                pr = PostsRead(user=user, feed=feed)
+                pr.save()
+            except IntegrityError:
+                # IntegrityError means one already exists, so pass
+                pass
+
+        # Report any failed pks. See TODO above.
         failed = instance.failed
         if failed:
             errMsg = "Feeds %s already exists in another topic" % (str(failed),)
@@ -518,7 +533,18 @@ class PostsRead(models.Model):
     # Date after which to auto mark as read (TODO: Need a way to handle users marking something as unread
     # and then not just obliterating it everytime this update function is called)
     # dateCutoff defaults to null = True since we do not require posts to be auto-marked-as-read
-    dateCutoff = timedelta.fields.TimedeltaField(null=True)
+    dateCutoff = timedelta.fields.TimedeltaField(null=True, blank=True) # Blank so serializer doesn't have to keep track
+
+    class Meta:
+        unique_together = (('user', 'feed'),);
+
+    @classmethod
+    def create(cls, user, feedID, posts):
+        cls.user = user
+        cls.feed = Feed.objects.get(id=feedID)
+        cls.save()
+        cls.posts = posts
+        return cls
 
     def update(self):
         # Auto-update the posts read according to the setting for feed ranges

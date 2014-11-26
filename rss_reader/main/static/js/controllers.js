@@ -287,22 +287,37 @@ angular.module('main.controllers', ['main.services'])
         }
         $scope.posts = data;
       });
+      APIService.getPostsRead($scope.feedID).success(function(data){
+        console.log(data);
+        $scope.postsRead = data;
+      }).error(function(data, status, headers, config){
+        console.log(status);
+      });
     };
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
     };
-    $scope.toggleMarkAsRead = function(index) {
-      var post = $scope.posts[index];
-      var isMarked = $scope.markedPosts.indexOf(post.id);
-      if (isMarked != -1){
-        array.splice(isMarked, 1);
+    $scope.clickPostHeader = function(post) {
+      if(post.unread){
+        post.unread = false;
+        $scope.updatePostsRead();
       }
-      else{
-        array.push(post.id);
-      }
-    };
-    $scope.markedPosts = [];
+    }
+    $scope.updatePostsRead = function() {
+      var postsReadArr = $scope.posts.reduce(function(previousValue, currentValue, index, array){
+        if(!currentValue.unread){
+          previousValue.push(currentValue.id);
+        }
+        return previousValue;
+      }, new Array());
+      $scope.postsRead["posts"] = postsReadArr;
+      APIService.updatePostsRead($scope.feedID, $scope.postsRead).success(function(data){
+        console.log("Success");
+      }).error(function(data, status, headers, config){
+        console.log(status);
+      });
+    }
   })
   .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
     $scope.searchResults = [];
