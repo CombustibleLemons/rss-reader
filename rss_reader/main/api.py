@@ -338,7 +338,6 @@ def remove_repeats(seq):
 import watson
 @api_view(['GET', 'POST'])
 def search(request):
-    #print "entered search"
     if request.method == "POST":
         # Create feed using input URL
         #print "getting search string"

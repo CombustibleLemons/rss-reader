@@ -14,7 +14,7 @@
 		        <div ng-controller="SearchController">
 		          <form id="searchForm">
 		            <input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
-		            <a class="settings-btn" ng-click="expandSettings()" style="float:right;">
+		            <a href="" class="settings-btn" ng-click="expandSettings()" style="float:right;">
 		              <img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
 		            </a>
 		            <a href="" ng-click="search()" class="settings-btn">
@@ -30,7 +30,7 @@
 						<li>
 							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
 		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
-		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}x</div>
 			      			</a>
 			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
 
