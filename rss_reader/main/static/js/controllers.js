@@ -197,20 +197,19 @@ angular.module('main.controllers', ['main.services'])
         }
     });
 
+    $rootScope.$on("addedFeedObject", function (event, message) {
+        if ($scope.topic.name == message.topic.name){
+          //somehow refresh the topics
+          $scope.topic = message.topic;
+          $scope.fetchFeeds();
+        }
+    });
+
     $scope.addFeedToTopic = function(feed) {
       // Add the feed to the local side of things
       if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
         $scope.topic["feeds"].push(feed.id);
         $scope.feeds.push(feed);
-        APIService.updateTopic($scope.topic).error(function(data, status, headers, config) {
-          // Log the error
-          console.log(status);
-          // Remove the feed
-          $scope.topic["feeds"].pop();
-          $scope.feeds.pop();
-          // Try again
-          $scope.addFeedToTopic(feed);
-        });
       } else {
         $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
       }
@@ -309,8 +308,8 @@ angular.module('main.controllers', ['main.services'])
       $scope.showPopup(feedID);
     };
 
-    $scope.showPopup = function(feedURL) {
-      $(".feedURL").attr("value", feedURL);
+    $scope.showPopup = function(feedID) {
+      $(".feedID").attr("value", feedID);
       $("#popupWrapperResults").show();
       $("#dimmer").show();
     };
@@ -321,22 +320,24 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.addFeedObject = function() { // formerly passed url as an argument
-      var feedID = $(".feedID").attr("value");
+      var feedID = parseInt($(".feedID").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feedID);
+      topic.feeds.push(feedID)
       APIService.updateTopic(topic).success(function(data) {
-          console.log(data);
-          // $rootScope.$broadcast("addedFeed", {
-          //     feed: data,
-          //     topicName: topic
-          // });
-          // if ($("#searchForm").find(".error")) {
-          //   $("#searchForm").find(".error").remove();
-          // }
-          // $scope.hidePopup();
-          // $("#topicsForm")[0].reset();
+          $rootScope.$broadcast("addedFeedObject", {
+              topic: data,
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $scope.hidePopup();
+          $("#topicsForm")[0].reset();
         }).error(function(data, status, headers, config){
-          console.log(data);
+          //if user already subscribed
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+          }
+          console.log("fail");
         });
     };
     
