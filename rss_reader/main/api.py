@@ -171,6 +171,7 @@ def feed_create(request):
     if request.method == "POST":
         # Create feed using input URL
         url = request.DATA["url"]
+        print url
         try:
             # Try creating a Feed with the url
             f = Feed.createByURL(url)
@@ -180,6 +181,9 @@ def feed_create(request):
             fs = FeedSerializer(f)
             return Response(fs.data, status=status.HTTP_200_OK)
         except IntegrityError as e:
+            print "=============================="
+            print IntegrityError
+            print e
             # Check if user already subscribed, then we have a genuine error
             user = User.objects.get(id="1")
             existsInOtherTopic = False

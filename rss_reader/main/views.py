@@ -62,7 +62,7 @@ def register(request):
         # These forms will be blank, ready for user input.
         else:
             user_form = UserForm()
-            # Render the template depending on the context.
+            # Render the template depending on txhe context.
             return render_to_response(
                     'registration/register.html',
                     {'user_form': user_form, 'registered': registered},
@@ -72,10 +72,6 @@ def about(request):
 	template = "about.html"
 	return render(request, template, {})
 
-
-def search(request):
-	template = "search.html"
-	return render(request, template, {})
 
 def user_login(request):
     context = RequestContext(request)

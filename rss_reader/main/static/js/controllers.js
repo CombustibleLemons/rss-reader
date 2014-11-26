@@ -301,15 +301,9 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
-    $scope.showTopicOptions = function(feedURL) { // formerly passed url as an argument
-      $http.get('/topics', {}).success(function(data) {
-          // show popup with topic options
-          $scope.topics = data;
-          $scope.showPopup(feedURL);
-        }).error(function(data, status, headers, config){
-            console.log(status);
-            console.log(data);
-        });
+    $scope.showTopicOptions = function(feedURL) { 
+      $scope.topics = ($scope.$parent.topics);
+      $scope.showPopup(feedURL);
     };
 
     $scope.showPopup = function(feedURL) {
@@ -323,16 +317,18 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeed = function(feedURL,topic) { // formerly passed url as an argument
+    $scope.addFeed = function() { // formerly passed url as an argument
+      var feedURL = $(".feedURL").attr("value");
+      var topic = $('input[name=selectedTopic]:checked', '#topicsForm').val()
       APIService.addFeedByUrl(feedURL).success(function(data) {
-          // How do we figure out where to put it if this creates a new feed?
           $rootScope.$broadcast("addedFeed", {
-                feed: data,
-                topicName: topic
+              feed: data,
+              topicName: topic
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
           }
+          $scope.hidePopup();
         }).error(function(data, status, headers, config){
           if (status == 409) {
             $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
