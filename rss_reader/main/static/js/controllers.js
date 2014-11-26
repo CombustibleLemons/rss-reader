@@ -336,7 +336,7 @@ angular.module('main.controllers', ['main.services'])
           //if user already subscribed
           if (status == 409) {
 
-            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><span class='sr-only'>Error:</span>You are already subscribed to that feed.</div>");
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
             $scope.hidePopup();            
 
             // fade out the alert
@@ -344,7 +344,7 @@ angular.module('main.controllers', ['main.services'])
               $(".flash").fadeTo(500, 0).slideUp(500, function(){
                   $(this).remove();
               });
-            }, 3500);
+            }, 3000);
           }
         });
     };
