@@ -1,4 +1,100 @@
 # RSS-reader
+## Milestone 4.B
+### Compiling and Installation
+We are primarily using Django and AngularJS, so there is no direct compilation. However, there are a lot of packages that need to be installed in order to get the system up and running. We heavily recommend Linux or Ubuntu to install the necessary packages.
+###### Step Zero: Clone the Repository
+Clone our git repository with the command `git clone https://github.com/CombustibleLemons/rss-reader.git`
+
+###### Step One: Install PostgreSQL v.9.3 (if it is not installed already)
+  1. Install postgresql
+    2. Run `[your favourite package manager] install postgresql`
+  3. Initialize the postgres database and user
+    4. There is a script in the `~/rss_reader` folder that can be run with `./postgres-setup.sh`
+    5. Alternatively, you can set everything up manually if you want (or if the script does not work with your configuration):
+        2.  [For Arch]: run `systemctl start postgresql`. Then run `sudo -i -u postgres` and enter your password when prompted.
+        3. [For OSX]: Run `sudo su postgres` and enter the password for your computer to get the shell as a postgres user.
+        4. Run `createdb feeddb` to make a database named feeddb
+        4. Run `createuser -P combustible` to make a user named combustible
+        5. Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
+        6. Run `exit`
+    
+        Note: If you would like to change username or password, you can do so in the `~/rss_reader/rss_reader/conf/settings.py` file
+    
+
+###### Step Two: Install virtualenv and other packages
+  1. Install pip, virtualenv, and virtualenvwrapper (if they are not otherwise installed)
+  2. Create a new virtualenv and activate it
+  3. Navigate to the repository `~/rss_reader/` and run `pip install -r requirements.txt`
+
+###### Step Three: Install karma
+ 1. Install npm
+  2. Run `npm install -g karma`
+  3. Run `npm install -g jasmine`
+  4. Run `npm install -g karma-jasmine`
+  5. Run `npm install -g karma-chrome-launcher`
+  6. Run `npm install -g karma-cli` This is not strictly necessary, but makes things much easier.
+
+    *Note:* the `-g` is a global install. You can install locally to a project with `--save-dev`. The official
+guidelines recommend you do both if you have trouble.
+
+###### Step Four: Start the RSS-reader
+
+  1. Navigate to `~/rss-reader/rss_reader/` and run `./manage.py migrate` to get the database set up
+  2. Have a cookie, on us
+  3. Aw shucks, have another
+
+And you've started an instance of the RSS-reader!
+
+### Running Code
+In the terminal, access the `~/rss-reader/rss_reader/` directory and type `./manage.py runserver`.  Access `localhost:8000` via web browser. The RSS feed website should be viewable.
+
+### Running Unit Tests
+To run Django unit tests, make sure you are the postgres user (as described in Step 1.2 above) and run `psql -c 'ALTER ROLE combustible CREATEDB;'` After, navigate to the `~/rss-reader/rss_reader/` directory and enter `./manage.py test` into the terminal. This runs the model and API tests.
+
+To run AngularJS unit tests, navigate to the `~/rss-reader/rss_reader/` directory and enter `./manage.py testjs` into the terminal.
+
+### Acceptance Test Suggestions
+
+1. Automatic initialization (if you want to start with a user and some topics/feeds already initialized)
+    2. Run our intitalization script from `~/rss_reader/rss_reader` with `./manage.py shell < init_script.py`
+    3. Access `localhost:8000` via web browser, log in with the credentials Username: **lemon** and Password: **lemon**
+    4. You should see several Topics (Comics, Science, and Uncategorized) along with a few feeds in each topic
+2. Manual initialization (if you want to create a user and add topics/feeds yourself)
+    3. Make sure you are running the server as per above and access `localhost:8000` in a web browser
+    4. Click on the 'Register here!' link. You will be redirected to a register page. Enter the Username **lemon** and Password **lemon** and press the **register** button. You will be redirected back to the login page. Enter the username and password that you just registered. You should see a blank page with only an Uncategorized section on the left side. 
+    5. Click on **Add a topic** and enter **Science**. Click **Add Topic** directly underneath it. The **Science** topic should be on the left side now. Follow the same process to add the **Comics** topic. 
+    6. Enter the url "http://xkcd.com/rss.xml" in the search box on the left top of the page. Press enter and choose **xkcd** from the list of results that are displayed. In the popup that displays, select the topic **Comics** and click **Subscribe**. Follow the same sequence of events to add the urls "http://www.questionablecontent.net/QCRSS.xml", "http://broodhollow.chainsawsuit.com/feed/", and "http://rss.escapistmagazine.com/videos/list/1.xml" to the **Comics** topic.
+    7. Enter the url "http://rss.nytimes.com/services/xml/rss/nyt/Science.xml" in the search box on the left top of the page. Press enter and choose **NYT > Science** from the list of results that are displayed. In the popup that displays, select the topic **Science** and lick **Subscribe** Follow the same sequence of events to add the urls "http://feeds.feedburner.com/kernelmag?format=xml" and "http://www.popsci.com/taxonomy/term/100136/feed" to the **Science** topic.
+
+##### Register/Login Tests
+1. Registering
+    1. If you are logged in, press the logout button. Click the **Register here!** link.
+    2. Enter **Supercalifragilisticexpialidocious** in the Username field and **lemon** in the Password field. Press the **register** button. FINISHHHHHH
+    3. Enter **~bubbles~** in the Username field and **bub** in the Password field. Press the **register** button. FINISHHHHHH
+    4. Re-navigate to the register page and enter the valid Username **Chris** and the Password **bro**. Press the **register** button. You should now have been redirected to the login page.
+5. Logging In
+    6. Enter **Daisy** in the Username field and **flower** in the Password field. Press the **login** button. You will be redirected back to the same login page because the User **Daisy** does not exist.
+    6. Enter **Christopher** in the Username field and **bro** in the Password field. Press the **login** button. You will be redirected back to the same login page again because the username was incorrect.
+    6. Enter **Chris** in the Username field and **bub** in the Password field. Press the **login** button. You will be redirected back to the same login page again because the password was incorrect.
+    7. Enter correct fields this time (Username=**lemon**, Password=**lemon**). You will be redirected to the rss reader's home page, with your previously-added topics on the left side.
+
+
+### What Is Implemented
+Laterrrrr
+
+### Roles and Tasks
+Views and front-end controllers: Michelle, Jawwad
+
+Controller unit tests: James and Devon
+
+API and back-end controllers: Justyn
+
+Models, API, and model unit tests: Lucia and Justyn
+
+### Changes
+Not that we are aware of?
+
+# RSS-reader
 ## Milestone 3.B
 ### Compiling and Installation
 We are primarily using Django and AngularJS, so there is no direct compilation. However, there are a lot of packages that need to be installed in order to get the system up and running. We heavily recommend Linux or Ubuntu to install the necessary packages.
