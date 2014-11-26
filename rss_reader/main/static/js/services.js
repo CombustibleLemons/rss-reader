@@ -97,7 +97,7 @@ angular.module('main.services', []).
           return promise;
         },
         search : function(searchString) {
-          var promise = $http.get('/search/', {"params" : {"searchString" : searchString}});
+          var promise = $http.post('/search/', {"searchString" : searchString});
           return promise;
         },
         // Feed controller functions

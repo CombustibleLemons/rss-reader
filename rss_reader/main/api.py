@@ -171,6 +171,7 @@ def feed_create(request):
     if request.method == "POST":
         # Create feed using input URL
         url = request.DATA["url"]
+        print url
         try:
             # Try creating a Feed with the url
             f = Feed.createByURL(url)
@@ -320,7 +321,6 @@ def remove_repeats(seq):
 import watson
 @api_view(['GET', 'POST'])
 def search(request):
-    #print "entered search"
     if request.method == "POST":
         # Create feed using input URL
         #print "getting search string"
