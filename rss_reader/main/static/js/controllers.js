@@ -97,7 +97,6 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.saveEdits = function() {
-      $scope.toggleEditMode();
       var listOfTopics = $(".feeds");
 
       $.each( listOfTopics, function( i, val ) {
@@ -116,22 +115,12 @@ angular.module('main.controllers', ['main.services'])
           APIService.updateTopic(topic).success(function(data) {
             console.log("success");
           }).error(function(data, status, headers, config){
-            console.log("fail mofo");
+            console.log(status);
+            console.log(data);
           });
         }
-
       });
-
-      // for each topic in listOfTopics {
-      //   ls = [];
-      //   for each div under topic {
-      //     ls.push(div.attr("data"))
-      //     if (ls != topic.feeds) {
-      //       call updateTopic;
-      //     }
-      //   }
-      // }
-
+      $scope.toggleEditMode();
     };
 
     $scope.toggleEditMode = function() {
