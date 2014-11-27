@@ -518,17 +518,17 @@ angular.module('main.controllers', ['main.services'])
         });
       };
 
-      $scope.expandSettingsUser = function() {
-        $scope.expandedSettingIndex = 1;
-      };
+    $scope.expandSettingsUser = function() {
+      $scope.expandedSettingIndex = 1;
+    };
 
-      $scope.expandSettingsFeed = function() {
-        $scope.expandedSettingIndex = 2;
-      };
+    $scope.expandSettingsFeed = function() {
+      $scope.expandedSettingIndex = 2;
+    };
 
-      $scope.expandSettingsReading = function() {
-        $scope.expandedSettingIndex = 3;
-      };
-      // End Methods
-    });
+    $scope.expandSettingsReading = function() {
+      $scope.expandedSettingIndex = 3;
+    };
+    // End Methods
+  });
 //*/
