@@ -355,6 +355,7 @@ def topicFeedsChanged(sender, instance, **kwargs):
                     # Add the pk to failed list and remove it from the pk_set
                     pk_set.remove(pk)
                     failed.append(pk)
+                    break
             # Check if feed is in this Topic's feed list
             if instance.feeds.all().filter(id=pk).exists():
                 # Fail to add silently, it's okay if a feed is already in a topic and we add it

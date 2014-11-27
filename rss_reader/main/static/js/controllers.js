@@ -136,7 +136,9 @@ angular.module('main.controllers', ['main.services'])
       if($(".nav-sidebar").hasClass("sortable")) {
         $(".nav-sidebar").removeClass("sortable");
         $(".nav-sidebar").removeClass("ui-sortable");
-        $(".nav li a[class^='removeTopic']").hide(); 
+        $(".nav li a[class^='removeTopic']").hide();
+        $(".nav li input[class^='editTopic']").hide();
+        $(".nav li a[class^='editTopic']").hide();
         $(".nav li a[class^='editBtn']").hide();
         $(".saveBtn").hide()
 
@@ -179,16 +181,20 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.renameTopic = function(newTopicName, topic) {
-      topic.name = newTopicName;
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("renamedTopic", {
-            topic: data,
-            identifier: topic.id
+      if(newTopicName) {
+        topic.name = newTopicName;
+        APIService.updateTopic(topic).success(function(data) {
+            $rootScope.$broadcast("renamedTopic", {
+              topic: data,
+              identifier: topic.id
+            });
+            console.log("success");
+          }).error(function(data, status, headers, config){
+            console.log(status);
           });
-          console.log("success");
-        }).error(function(data, status, headers, config){
-          console.log(status);
-        });
+      }
+      $(".editTopic"+topic.id).hide();
+      $(".editBtn"+topic.id).show();
     };
 
     $scope.removeTopic = function(topicID) {
@@ -518,17 +524,17 @@ angular.module('main.controllers', ['main.services'])
         });
       };
 
-      $scope.expandSettingsUser = function() {
-        $scope.expandedSettingIndex = 1;
-      };
+    $scope.expandSettingsUser = function() {
+      $scope.expandedSettingIndex = 1;
+    };
 
-      $scope.expandSettingsFeed = function() {
-        $scope.expandedSettingIndex = 2;
-      };
+    $scope.expandSettingsFeed = function() {
+      $scope.expandedSettingIndex = 2;
+    };
 
-      $scope.expandSettingsReading = function() {
-        $scope.expandedSettingIndex = 3;
-      };
-      // End Methods
-    });
+    $scope.expandSettingsReading = function() {
+      $scope.expandedSettingIndex = 3;
+    };
+    // End Methods
+  });
 //*/

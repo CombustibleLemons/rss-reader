@@ -21,13 +21,14 @@
 			        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 			        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 				      			</a>
-				      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
+								<div ng-if="topic.name != 'Uncategorized'" style="display:inline">
+					      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
 
-				      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
+					      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic.name, topic)" style="float:right;">submit</a>
 
-				      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic.name, topic)" style="float:right;">submit</a>
-
-				      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
+					      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;"><img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12"></a>
+					      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;"><img src="https://cdn2.iconfinder.com/data/icons/windows-8-metro-style/512/edit.png" width="12"></a>
+					      		</div>
 				      		</div>
 							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
 								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
@@ -95,7 +96,7 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
-						<a href="" ng-click="showTopicOptions(result)">+</a>
+						<a href="" ng-click="showTopicOptions(result)"><img src="https://cdn3.iconfinder.com/data/icons/eightyshades/512/14_Add-128.png" width="30"></a>
 					</div>
 					<div id="popupWrapperResults">
 						<div id="popupTopicResults">
@@ -105,7 +106,7 @@
 								<div ng-repeat="topic in topics">
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
-								<input class="feedObj" type="hidden" value="">
+								<input class="feedObj" type="hidden" value="">x
 								<a href="#" class="addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
 								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
