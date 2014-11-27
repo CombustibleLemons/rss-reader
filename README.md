@@ -180,7 +180,7 @@ These are the things we ran into trouble with:
 
 1) Queue feeds
 
-* Django's models ended up being much more complicated than predicted when it came to implementing queue feeds.
+* Django's models ended up being much more complicated than predicted when it came to implementing queue feeds. When you ask for a feed from the server then call the `UPDATE` method, it calls the feed method rather than the queue feed subclass because subclassing in Django does not work the way we assumed it did. This is a bug we will fix in the Q & A phase.
 
 2) Removing topics
 
