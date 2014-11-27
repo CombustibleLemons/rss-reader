@@ -36,7 +36,11 @@ class PostSerializer(serializers.ModelSerializer):
         #     "pubDate", "updated", "ackDate", )
 
 class PostsReadSerializer(serializers.ModelSerializer):
+    Length = serializers.SerializerMethodField('get_post_length')
     # posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = PostsRead
         #fields = ('id', 'user', 'feed', 'posts' )
+    def get_post_length(self, obj):
+        words = obj.content.split()
+        return len(words)
