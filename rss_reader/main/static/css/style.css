@@ -137,7 +137,8 @@ body {
 .nav li a[class^='editTopic'],
 .nav li a[class^='editBtn'],
 .nav li a[class^='removeTopic'], 
-.nav input[class^='editTopic'] {
+.nav input[class^='editTopic'],
+.saveBtn {
 	display:none;
 }
 .error {

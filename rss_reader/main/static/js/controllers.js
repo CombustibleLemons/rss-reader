@@ -96,12 +96,17 @@ angular.module('main.controllers', ['main.services'])
       $(".editBtn"+topicID).hide();
     };
 
+    $scope.saveEdits = function() {
+      console.log("yay!");
+    };
+
     $scope.toggleEditMode = function() {
       if($(".nav-sidebar").hasClass("sortable")) {
         $(".nav-sidebar").removeClass("sortable");
         $(".nav-sidebar").removeClass("ui-sortable");
         $(".nav li a[class^='removeTopic']").hide(); 
         $(".nav li a[class^='editBtn']").hide();
+        $(".saveBtn").hide()
 
         $scope.expandedIndex = [];
 
@@ -111,6 +116,7 @@ angular.module('main.controllers', ['main.services'])
         $(".nav-sidebar").addClass("sortable");
         $(".nav li a[class^='removeTopic']").show(); 
         $(".nav li a[class^='editBtn']").show();
+        $(".saveBtn").show()
 
         for (var i = 0; i <= $(".nav li").length; i++) {
             $scope.expandedIndex.push(i);
