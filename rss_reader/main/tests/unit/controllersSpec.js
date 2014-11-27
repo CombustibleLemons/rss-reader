@@ -195,11 +195,11 @@ describe("Navigation controllers", function() {
         expect(navScope.topics[1]["name"]).toEqual("topic2");
         expect(navScope.topics[1]["id"]).toEqual(13);
 
-        expect(navScope.expandedIndex).toEqual(-1);
+        expect(navScope.expandedIndex).toEqual([-1]);
         navScope.expandTopic(0);
-        expect(navScope.expandedIndex).toEqual(0);
+        expect(navScope.expandedIndex).toEqual([0]);
         navScope.expandTopic(1);
-        expect(navScope.expandedIndex).toEqual(1);
+        expect(navScope.expandedIndex).toEqual([1]);
     });
 
     it("should move feeds from topic to topic", inject(function($controller) {
@@ -433,14 +433,17 @@ describe("Feed controllers", function() {
     it("should fetch posts", function() {
         // feed has no posts
         httpBackend.expectGET('/feeds/12/posts/').respond(200, []);
+        httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
         topicScope.expandFeed(12);
         httpBackend.flush();
         expect(feedScope.posts).toEqual([]);
         var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
         httpBackend.expectGET('/feeds/12/posts/').respond(200, fake_post_array);
+        httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
         topicScope.expandFeed(12);
         httpBackend.flush();
-        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
+        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true},
+           {"bill": "murray", "content":"", "unread":true}]);
     });
 });
 
