@@ -177,8 +177,8 @@
 								    var startTime = new Date();
 								    var x;
 								    var endTime, elapsed;
-								    var wordcount1 = 125;
-								    if (confirm("We are nothing. We are the dirt beneath your feet. And no one cared who I was until I put on the mask... \n\nWho we are does not matter. What matters is our plan. \n\nIf I pull this off, will you die? \n\nIt would be extremely painful. \n\nYou're a big guy - \n\nFor you. \n\nWas being caught part of your plan? \n\nOf course. Dr. Pavel refused our offer in favor of yours. We had to know what he told you about us. \n\nNothing! I said nothing! \n\nWhy not just ask him? \n\nHe would not have told us. \n\nYou have methods. \n\nHim, I need healthy. You present no such problem. \n\nWell congratulations, you got yourselves caught. What's the next step of your master plan? \n\nCrashing this plane...") == true) {
+								    var wordcount1 = 141;
+								    if (confirm("\"Words can be like X-rays, if you use them properly — they’ll go through anything. You read and you’re pierced. That’s one of the things I try to teach my students — how to write piercingly. But what on earth’s the good of being pierced by an article about a Community Sing, or the latest improvement in scent organs? Besides, can you make words really piercing — you know, like the very hardest X-rays — when you’re writing about that sort of thing? Can you say something about nothing? That’s what it finally boils down to. I try and I try …” \n“Hush!” said Bernard suddenly, and lifted a warning finger; they listened. “I believe there’s somebody at the door,” he whispered. Helmholtz got up, tiptoed across the room, and with a sharp quick movement flung the door wide open. There was, of course, nobody there.") == true) {
 								        endTime = new Date();
 								        elapsed = (endTime - startTime) / 1000;
 								        wpm1 = Math.round(wordcount1 / elapsed * 60);
@@ -190,8 +190,8 @@
 								    var startTime = new Date();
 								    var x;
 								    var endTime, elapsed;
-								    var wordcount2 = 61;
-								    if (confirm("In the moment when I truly understand my enemy, understand him well enough to defeat him, then in that very moment I also love him. I think it’s impossible to really understand somebody, what they want, what they believe, and not love them the way they love themselves. And then, in that very moment when I love them.... I destroy them.") == true) {
+								    var wordcount2 = 140;
+								    if (confirm("It wasn't until a number of years later, when they both wound up working at Black Sun Systems, Inc., that he put the other half of the equation together. At the time, both of them were working on avatars. He was working on bodies, she was working on faces. She was the face department, because nobody thought that faces were all that important— they were just flesh-toned busts on top of the avatars. She was just in the process of proving them all desperately wrong. But at this phase, the all-male society of bitheads that made up the power structure of Black Sun Systems said that the face problem was trivial and superficial. It was, of course, nothing more than sexism, the especially virulent type espoused by male techies who sincerely believe that they are too smart to be sexists.") == true) {
 								        endTime = new Date();
 								        elapsed = (endTime - startTime) / 1000;
 								        wpm2 = Math.round(wordcount2 / elapsed * 60);
@@ -211,6 +211,7 @@
 								    }
 								    document.getElementById("time3").innerHTML = "You read at " + wpm3 + " words per minute";
 								}
+								var finalWPM = Math.round(wpm1 * wpm2 * wpm3/3);
 							</script>
 						</div>
 					</div>
