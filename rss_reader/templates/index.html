@@ -12,31 +12,35 @@
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
-					<a href="#" ng-click="showPopup()">Add a topic</a>
-					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
-						<li>
-							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
-		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
-		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
-			      			</a>
-			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
+					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;
+					<a href="#" ng-click="toggleEditMode()" class="toggleEdit">Edit</a>
+					<ul class="nav nav-sidebar">
+						<li ng-repeat="topic in topics">
+							<div class="topicHolder" data="{{topic}}">
+								<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
+			        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+			        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+				      			</a>
+				      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
 
-			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
+				      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
 
-			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
+				      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
 
-			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
-
-							<div ng-controller="TopicController"><br><br>
-								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
-									<li>
+				      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
+				      		</div>
+							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
+								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
+									<div id="{{feed.id}}">
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
 										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
-									</li>
-								</ul>
-							</div>
+									</div>
+								</li>
+							</ul>
 						</li>
+						<br/>
 					</ul>
+					<a href="#" ng-click="saveEdits()" class="saveBtn">Save changes</a>
 				</div>
 			</div>
 			
@@ -91,7 +95,7 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
-						<a href="" ng-click="showTopicOptions(result.id)">+</a>
+						<a href="" ng-click="showTopicOptions(result)">+</a>
 					</div>
 					<div id="popupWrapperResults">
 						<div id="popupTopicResults">
@@ -101,7 +105,7 @@
 								<div ng-repeat="topic in topics">
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
-								<input class="feedID" type="hidden" value="">
+								<input class="feedObj" type="hidden" value="">
 								<a href="#" class="addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
 								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
