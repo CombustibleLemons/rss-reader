@@ -79,10 +79,6 @@ angular.module('main.services', []).
           var promise = $http.post('/topics/', {"name":topicName});
           return promise;
         },
-        renameTopic : function(newTopicName, topicID) {
-          var promise = $http.put('/topics/' + topicID, {"name":newTopicName, "index":topicID});
-          return promise;
-        },
         removeTopic : function(topicID) {
           var promise = $http.delete('/topics/' + topicID, {"index":topicID});
           return promise;
@@ -103,6 +99,13 @@ angular.module('main.services', []).
         // Feed controller functions
         fetchPosts : function(feedID) {
           var promise = $http.get('/feeds/' + feedID + '/posts/');
+          return promise;
+        },
+        updatePostsRead : function(feedID, postsRead){
+          return $http.put("/feeds/" + feedID + "/posts/read", postsRead);
+        },
+        getPostsRead : function(feedID){
+          var promise = $http.get("/feeds/" + feedID + "/posts/read");
           return promise;
         }
     };

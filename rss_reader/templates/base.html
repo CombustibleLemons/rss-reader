@@ -1,4 +1,4 @@
-{% load i18n %} 
+{% load i18n %}
 {% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en" ng-app="main">
@@ -9,10 +9,12 @@
 	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
 	<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css">
 
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.min.js"></script>
+	<script type="text/javascript"  src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
+	<script type="text/javascript"  src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular-cookies.js"></script>
 	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-sanitize.min.js"></script>
+	<script type="text/javascript" src="{% static 'js/jquery.mjs.nestedSortable.js' %}"></script>
 
 </head>
 <body ng-app="main">

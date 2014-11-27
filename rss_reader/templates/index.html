@@ -9,73 +9,85 @@
 		<!--Navigation Section -->
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
+
+				<!-- Topics Section -->
+				<div> <!--ng-controller="TopicController"-->
+					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;
+					<a href="#" ng-click="toggleEditMode()" class="toggleEdit">Edit</a>
+					<ul class="nav nav-sidebar">
+						<li ng-repeat="topic in topics">
+							<div class="topicHolder" data="{{topic}}">
+								<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
+			        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
+			        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
+				      			</a>
+								<div ng-if="topic.name != 'Uncategorized'" style="display:inline">
+					      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
+
+					      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic.name, topic)" style="float:right;">submit</a>
+
+					      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;"><img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12"></a>
+					      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;"><img src="https://cdn2.iconfinder.com/data/icons/windows-8-metro-style/512/edit.png" width="12"></a>
+					      		</div>
+				      		</div>
+							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
+								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
+									<div id="{{feed.id}}">
+										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
+										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+									</div>
+								</li>
+							</ul>
+						</li>
+						<br/>
+					</ul>
+					<a href="#" ng-click="saveEdits()" class="saveBtn">Save changes</a>
+				</div>
+			</div>
+			
+
+			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
 				<!-- Search Section -->
 
 		        <div ng-controller="SearchController">
 		          <form id="searchForm">
 		            <input type="text" id="searchInput" placeholder="Search for a feed" ng-model="query" ng-keyup="$event.keyCode == 13 && search()">
-		            <a href="" class="settings-btn" ng-click="expandSettings()" style="float:right;">
-		              <img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="15">
-		            </a>
 		            <a href="" ng-click="search()" class="settings-btn">
-		              <img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="15">
+		              <img src="https://cdn3.iconfinder.com/data/icons/buttons/512/Icon_35-512.png" width="25">
+		            </a>
+		            <a href="" class="settings-btn" ng-click="expandSettings()">
+		              <img src="http://www.clker.com/cliparts/x/6/h/b/B/G/gear-grey.svg" width="25">
 		            </a>
 		          </form>
 		        </div>
 
-				<!-- Topics Section -->
-				<div> <!--ng-controller="TopicController"-->
-					<a href="#" ng-click="showPopup()">Add a topic</a>
-					<ul class="nav nav-sidebar" ng-repeat="topic in topics">
-						<li>
-							<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" style="float:left;">
-		        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
-		        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
-			      			</a>
-			      			<input class="editTopic{{topic.id}}" type="text" id="renameInput{{topic.id}}" ng-model="newTopic.name" value="{{topic.name}}">
-
-			      			<a href="#" class="editBtn{{topic.id}}"ng-click="toggleEdit(topic.id)" style="float:right;">edit</a>
-
-			      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic, topic.id)" style="float:right;">submit</a>
-
-			      			<a href="#" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
-
-							<div ng-controller="TopicController"><br><br>
-								<ul class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-repeat="feed in feeds" ng-show="expandedIndex == $parent.$index">
-									<li>
-										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
-										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
-									</li>
+		        <div class="row">
+		        	<div class="col-sm-3 col-sm-offset-9 col-md-3 col-md-offset-9">
+		        		<div class="dropbox">
+							<span class="dropdown">
+								<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
+								<ul class="dropdown-menu" role="menu">
+									<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
+									<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li>
+									<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
+									<li><a href="">Length</a></li>
+									<li><a href="">Rating</a></li>
+									<li><a href="">Unread</a></li>
 								</ul>
-							</div>
-						</li>
-					</ul>
-				</div>
-			</div>
-			<div class="dropbox">
-				<span class="dropdown">
-						<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
-							<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li>
-							<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
-							<li><a href="">Length</a></li>
-							<li><a href="">Rating</a></li>
-							<li><a href="">Unread</a></li>
-						</ul>
-					</span>
-					<span class="dropdown">
-						<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">&nbsp;&nbsp;Settings<span class="caret"></span></a>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Queue</a></li>
-							<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li>
-						</ul>
-					</span>
+							</span>
+							&nbsp;&nbsp;
+							<span class="dropdown">
+								<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">Settings<span class="caret"></span></a>
+								<ul class="dropdown-menu" role="menu">
+									<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Queue</a></li>
+									<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li>
+								</ul>
+							</span>
+						</div>
+		        	</div>
+		        </div>
 
-			</div>
-
-			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
-				<div ng-controller="ResultsController" ng-show="activeView == 'searchResults'">
+				<div ng-controller="ResultsController" ng-show="activeView == 'searchResults'" class="row-fluid">
 					{{numResults}} results found:<br/>
 					<div class="row-fluid post" ng-repeat="result in searchResults">
 						<a id="feed{{result.id}}">
@@ -84,7 +96,7 @@
 								<p>{{result.description}}</p>
 							</div>
 						</a>
-						<a href="" ng-click="showTopicOptions(result.id)">+</a>
+						<a href="" ng-click="showTopicOptions(result)"><img src="https://cdn3.iconfinder.com/data/icons/eightyshades/512/14_Add-128.png" width="30"></a>
 					</div>
 					<div id="popupWrapperResults">
 						<div id="popupTopicResults">
@@ -94,43 +106,45 @@
 								<div ng-repeat="topic in topics">
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
-								<input class="feedID" type="hidden" value="">
+								<input class="feedObj" type="hidden" value="">x
 								<a href="#" class="addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
 								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
 						</div>
 					</div>
 				</div>
-				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'">
+				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'" class="row-fluid">
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
-					<span ng-model = "unread" ng-init="unread=true">
-						<a ng-click="expandPost($index); unread=false">
-								<div class="onoffswitch">
-								    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
-								    <label class="onoffswitch-label" for="myonoffswitch">
-								        <span class="onoffswitch-inner">
-								            <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
-								            <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
-								        </span>
-								    </label>
-								</div>
-							<div class="mini" ng-hide="expandedPostIndex == $index">
-								<h3>{{post.title}}</h3>
-							</div>
-						</a>
+					<span>
+						<div style="width:100%">
+                  <a ng-click="expandPost($index); post.unread=false; updatePostsRead()">
+                  <div class="mini" ng-hide="expandedPostIndex == $index" >
+                    <h3 class="post-header">{{post.title}}</h3>
+                  </div>
+                  </a>
+                <div class="onoffswitch">
+                    <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead()" class="onoffswitch-checkbox" id="readunread{{$index}}">
+                    <label class="onoffswitch-label" for="readunread{{$index}}">
+                        <span class="onoffswitch-inner">
+                            <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
+                            <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+                        </span>
+                    </label>
+                </div>
+            </div>
 						<div class="full" ng-show="expandedPostIndex == $index">
-							<h3>{{post.title}}<span ng-if="unread==true">Read</span></h3>
+							<h3>{{post.title}}<span ng-if="!post.unread">Read</span></h3>
 							<p ng-bind-html="post.content" >{{post.content}}</p>
 							<p><a href="{{post.url}}" target="_blank">View source</a></p>
 							<p style="display:none">{{post.pub}}</p>
-							<p ng-if="unread==false">I am read</p>
+							<p ng-if="post.unread">I am read</p>
 						</div>
 						</span>
 
 					</div>
 				</div>
 
-				<div ng-controller="ResultsController" ng-show="activeView == 'settingsGroups'">
+				<div ng-controller="ResultsController" ng-show="activeView == 'settingsGroups'" class="row-fluid">
 					<div class="row-fluid post">
 						<a ng-click="expandSettingsUser()">
 							<div class="mini" ng-hide="expandedSettingIndex == 1">
@@ -144,6 +158,8 @@
 								<input type="text" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
 							</form>
 						</div>
+					</div>
+					<div class="row-fluid post">
 						<a ng-click="expandSettingsFeed()">
 							<div class="mini" ng-hide="expandedSettingIndex == 2">
 								<h3>Feed Settings</h3>
@@ -152,6 +168,8 @@
 						<div class="full" ng-show="expandedSettingIndex == 2">
 							<h3>Feed Settings</h3>
 						</div>
+					</div>
+					<div class="row-fluid post">
 						<a ng-click="expandSettingsReading()">
 							<div class="mini" ng-hide="expandedSettingIndex == 3">
 								<h3>Reading Test</h3>
@@ -196,7 +214,7 @@
 						</div>
 					</div>
 				</div>
-				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'">
+				<div ng-controller="ResultsController" ng-show="activeView == 'searchResult'" class="row-fluid">
 					<div id="popupQueueWrapper">
 						<div id="popupQueue">
 							<form action="#" id="form" name="form">
