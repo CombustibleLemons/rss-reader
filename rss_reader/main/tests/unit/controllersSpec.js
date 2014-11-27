@@ -288,9 +288,7 @@ describe("Topic controllers", function() {
     it("should add and remove feeds", function() {
         // add foofeed
         var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.expectPUT('/topics/12').respond(200, '');
         topicScope.addFeedToTopic(foofeed);
-        httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
         expect(topicScope.feeds[0]).toEqual(foofeed);
         // check fetching feeds when there are feeds
@@ -376,7 +374,6 @@ describe("Search controllers", function($rootScope) {
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
 
-        httpBackend.expectPUT('/topics/12', {"name":"Uncategorized", "id":12, "user":1, "feeds":[42]}).respond(200, '');
         searchScope.addFeed();
         searchScope.$on("addedFeed", function (event, message) {
             success = true;

@@ -95,7 +95,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.addTopic = function(topicName) {
       APIService.addTopic(topicName).success(function(data) {
         $rootScope.$broadcast("addedTopic", {
-          topic: data,
+          topic: data
         });
         $scope.hidePopup();
         $("#popupTopic input").val('');
@@ -108,7 +108,7 @@ angular.module('main.controllers', ['main.services'])
       APIService.renameTopic(newTopicName, topicID).success(function(data) {
           $rootScope.$broadcast("renamedTopic", {
             topic: data,
-            identifier: topicID,
+            identifier: topicID
           });
         }).error(function(data, status, headers, config){
           console.log(status);
@@ -118,7 +118,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.removeTopic = function(topicID) {
       APIService.removeTopic(topicID).success(function(data) {
           $rootScope.$broadcast("removedTopic", {
-                identifier: topicID,
+                identifier: topicID
           });
         }).error(function(data, status, headers, config){
           console.log(status);
@@ -149,6 +149,7 @@ angular.module('main.controllers', ['main.services'])
 
   .controller('SearchController', function($scope, $rootScope, APIService) {
 
+    // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
     };
@@ -170,10 +171,42 @@ angular.module('main.controllers', ['main.services'])
         });
     };
 
-    $scope.search = function() { // formerly passed url as an argument
-      APIService.search($scope.query).success(function(data) {
+    $scope.search = function() {
+      var testSuccess = false;
+      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
+      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      // Is the query a valid URL?
+      testSuccess = regexp.test($scope.query);
+      // Query is a valid URL
+      if(testSuccess == true) {
+        APIService.addFeedByUrl($scope.query).success(function(data) {
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          console.log(data);
+          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+        }).error(function(data, status, headers, config) {
+          // Feed already exists in the database, add it
+          if(status == 409) {
+            if ($("#searchForm").find(".error")) {
+              $("#searchForm").find(".error").remove();
+            }
+            console.log('Hey');
+            console.log(data);
+            console.log('ho');
+            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+          }
+          // URL isn't a feed
+          if(status == 400) {
+            testSuccess = false;
+          }
+        });
+      } 
+      // Query is not a valid URL
+      if(testSuccess == false) {
+        APIService.search($scope.query).success(function(data) {
           $rootScope.$broadcast("showSearchResults", {
-                searchResults: data,
+            searchResults: data
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
@@ -183,7 +216,10 @@ angular.module('main.controllers', ['main.services'])
             $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
           }
         });
+      }
     };
+    // End methods
+
   })
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
@@ -203,6 +239,7 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addFeedToTopic = function(feed) {
       // Add the feed to the local side of things
+      // Is the feed in the topic already?
       if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
         $scope.topic["feeds"].push(feed.id);
         $scope.feeds.push(feed);
@@ -297,6 +334,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
+    // feedID is actually entire feed
     $scope.showTopicOptions = function(feedID) {
       $scope.topics = $scope.$parent.topics;
       $scope.showPopup(feedID);
