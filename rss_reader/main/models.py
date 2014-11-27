@@ -456,43 +456,41 @@ def topicFeedsChanged(sender, instance, **kwargs):
         # We have to keep track of a failed set, since just throwing a ValidationError would cause
         # the Topic objects to lose all of its feeds.
         failed = []
-        pk_set = kwargs.get("pk_set").copy()
-        for pk in kwargs.get("pk_set"):
+        pk_set = kwargs.pop("pk_set")
+        for pk in pk_set:
             for t in instance.user.topics.all().exclude(id=instance.id):
                 # Check if the feed is in any other topic
                 if t.feeds.filter(id=pk).exists():
                     # Add the pk to failed list and remove it from the pk_set
-                    pk_set.remove(pk)
                     failed.append(pk)
                     break
             # Check if feed is in this Topic's feed list
             if instance.feeds.all().filter(id=pk).exists():
                 # Fail to add silently, it's okay if a feed is already in a topic and we add it
                 pass
-        kwargs["pk_set"] = pk_set
         # Since we are forced to use Django signals, put the data into the object and remove it later
         instance.failed = failed
     elif kwargs['action'] == 'post_add':
+	 # Report any failed pks. See TODO above.
+        failed = instance.failed
+        if failed:
+            errMsg = "Feeds %s already exists in another topic" % (str(failed),)
+            # Remove failures
+            instance.feeds.remove(*failed)
+            raise ValidationError(errMsg)
+        # Cleanup the failed rider, don't want it sticking around with the object forever
+        del instance.failed
+
         # Make sure each added feed is given a PostsRead object to associate with a User
         user = instance.user
-        for pk in kwargs["pk_set"]:
+        for feed in list(instance.feeds.all()):
             try:
-                feed = Feed.objects.get(id=pk)
                 with transaction.atomic():
                     pr = PostsRead(user=user, feed=feed)
                     pr.save()
             except IntegrityError:
                 # IntegrityError means one already exists, so pass
                 pass
-
-        # Report any failed pks. See TODO above.
-        failed = instance.failed
-        if failed:
-            errMsg = "Feeds %s already exists in another topic" % (str(failed),)
-            failed = []
-            raise ValidationError(errMsg)
-        # Cleanup the failed rider, don't want it sticking around with the object forever
-        del instance.failed
 
 m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
 
