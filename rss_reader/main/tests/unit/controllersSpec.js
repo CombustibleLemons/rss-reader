@@ -24,27 +24,35 @@ describe("User controllers", function() {
         expect(userScope.user).toBe(undefined);
         // Set it up to return a very fake user object
         httpBackend.expectGET('/user/').respond(200, {"topics": 12});
+        httpBackend.expectGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         // Call the function
         userScope.refreshUser();
         // Send the response back from fake-server to client
         httpBackend.flush();
         // Make sure that the user variable has been properly set
         expect(userScope.user).toEqual({"topics": 12});
+
         // Try it again to make sure it doesn't break anything
         httpBackend.expectGET('/user/').respond(200, {"topics":12});
+        httpBackend.expectGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         userScope.refreshUser();
         httpBackend.flush();
         expect(userScope.user).toEqual({"topics":12});
+        expect(userScope.userSettings).toEqual({"user":1, "readtime":300});
+
         // What if the user has somehow changed on the server?
         httpBackend.expectGET('/user/').respond(200, {"topics":21});
+        httpBackend.expectGET('/user/settings/').respond(200, {"user":4, "readtime":400});
         userScope.refreshUser();
         httpBackend.flush();
         expect(userScope.user).toEqual({"topics":21});
+        expect(userScope.userSettings).toEqual({"user":4, "readtime":400});
     });
 
     it("should getTopicIds", function() {
         // Set it up to return fake user object when refreshUser is called inside getTopicIds
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         // Call the function
         userScope.getTopicIds();
         // Send the response
@@ -69,6 +77,7 @@ describe("Navigation controllers", function() {
         navScope = userScope.$new();
         $controller('NavigationController', {$scope: navScope});
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/settings/').respond(200, {"user":1, "readtime":300});
 
         userScope.$digest();
         httpBackend.flush();
@@ -333,6 +342,7 @@ describe("Feed controllers", function() {
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         userScope.refreshUser();
         httpBackend.flush();
 

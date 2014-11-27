@@ -8,7 +8,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.refreshUser = function(){
       var promise = APIService.getUser().then(function(user){
         $scope.user = user;
-        APIService.getUserSettings().then(function(userSettings) {
+        APIService.getUserSettings().success(function(userSettings) {
           $scope.userSettings = userSettings;
         });
       });
