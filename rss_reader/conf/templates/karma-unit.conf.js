@@ -29,8 +29,10 @@ module.exports = function(config) {
     ],
 
 
-    // list of files to exclude
+    // list of files to exclude 
     exclude: [
+      // {% for app_path in app_paths %}
+      '{{ app_path }}/static/js/jquery.mjs.nestedSortable.js', // {% endfor %}
     ],
 
 
