@@ -30,10 +30,14 @@ class FeedSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
+    Length = serializers.SerializerMethodField('get_post_length')
         model = Post
         # fields = ("feedURL", "author", "category", "rights", "title",
         #     "subtitle", "content", "generator", "guid", "url", "contributor",
         #     "pubDate", "updated", "ackDate", )
+    def get_post_length(self, obj):
+        words = obj.content.split()
+        return len(words)
 
 class PostsReadSerializer(serializers.ModelSerializer):
     Length = serializers.SerializerMethodField('get_post_length')
@@ -41,6 +45,3 @@ class PostsReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostsRead
         #fields = ('id', 'user', 'feed', 'posts' )
-    def get_post_length(self, obj):
-        words = obj.content.split()
-        return len(words)
