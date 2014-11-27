@@ -186,7 +186,6 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.renameTopic = function(newTopicName, topic) {
       topic.name = newTopicName;
-      console.log(topic);
       APIService.updateTopic(topic).success(function(data) {
           $rootScope.$broadcast("renamedTopic", {
             topic: data,
