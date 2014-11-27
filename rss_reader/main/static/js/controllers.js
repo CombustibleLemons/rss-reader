@@ -136,7 +136,9 @@ angular.module('main.controllers', ['main.services'])
       if($(".nav-sidebar").hasClass("sortable")) {
         $(".nav-sidebar").removeClass("sortable");
         $(".nav-sidebar").removeClass("ui-sortable");
-        $(".nav li a[class^='removeTopic']").hide(); 
+        $(".nav li a[class^='removeTopic']").hide();
+        $(".nav li input[class^='editTopic']").hide();
+        $(".nav li a[class^='editTopic']").hide();
         $(".nav li a[class^='editBtn']").hide();
         $(".saveBtn").hide()
 
