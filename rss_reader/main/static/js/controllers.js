@@ -365,7 +365,6 @@ angular.module('main.controllers', ['main.services'])
   .controller('FeedController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
     $scope.expandedPostIndex = -1;
 
-
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
@@ -374,7 +373,6 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.fetchPosts = function() {
       APIService.fetchPosts($scope.feedID).success(function(data) {
-
         // This for loop removes unnecessary line breaks
         for(var i=0; i<data.length; i++){
           //create dummy div
@@ -397,18 +395,56 @@ angular.module('main.controllers', ['main.services'])
           data[i].content = $(tmp).html();
         }
         $scope.posts = data;
+        /* Grab the PostsRead object from the server */
+        APIService.getPostsRead($scope.feedID).success(function(data){
+          console.log(data);
+          $scope.postsRead = data;
+          angular.forEach($scope.posts, function(post){
+            if (data["posts"].indexOf(post.id) == -1){
+              post.unread = true;
+            }
+            else{
+              post.unread = false;
+            }
+          });
+          /* Update the 'unread' field of the posts */
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
       });
+
     };
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
     };
+    $scope.clickPostHeader = function(post) {
+      if(post.unread){
+        post.unread = false;
+        $scope.updatePostsRead();
+      }
+    }
+    $scope.updatePostsRead = function() {
+      var postsReadArr = $scope.posts.reduce(function(previousValue, currentValue, index, array){
+        if(!currentValue.unread){
+          previousValue.push(currentValue.id);
+        }
+        return previousValue;
+      }, new Array());
+      $scope.postsRead["posts"] = postsReadArr;
+      APIService.updatePostsRead($scope.feedID, $scope.postsRead).success(function(data){
+        console.log("Success");
+      }).error(function(data, status, headers, config){
+        console.log(status);
+      });
+    }
   })
   .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
     $scope.searchResults = [];
     $scope.numResults = 0;
     $scope.topics = [];
     $rootScope.$on("showSearchResults", function (event, message) {
+        console.log(message.searchResults);
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
     });
@@ -460,24 +496,5 @@ angular.module('main.controllers', ['main.services'])
         });
     };
 
-    $scope.expandedSettingIndex = -1;
-    $rootScope.$on("clickSettings", function (event, message) {
-            $scope.expandedPostIndex = -1;
-        });
-
-
-      $scope.expandSettingsUser = function() {
-      // Expand the post
-      $scope.expandedSettingIndex = 1;
-    };
-
-      $scope.expandSettingsFeed = function() {
-        $scope.expandedSettingIndex = 2;
-      };
-
-      $scope.expandSettingsReading = function() {
-        $scope.expandedSettingIndex = 3;
-      };
-  });
-
+  })
 //*/
