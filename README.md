@@ -69,10 +69,17 @@ To run AngularJS unit tests, navigate to the `~/rss-reader/rss_reader/` director
 
 Note: if mistakes (typing or otherwise) are made in setting up everything for some reason, please run `./flush_database.sh` and retry.
 
+Subnote: if sor some reason you cannot run that script or it runs with errors, simply run these commands in order
+* `sudo -i -u postgres` (or Mac equivalent)
+* `dropdb feeddb`
+* `dropuser combustible`
+* Complete step 1.2 above again, creating the postgres database and user
+* Make sure to migrate afterwards!
+        
 ##### Register/Login Tests
 1. Registering
     * If you are logged in, press the logout button. If not, navigate to `localhost:8000`. Click the **Register here!** link.
-    * Enter **Supercalifragilisticexpialidocious** in the Username field. Only **Supercalifragilisticexpialidoc** will fit in the box. Delete the text from the username box.
+    * Enter **Supercalifragilisticexpialidocious** in the Username field. Only **Supercalifragilisticexpialidoc** will fit in the box because of the 30 character limit. Delete the text from the username box.
     * Enter **~bubbles~** in the Username field and **bub** in the Password field. Press the **register** button. The page will redirect to itself and display the error "Enter a valid username."
     * Enter the valid Username **Chris** and the Password **bro**. Press the **register** button. You should now have been redirected to the login page.
 5. Logging In
@@ -95,10 +102,13 @@ Note: if mistakes (typing or otherwise) are made in setting up everything for so
 ##### Adding, Editing, and Deleting Topics Tests
 * Click on **Add a Topic**. You should see a popup asking you to enter a topic name. Click on **Cancel**. The popup should close with no topics having been added.
 * Click on **Add a Topic** again. This time, enter **News** and press **Add Topic**. The popup should close, with the new Topic **News** now present on the left side navigation bar. 
-* Click on **News**. Click on the **edit** button next to the name. A field should now appear in which the user can enter a new name for the Topic. Type **Sports News** and press enter. The name of the Topic should now be **Sports News**.
-* Click on the **x** next **Sports News**. The topic should now no longer be seen on the navigation bar.
+* Click on the **edit** button above the topics. The nav bar should now change to have a pencil and **x** next to each topic.
+* Click on the pencil next to **News**. Type **Sports News** in the blank field that appears next to it and hit **submit**. The name of the Topic should now be **Sports News**.
 * Click on **Add a Topic** again. Leave the input blank and press **Add Topic**. The popup will not disappear because the name of the topic is empty.
-* Click on **Add a Topic** one last time. Enter **Supercalifragilisticexpialidocious** and click the **Add Topic** button. The new topic with a (very long) name will be displayed at the left. Press the **x** next to it and delete it.
+* Click on **Add a Topic** one last time. Enter **Supercalifragilisticexpialidocious** and click the **Add Topic** button. The new topic with a (very long) name will be displayed at the left. 
+* Click on **Save changes**. The original nav bar view should return.
+* Go back into the edit module. Click on the **x** next **Sports News**. The topic should now no longer be seen on the navigation bar. Press the **x** next to **Supercalifragilisticexpialidocious** as well and delete it. Click **Save changes** again.
+
 
 ##### Adding, Searching, and Deleting Feeds Tests
 * Copy "http://www.eurekalert.org/rss/technology_engineering.xml" to the search box at the top of the page. Press enter. A list of results (with only 1 result this time) should display underneath.
@@ -106,18 +116,16 @@ Note: if mistakes (typing or otherwise) are made in setting up everything for so
 * Click on **Subscribe** without choosing a topic. The popup should stay open.
 * Click on the radio button next to **Science** and press the **Subscribe** button at the bottom. The popup should close. Refresh your page. Click on the **Science** topic to the left. It should expand and have **EurekAlert!** as a feed in it now.
 * Click on **EurekAlert!**. It should display the posts in this feed to the right.
-* Copy "http://www.eurekalert.org/rss/technology_engineering.xml" once again into the top search box and press enter. Once again, click on the top **EurekAlert!** link. Red text should display saying "You are already subscribed to that feed" and the feed should not be added again.
+* Copy "http://www.eurekalert.org/rss/technology_engineering.xml" once again into the top search box and press enter. Once again, click on the plus next to **EurekAlert!**. Click on the topic **Comics** and press **Subscribe**. Red text should appear saying, "You are already subscribed to that feed", and the feed should not be added again.
 * Click on the **-** (minus) sign before the name of the feed (**EurekAlert!**). The feed should now disppear from the list.
-* In the search box at the top of the page, enter the keyword **eurekalert** and press enter. Underneath should display the link to **eurekalert** that we saw before when we entered the link. Click on it again. Choose the **Science** topic from the list and again click **Subscribe**.
 * In the navigation bar, click the **x** next to the Topic **Science**. This should eliminate **Science** and all of the feeds that it contains, including the newly-added **EurekAlert!**.
-* INCORRECT INPUT URL
-* KEYWORD WITH NO RESULTS
-* MOVING FEEDS BETWEEN TOPICS?
+* Type "https://github.com/" into the search box and press enter. The view will not change from the current one because no results were found for this link.
+* There is currently no way to move feeds between different topics.
 
 
 
 ##### Settings Tests
-* Click on the gear underneath the search bar. The settings view should display.
+* Click on the gear next to the search bar. The settings view should display.
 * Click on **User Settings**. The selection should expand and display a box in which a new password can be entered
 * Type in **carrot** to the field. Press enter. Nothing should happen because this part has not been implemented.
 * Click on **Feed Settings**. The selection should expand to show nothing because we have not implemented feed settings.
@@ -133,8 +141,7 @@ Note: if mistakes (typing or otherwise) are made in setting up everything for so
     * Click on the same dropbox and choose **Time (newest)**. The same order as was initially displayed should now appear.
     * Click on the same dropbox and choose **Time (oldest)**. The reverse of the order you originally saw should appear.
 2. Settings
-    * Click on the **Feed Settings** dropbox and click on **Queue**. You should be shown the view of the settings page.
-    * Navigate back to a feed of your choosing and click on the **Feed Settings** dropbox again. This time, click on **Autodelete**. You should likewise see the same settings page as before.
+    * Click on the **Feed Settings** dropbox and click on **Queue** or **Autodelete**. Nothing should happen because these have not been implemented.
 
 
 #####Unread/Read Tests
