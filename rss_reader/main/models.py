@@ -1,7 +1,7 @@
 # Django
 
 ## Models
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User, UserManager
 import watson
 
@@ -19,6 +19,9 @@ from django import forms
 import feedparser
 import time
 from datetime import datetime
+from django.utils import timezone
+import timedelta
+import math
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
@@ -104,7 +107,7 @@ class Feed(models.Model):
 
     # URL
     # - URL : string
-    URL = models.URLField(unique=True)
+    URL = models.TextField(unique=True)
 
     # Integer
     # - ttl : int
@@ -280,7 +283,112 @@ class Feed(models.Model):
                     pass
 
 class QueueFeed(Feed):
-    pass
+    #QueueFeeds, unlike other Feeds, are unique to a User
+    user = models.ForeignKey(User, null=True, related_name="queues")
+    feed = models.ForeignKey(Feed, null=True, related_name = "feed")
+
+    #update data
+    postNum = models.IntegerField()
+    interval = timedelta.fields.TimedeltaField()
+    lastUpdate = models.DateTimeField()
+
+    #list of posts accessible to user, by post.id (posts shoudl be unique to Feeds, cannot be added to QueueFeed directly)
+    qPosts = ListField(null=True)
+
+    #static attribute - if static is True, the number of unread posts will not exceed postNum
+    static = False
+
+    @classmethod
+    def create(cls, feed, postnum, interval, user):
+        # interval constraints - at smallest, will be hours
+
+        #save feed if it is not in the database
+        if not(feed.pk):
+            feed.save()
+
+        #create bones of a QueueFeed
+        # Feed URL's must be unique; though QueueFeeds don't need URLs, initialized URL with feed.id to fulfill this constraint
+        # Django won't let us override this
+        # this is our hacky, hacky fate
+        q = cls.objects.create(postNum = postnum, interval = interval, lastUpdate = timezone.now(), user = user, URL=str(feed.id))
+
+        #q.URL = str(q.id)
+        #print q.id
+
+        q.feed = feed
+        fposts = feed.posts.all().order_by('pubDate')
+        #print fposts[:postnum]
+        for p in fposts[:postnum]:
+            # print p
+            # print p.id
+            q.qPosts.append(p.id)
+        #print q.qPosts
+        return q
+
+    def getPosts(self):
+        #returns list of Posts that's ids should be added to qPosts
+        user = self.user
+        qfeed = self.feed
+        qPosts = self.qPosts
+
+        #calculate timePassed, convert interval from timedelta to hours
+        # print "getPosts says:"
+        # print timezone.now()
+        # print self.lastUpdated
+        diff =  timezone.now() - self.lastUpdated
+        timePassed = diff.total_seconds() / 3600
+        #print "time passed is %d" % (timePassed,)
+        currInt = self.interval.total_seconds() / 3600
+        #print "interval is %d" % (currInt,)
+
+        #no posts added if not enough time has passed
+        if (timePassed<=currInt):
+            return list()
+
+        #get entire list of available posts
+        ascending_posts = qfeed.posts.all().order_by('pubDate')
+
+        #length of list of current qPosts; how far along Feed's Postlist the QueueFeed has gone
+        qPostsLen = len(self.qPosts)
+
+        if not(self.static):
+            #return list of postNum posts after last Post grabbed
+            return list(ascending_posts[qPostsLen:(qPostsLen+self.postNum)])
+
+        else:
+            # print "entered static"
+            #get qfeed's read posts from readPosts
+            feedReadPost = user.readPosts.get(feed__id=qfeed.id)
+            feedReadPostSet = list(feedReadPost.posts.all())
+            # print "ReadPosts:"
+            # print feedReadPostSet
+            # make list of unread posts
+            unread = []
+            unread = [pq_id for pq_id in qPosts if not Post.objects.get(id = pq_id) in feedReadPostSet]
+            # print "unread and len:"
+            # print idsToPosts(unread)
+            # print len(unread)
+
+            #determine number of Posts that need to be added so that there are postNum unread Posts
+            diff = self.postNum - len(unread)
+            # print diff
+            truncPostNum = diff if (diff > 0) else 0
+            return list(ascending_posts[qPostsLen:(qPostsLen+truncPostNum)])
+
+    def update(self):
+        # with transaction.atomic():
+        #     self.feed.update()
+        for p in self.getPosts():
+            self.qPosts.append(p.id)
+
+#debugging, takes qPosts and returns list of Posts
+def idsToPosts(qlist):
+    #print qlist
+    ret_list = list()
+    for qp_id in qlist:
+        post = Post.objects.get(pk=qp_id)
+        ret_list.append(post)
+    return ret_list
 
 class Topic(models.Model):
     name = models.TextField()
@@ -342,47 +450,47 @@ from django.db.models.signals import m2m_changed
 # multiple feeds at once. We don't do this in the controller code, but that behavior is not
 # well defined elsewhere
 def topicFeedsChanged(sender, instance, **kwargs):
+    #import pdb; pdb.set_trace()
     # Remember to exclude self from the checking!
     if kwargs['action'] == 'pre_add':
         # We have to keep track of a failed set, since just throwing a ValidationError would cause
         # the Topic objects to lose all of its feeds.
         failed = []
-        pk_set = kwargs.get("pk_set").copy()
-        for pk in kwargs.get("pk_set"):
+        pk_set = kwargs.pop("pk_set")
+        for pk in pk_set:
             for t in instance.user.topics.all().exclude(id=instance.id):
                 # Check if the feed is in any other topic
                 if t.feeds.filter(id=pk).exists():
                     # Add the pk to failed list and remove it from the pk_set
-                    pk_set.remove(pk)
                     failed.append(pk)
                     break
             # Check if feed is in this Topic's feed list
             if instance.feeds.all().filter(id=pk).exists():
                 # Fail to add silently, it's okay if a feed is already in a topic and we add it
                 pass
-        kwargs["pk_set"] = pk_set
         # Since we are forced to use Django signals, put the data into the object and remove it later
         instance.failed = failed
     elif kwargs['action'] == 'post_add':
-        # Make sure each added feed is given a PostsRead object to associate with a User
-        user = instance.user
-        for pk in kwargs["pk_set"]:
-            try:
-                feed = Feed.objects.get(id=pk)
-                pr = PostsRead(user=user, feed=feed)
-                pr.save()
-            except IntegrityError:
-                # IntegrityError means one already exists, so pass
-                pass
-
-        # Report any failed pks. See TODO above.
+	 # Report any failed pks. See TODO above.
         failed = instance.failed
         if failed:
             errMsg = "Feeds %s already exists in another topic" % (str(failed),)
-            failed = []
+            # Remove failures
+            instance.feeds.remove(*failed)
             raise ValidationError(errMsg)
         # Cleanup the failed rider, don't want it sticking around with the object forever
         del instance.failed
+
+        # Make sure each added feed is given a PostsRead object to associate with a User
+        user = instance.user
+        for feed in list(instance.feeds.all()):
+            try:
+                with transaction.atomic():
+                    pr = PostsRead(user=user, feed=feed)
+                    pr.save()
+            except IntegrityError:
+                # IntegrityError means one already exists, so pass
+                pass
 
 m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
 
@@ -534,7 +642,7 @@ class PostsRead(models.Model):
     # Date after which to auto mark as read (TODO: Need a way to handle users marking something as unread
     # and then not just obliterating it everytime this update function is called)
     # dateCutoff defaults to null = True since we do not require posts to be auto-marked-as-read
-    dateCutoff = timedelta.fields.TimedeltaField(null=True, blank=True) # Blank so serializer doesn't have to keep track
+    dateCutoff = timedelta.fields.TimedeltaField(null=False, blank=True) # Blank so serializer doesn't have to keep track
 
     class Meta:
         unique_together = (('user', 'feed'),);
@@ -581,6 +689,14 @@ def createUncategorized(sender, instance, **kwargs):
 # Register classes that we want to be able to search
 # We will only be returning information about the Feed.
 # from https://github.com/etianen/django-watson/wiki/registering-models
-watson.register(Topic)
 watson.register(Feed)
+watson.register(Topic)
 watson.register(Post)
+#watson.register(Post.objects.all(), fields = ("title", "subtitle", "author", "content",))
+
+from django.db.models.signals import post_save
+def update_post_index(instance, **kwargs):
+    for post in instance.posts.all():
+        watson.default_search_engine.update_obj_index(post)
+
+post_save.connect(update_post_index, Feed)

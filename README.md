@@ -17,9 +17,9 @@ Clone our git repository with the command `git clone https://github.com/Combusti
         4. Run `createuser -P combustible` to make a user named combustible
         5. Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
         6. Run `exit`
-    
+
         Note: If you would like to change username or password, you can do so in the `~/rss_reader/rss_reader/conf/settings.py` file
-    
+
 
 ###### Step Two: Install virtualenv and other packages
   1. Install pip, virtualenv, and virtualenvwrapper (if they are not otherwise installed)
@@ -61,18 +61,25 @@ To run AngularJS unit tests, navigate to the `~/rss-reader/rss_reader/` director
     4. You should see several Topics (Comics, Science, and Uncategorized) along with a few feeds in each topic
 2. Manual initialization (if you want to create a user and add topics/feeds yourself)
     3. Make sure you are running the server as per above and access `localhost:8000` in a web browser
-    4. Click on the 'Register here!' link. You will be redirected to a register page. Enter the Username **lemon** and Password **lemon** and press the **register** button. You will be redirected back to the login page. Enter the username and password that you just registered. You should see a blank page with only an Uncategorized section on the left side. 
-    5. Click on **Add a topic** and enter **Science**. Click **Add Topic** directly underneath it. The **Science** topic should be on the left side now. Follow the same process to add the **Comics** topic. 
+    4. Click on the 'Register here!' link. You will be redirected to a register page. Enter the Username **lemon** and Password **lemon** and press the **register** button. You will be redirected back to the login page. Enter the username and password that you just registered. You should see a blank page with only an Uncategorized section on the left side.
+    5. Click on **Add a topic** and enter **Science**. Click **Add Topic** directly underneath it. The **Science** topic should be on the left side now. Follow the same process to add the **Comics** topic.
     6. Enter the url "http://xkcd.com/rss.xml" in the search box on the top of the page. Press enter and choose **xkcd** from the list of results that are displayed. In the popup that displays, select the topic **Comics** and click **Subscribe**. Follow the same sequence of events to add the urls "http://www.questionablecontent.net/QCRSS.xml", "http://broodhollow.chainsawsuit.com/feed/", and "http://rss.escapistmagazine.com/videos/list/1.xml" to the **Comics** topic.
     7. Enter the url "http://rss.nytimes.com/services/xml/rss/nyt/Science.xml" in the search box on the top of the page. Press enter and choose **NYT > Science** from the list of results that are displayed. In the popup that displays, select the topic **Science** and lick **Subscribe** Follow the same sequence of events to add the urls "http://feeds.feedburner.com/kernelmag?format=xml" and "http://www.popsci.com/taxonomy/term/100136/feed" to the **Science** topic.
 3. If desired, you can skip both of these and experiment directly on your own. However, bear in mind that some of the later acceptance tests assume that you either run the script or set everything up manually. If you choose this option, please play around on your own, then run `./flush_database.sh` and choose one of the previous options.
 
 Note: if mistakes (typing or otherwise) are made in setting up everything for some reason, please run `./flush_database.sh` and retry.
 
+Subnote: if sor some reason you cannot run that script or it runs with errors, simply run these commands in order
+* `sudo -i -u postgres` (or Mac equivalent)
+* `dropdb feeddb`
+* `dropuser combustible`
+* Complete step 1.2 above again, creating the postgres database and user
+* Make sure to migrate afterwards!
+
 ##### Register/Login Tests
 1. Registering
     * If you are logged in, press the logout button. If not, navigate to `localhost:8000`. Click the **Register here!** link.
-    * Enter **Supercalifragilisticexpialidocious** in the Username field. Only **Supercalifragilisticexpialidoc** will fit in the box. Delete the text from the username box.
+    * Enter **Supercalifragilisticexpialidocious** in the Username field. Only **Supercalifragilisticexpialidoc** will fit in the box because of the 30 character limit. Delete the text from the username box.
     * Enter **~bubbles~** in the Username field and **bub** in the Password field. Press the **register** button. The page will redirect to itself and display the error "Enter a valid username."
     * Enter the valid Username **Chris** and the Password **bro**. Press the **register** button. You should now have been redirected to the login page.
 5. Logging In
@@ -94,30 +101,31 @@ Note: if mistakes (typing or otherwise) are made in setting up everything for so
 
 ##### Adding, Editing, and Deleting Topics Tests
 * Click on **Add a Topic**. You should see a popup asking you to enter a topic name. Click on **Cancel**. The popup should close with no topics having been added.
-* Click on **Add a Topic** again. This time, enter **News** and press **Add Topic**. The popup should close, with the new Topic **News** now present on the left side navigation bar. 
-* Click on **News**. Click on the **edit** button next to the name. A field should now appear in which the user can enter a new name for the Topic. Type **Sports News** and press enter. The name of the Topic should now be **Sports News**.
-* Click on the **x** next **Sports News**. The topic should now no longer be seen on the navigation bar.
+* Click on **Add a Topic** again. This time, enter **News** and press **Add Topic**. The popup should close, with the new Topic **News** now present on the left side navigation bar.
+* Click on the **edit** button above the topics. The nav bar should now change to have a pencil and **x** next to each topic.
+* Click on the pencil next to **News**. Type **Sports News** in the blank field that appears next to it and hit **submit**. The name of the Topic should now be **Sports News**.
 * Click on **Add a Topic** again. Leave the input blank and press **Add Topic**. The popup will not disappear because the name of the topic is empty.
-* Click on **Add a Topic** one last time. Enter **Supercalifragilisticexpialidocious** and click the **Add Topic** button. The new topic with a (very long) name will be displayed at the left. Press the **x** next to it and delete it.
+* Click on **Add a Topic** one last time. Enter **Supercalifragilisticexpialidocious** and click the **Add Topic** button. The new topic with a (very long) name will be displayed at the left.
+* Click on **Save changes**. The original nav bar view should return.
+* Go back into the edit module. Click on the **x** next **Sports News**. The topic should now no longer be seen on the navigation bar. Press the **x** next to **Supercalifragilisticexpialidocious** as well and delete it. Click **Save changes** again.
+
 
 ##### Adding, Searching, and Deleting Feeds Tests
 * Copy "http://www.eurekalert.org/rss/technology_engineering.xml" to the search box at the top of the page. Press enter. A list of results (with only 1 result this time) should display underneath.
-* Click the **+** (plus) sign to the right of **EurekAlert! - Technology, Engineering and Computer Science**. A popup should display and ask which Topic to enter the feed into. 
+* Click the **+** (plus) sign to the right of **EurekAlert! - Technology, Engineering and Computer Science**. A popup should display and ask which Topic to enter the feed into.
 * Click on **Subscribe** without choosing a topic. The popup should stay open.
 * Click on the radio button next to **Science** and press the **Subscribe** button at the bottom. The popup should close. Refresh your page. Click on the **Science** topic to the left. It should expand and have **EurekAlert!** as a feed in it now.
 * Click on **EurekAlert!**. It should display the posts in this feed to the right.
-* Copy "http://www.eurekalert.org/rss/technology_engineering.xml" once again into the top search box and press enter. Once again, click on the top **EurekAlert!** link. Red text should display saying "You are already subscribed to that feed" and the feed should not be added again.
+* Copy "http://www.eurekalert.org/rss/technology_engineering.xml" once again into the top search box and press enter. Once again, click on the plus next to **EurekAlert!**. Click on the topic **Comics** and press **Subscribe**. Red text should appear saying, "You are already subscribed to that feed", and the feed should not be added again.
 * Click on the **-** (minus) sign before the name of the feed (**EurekAlert!**). The feed should now disppear from the list.
-* In the search box at the top of the page, enter the keyword **eurekalert** and press enter. Underneath should display the link to **eurekalert** that we saw before when we entered the link. Click on it again. Choose the **Science** topic from the list and again click **Subscribe**.
 * In the navigation bar, click the **x** next to the Topic **Science**. This should eliminate **Science** and all of the feeds that it contains, including the newly-added **EurekAlert!**.
-* INCORRECT INPUT URL
-* KEYWORD WITH NO RESULTS
-* MOVING FEEDS BETWEEN TOPICS?
+* Type "https://github.com/" into the search box and press enter. The view will not change from the current one because no results were found for this link.
+* There is currently no way to move feeds between different topics.
 
 
 
 ##### Settings Tests
-* Click on the gear underneath the search bar. The settings view should display.
+* Click on the gear next to the search bar. The settings view should display.
 * Click on **User Settings**. The selection should expand and display a box in which a new password can be entered
 * Type in **carrot** to the field. Press enter. Nothing should happen because this part has not been implemented.
 * Click on **Feed Settings**. The selection should expand to show nothing because we have not implemented feed settings.
@@ -133,8 +141,7 @@ Note: if mistakes (typing or otherwise) are made in setting up everything for so
     * Click on the same dropbox and choose **Time (newest)**. The same order as was initially displayed should now appear.
     * Click on the same dropbox and choose **Time (oldest)**. The reverse of the order you originally saw should appear.
 2. Settings
-    * Click on the **Feed Settings** dropbox and click on **Queue**. You should be shown the view of the settings page.
-    * Navigate back to a feed of your choosing and click on the **Feed Settings** dropbox again. This time, click on **Autodelete**. You should likewise see the same settings page as before.
+    * Click on the **Feed Settings** dropbox and click on **Queue** or **Autodelete**. Nothing should happen because these have not been implemented.
 
 
 #####Unread/Read Tests
@@ -165,7 +172,19 @@ It is composed of three main parts:
 * Topics, Feeds, and Posts all have separate models in models.py. They are looped through in the index.html file to be displayed and call the TopicController and FeedController for different functions. A PostController is unnecessary because the FeedController can handle all of the details.
 * The searching function uses a third-party search application for Django called Watson. The SearchController controls how the User can look up both links and keywords while the ResultsController just determines the displaying of the search results.
 * Settings are controlled from the ResultsController as well, and there is a separate view for it.
- 
+
+
+### What Is Not Completely Implemented
+
+These are the things we ran into trouble with:
+
+1) Queue feeds
+
+* Django's models ended up being much more complicated than predicted when it came to implementing queue feeds. When you ask for a feed from the server then call the `UPDATE` method, it calls the feed method rather than the queue feed subclass because subclassing in Django does not work the way we assumed it did. This is a bug we will fix in the Q & A phase.
+
+2) Removing topics
+
+* There is a known bug in AngularJS (https://github.com/angular/angular.js/issues/2149) that does not allow `DELETE` requests to be made.
 
 ### Roles and Tasks
 Views and front-end controllers: Michelle, Jawwad
@@ -177,9 +196,24 @@ API and back-end controllers: Justyn
 Models, API, and model unit tests: Lucia and Justyn
 
 ### Changes
-Queue???
 
+* Ability to mark posts read and unread
 
+* Add feed to topic with search bar
+
+* Controllers are more efficient
+
+* Can now search for feeds within a search view
+
+* Autodelete **UI bug**
+
+* Settings available to user
+
+* Integrated read time **Will be implemented in queue**
+
+* Sort-by moved to a dropdown
+
+* Queue feeds **BUG**
 
 # RSS-reader
 ## Milestone 3.B

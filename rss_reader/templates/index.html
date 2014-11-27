@@ -177,56 +177,14 @@
 						</a>
 						<div class="full" ng-show="expandedSettingIndex == 3">
 							<h3>Reading Test</h3>
-							<p>There are three reading speed tests. Complete all of them to find your average reading speed.</p>
-
-							<button onclick="getTime1()">Test 1</button>
-							<button onclick="getTime2()">Test 2</button>
-							<button onclick="getTime3()">Test 3</button>
-
-							<p id = "time1"></p>
-							<p id = "time2"></p>
-							<p id = "time3"></p>
-
-							<script>
-								function getTime1() {
-								    var startTime = new Date();
-								    var x;
-								    var endTime, elapsed;
-								    var wordcount1 = 125;
-								    if (confirm("We are nothing. We are the dirt beneath your feet. And no one cared who I was until I put on the mask... \n\nWho we are does not matter. What matters is our plan. \n\nIf I pull this off, will you die? \n\nIt would be extremely painful. \n\nYou're a big guy - \n\nFor you. \n\nWas being caught part of your plan? \n\nOf course. Dr. Pavel refused our offer in favor of yours. We had to know what he told you about us. \n\nNothing! I said nothing! \n\nWhy not just ask him? \n\nHe would not have told us. \n\nYou have methods. \n\nHim, I need healthy. You present no such problem. \n\nWell congratulations, you got yourselves caught. What's the next step of your master plan? \n\nCrashing this plane...") == true) {
-								        endTime = new Date();
-								        elapsed = (endTime - startTime) / 1000;
-								        var wpm = Math.round(wordcount1 / elapsed * 60);
-								    }
-								    document.getElementById("time1").innerHTML = "You read at " + wpm + " words per minute";
-								}
-
-								function getTime2() {
-								    var startTime = new Date();
-								    var x;
-								    var endTime, elapsed;
-								    var wordcount2 = 61;
-								    if (confirm("In the moment when I truly understand my enemy, understand him well enough to defeat him, then in that very moment I also love him. I think it’s impossible to really understand somebody, what they want, what they believe, and not love them the way they love themselves. And then, in that very moment when I love them.... I destroy them.") == true) {
-								        endTime = new Date();
-								        elapsed = (endTime - startTime) / 1000;
-								        var wpm = Math.round(wordcount2 / elapsed * 60);
-								    }
-								    document.getElementById("time2").innerHTML = "You read at " + wpm + " words per minute";
-								}
-
-								function getTime3() {
-								    var startTime = new Date();
-								    var x;
-								    var endTime, elapsed;
-								    var wordcount3 = 119;
-								    if (confirm("Home was a condominium on the fifteenth floor of a high-rise, a sort of filing cabinet for widows and young professionals. The marketing brochure promised a foot of concrete floor, ceiling, and wall between me and any adjacent stereo or turn-up television... a foot of concrete was important when your next-door neighbour lets the battery on her hearing aid go and has to watch her game shows at full blast. Or when a volcanic blast of burning gas and debris that used to be your living-room set and personal effects blows out your floor to ceiling windows and sails down flaming to leave just your condo, only yours, a gutted charred concrete hole in the cliffside of the building. ") == true) {
-								        endTime = new Date();
-								        elapsed = (endTime - startTime) / 1000;
-								        var wpm = Math.round(wordcount3 / elapsed * 60);
-								    }
-								    document.getElementById("time3").innerHTML = "You read at " + wpm + " words per minute";
-								}
-							</script>
+							<div class="row-fluid post" ng-show="expandedSettingIndex == 3">
+								<p>Press the "Start timer" button to begin the reading speed test.
+										You only need to press it at the beginning.
+										At the end of each passage, press the "End timer" button.</p> 
+								<p><button ng-click="startTime()">Start timer</button></p>
+								<p id="testArea"></p>
+								<p><button ng-click="endTime()">End timer</button></p>
+							</div>
 						</div>
 					</div>
 				</div>
