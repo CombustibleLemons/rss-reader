@@ -466,7 +466,6 @@ angular.module('main.controllers', ['main.services'])
 
     // Event handlers
     $rootScope.$on("showSearchResults", function (event, message) {
-        console.log(message.searchResults);
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
     });

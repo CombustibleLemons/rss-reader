@@ -32,7 +32,7 @@ feed_urls = patterns('',
     url(r'^/(?P<pk>[0-9]+)/posts/read$', PostsReadDetail.as_view(), name='topic-readPosts-list'),
     url(r'^/(?P<pk>[0-9]+)/posts/unread$', unread_posts, name='topicfeed-unread-list'),
     url(r'^/(?P<pk>[0-9]+)/posts/$', FeedPostList.as_view(), name='feedpost-list'),
-    url(r'^/(?P<pk>[0-9]+)$', FeedDetail.as_view(), name='feed-detail'),
+    url(r'^/(?P<pk>[0-9]+)/$', FeedDetail.as_view(), name='feed-detail'),
     url(r'^/create/$', feed_create, name='feed-create'),
     url(r'^/$', FeedList.as_view(), name='feed-list')
 )
@@ -68,5 +68,4 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^about/', MainViews.about),
    )

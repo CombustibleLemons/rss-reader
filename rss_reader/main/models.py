@@ -539,13 +539,13 @@ class PostsRead(models.Model):
     class Meta:
         unique_together = (('user', 'feed'),);
 
-    @classmethod
-    def create(cls, user, feedID, posts):
-        cls.user = user
-        cls.feed = Feed.objects.get(id=feedID)
-        cls.save()
-        cls.posts = posts
-        return cls
+    # @classmethod
+    # def create(cls, user, feedID, posts):
+    #     cls.user = user
+    #     cls.feed = Feed.objects.get(id=feedID)
+    #     cls.save()
+    #     cls.posts = posts
+    #     return cls
 
     def update(self):
         # Auto-update the posts read according to the setting for feed ranges
