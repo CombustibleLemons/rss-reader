@@ -107,11 +107,13 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+        obj = self.get_object()
         # Check if topic name is uncategorized, if so we can't delete it
-        if instance.name == "Uncategorized":
+        if obj.name == "Uncategorized":
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        self.perform_destroy(instance)
+        self.pre_delete(obj)
+        obj.delete()
+        self.post_delete(obj)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
