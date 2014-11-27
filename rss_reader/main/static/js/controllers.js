@@ -99,28 +99,41 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.saveEdits = function() {
-      var listOfTopics = $(".feeds");
+      var listOfTopics = $(".topicHolder");
 
+      // zero out each topic's feed list  to avoid conflicts  
       $.each( listOfTopics, function( i, val ) {
         var topic = $.parseJSON($(val).attr("data"));
-        var divList = $(val).find("div");
-        var feedList = []
-        $.each( divList, function(j, stuff) {
-          feedList.push(parseInt($(stuff).attr("id")));
-        });
 
-        //check if topic has been changed at all
-        var hasChanged = !(($(feedList).not(topic.feeds).length == 0) && ($(topic.feeds).not(feedList).length == 0));
-        if(hasChanged) {
+        topic.feeds = [];
+        APIService.updateTopic(topic).success(function(data) {
+          console.log("cleared out feeds");
+        }).error(function(data, status, headers, config){
           console.log(topic);
-          topic.feeds = feedList;
-          APIService.updateTopic(topic).success(function(data) {
-            console.log("success");
-          }).error(function(data, status, headers, config){
-            console.log(status);
-            console.log(data);
+          console.log(status);
+        });
+      });
+
+
+      // update the topics with the actual feeds
+      $.each( listOfTopics, function( i, val ) {
+        var topic = $.parseJSON($(val).attr("data"));
+
+        var divList = $($(val).next("ul")[0]).find("div");
+        var feedList = []
+        if (divList){
+          $.each( divList, function(j, stuff) {
+            feedList.push(parseInt($(stuff).attr("id")));
           });
         }
+
+        topic.feeds = feedList;
+
+        APIService.updateTopic(topic).success(function(data) {
+          console.log("success");
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
       });
       $scope.toggleEditMode();
     };
@@ -298,7 +311,6 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("addedFeedObject", function (event, message) {
         if ($scope.topic.name == message.topic.name){
-          console.log($scope.feeds);
           $scope.topic = message.topic;
           $scope.feeds.push(message.feed);
         }

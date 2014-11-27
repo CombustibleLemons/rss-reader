@@ -16,8 +16,8 @@
 					<a href="#" ng-click="toggleEditMode()" class="toggleEdit">Edit</a>
 					<ul class="nav nav-sidebar">
 						<li ng-repeat="topic in topics">
-							<div>
-								<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)" >
+							<div class="topicHolder" data="{{topic}}">
+								<a class="topicButton" href="#{{topic.name}}" ng-click="expandTopic($index)">
 			        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 			        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 				      			</a>
@@ -29,7 +29,7 @@
 
 				      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 				      		</div>
-							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" data="{{topic}}">
+							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
 								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
