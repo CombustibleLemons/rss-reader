@@ -8,4 +8,12 @@ angular.module('main.directives', []).
     return function(scope, elm, attrs) {
       elm.text(version);
     };
-  }]);
+  }])
+  .directive('knob', function() {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            $(element).val(scope.number).knob();
+        }
+    };
+  });

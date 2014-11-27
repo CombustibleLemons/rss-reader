@@ -22,6 +22,7 @@ angular.module('main.controllers', ['main.services'])
       return promise;
     };
     $scope.updateUserSettingsStatistics = function(){
+      console.log(typeof($scope.userSettings["timeOnline"]));
       $scope.userSettings["timeOnline"] = $scope.userSettings["timeOnline"] + $scope.statisticsInterval;
       APIService.updateUserSettings($scope.userSettings).success(function(data){
         // Update this data in one statistics interval
@@ -45,7 +46,7 @@ angular.module('main.controllers', ['main.services'])
     };
   })
   .controller('StatsController', function($scope, $rootScope, $timeout, APIService) {
-    
+
   })
   .controller('NavigationController', function($scope, $rootScope, $timeout, APIService) {
     $scope.topics = [];

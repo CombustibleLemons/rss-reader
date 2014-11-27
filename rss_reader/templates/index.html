@@ -242,8 +242,9 @@
 					</div>
 				</div>
         <div ng-controller="StatsController" ng-show="activeView == 'stats'">
-          <h1>Stats go here!</h1>
-          <input class="dial" data-width="75" data-displayPrevious=true data-fgColor="#ffec03" data-skin="tron" data-cursor=true value="75" data-thickness=".2">
+          <h3>Time spent in app</h3>
+          <p>Test: {{$parent.userSettings['timeOnline']}}</p>
+          <input class="dial" data-width="75" ng-bind="$rootScope.userSettings['timeOnline']" data-displayPrevious=true data-fgColor="#ffec03" data-skin="tron" data-cursor=true data-thickness=".2">
           <script>
             $(".dial").knob();
           </script>
