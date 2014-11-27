@@ -4,17 +4,14 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
-    $scope.refreshInterval = 5;
+    // Methods
     $scope.refreshUser = function(){
-      // Return a function that will keep refreshing the feeds
       var promise = APIService.getUser().then(function(user){
         $scope.user = user;
       });
-      //$timeout(function(){$scope.refreshUser();}, $scope.refreshInterval * 1000);
-      // I have no idea where this returns to when the function calls itself, and what
-      // Angular does to garbage collect. But it works.
       return promise;
     };
+
     $scope.getTopicIds = function(){
       if (this.user == null){
         // Force a refresh
@@ -30,13 +27,18 @@ angular.module('main.controllers', ['main.services'])
         return deferred.promise;
       }
     };
+    // End Methods
   })
   .controller('NavigationController', function($scope, $rootScope, $timeout, APIService) {
+    // Attributes
     $scope.topics = [];
     $scope.topicIds = [];
+    $scope.expandedIndex = -1;
+    $scope.predicate = "";
+    $scope.activeView = "feedResults"
+    // End Attributes
 
     // Event handlers
-
     // when addedTopic event is fired
     $rootScope.$on("addedTopic", function (event, message) {
       $scope.topicIds.push(message.topic.id);
@@ -74,12 +76,6 @@ angular.module('main.controllers', ['main.services'])
     });
     // End Event handlers
 
-    // Attributes
-    $scope.expandedIndex = -1;
-    $scope.predicate = "";
-    $scope.activeView = "feedResults"
-    // End Attributes
-
     // Methods
     $scope.showPopup = function() {
       $("#popupWrapper").show();
@@ -99,7 +95,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.addTopic = function(topicName) {
       APIService.addTopic(topicName).success(function(data) {
         $rootScope.$broadcast("addedTopic", {
-          topic: data,
+          topic: data
         });
         $scope.hidePopup();
         $("#popupTopic input").val('');
@@ -112,7 +108,7 @@ angular.module('main.controllers', ['main.services'])
       APIService.renameTopic(newTopicName, topicID).success(function(data) {
           $rootScope.$broadcast("renamedTopic", {
             topic: data,
-            identifier: topicID,
+            identifier: topicID
           });
         }).error(function(data, status, headers, config){
           console.log(status);
@@ -122,17 +118,17 @@ angular.module('main.controllers', ['main.services'])
     $scope.removeTopic = function(topicID) {
       APIService.removeTopic(topicID).success(function(data) {
           $rootScope.$broadcast("removedTopic", {
-                identifier: topicID,
+                identifier: topicID
           });
         }).error(function(data, status, headers, config){
           console.log(status);
         });
     };
+
     $scope.fetchTopics = function() {
       // Chicken and Egg problem, the UserController may not load before this class so we need to force a promise
       // Ask the UserController if it has data yet
       $scope.$parent.getTopicIds().then(function(topic_ids){
-        // TODO: Compare ids to see if we need to update the topics set
         if ($scope.topicIds != topic_ids){
           $scope.topicIds = topic_ids;
           APIService.getTopicsByIds(topic_ids).then(function(topics){
@@ -140,19 +136,20 @@ angular.module('main.controllers', ['main.services'])
           });
         }
       });
-      //$timeout(function(){$scope.fetchTopics();}, $scope.refreshInterval * 1000);
     };
 
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index;
     };
-
     //End Methods
+
+    // Must be called to populate topics
     $scope.fetchTopics();
   })
 
   .controller('SearchController', function($scope, $rootScope, APIService) {
 
+    // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
     };
@@ -174,10 +171,42 @@ angular.module('main.controllers', ['main.services'])
         });
     };
 
-    $scope.search = function() { // formerly passed url as an argument
-      APIService.search($scope.query).success(function(data) {
+    $scope.search = function() {
+      var testSuccess = false;
+      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
+      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      // Is the query a valid URL?
+      testSuccess = regexp.test($scope.query);
+      // Query is a valid URL
+      if(testSuccess == true) {
+        APIService.addFeedByUrl($scope.query).success(function(data) {
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          console.log(data);
+          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+        }).error(function(data, status, headers, config) {
+          // Feed already exists in the database, add it
+          if(status == 409) {
+            if ($("#searchForm").find(".error")) {
+              $("#searchForm").find(".error").remove();
+            }
+            console.log('Hey');
+            console.log(data);
+            console.log('ho');
+            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+          }
+          // URL isn't a feed
+          if(status == 400) {
+            testSuccess = false;
+          }
+        });
+      } 
+      // Query is not a valid URL
+      if(testSuccess == false) {
+        APIService.search($scope.query).success(function(data) {
           $rootScope.$broadcast("showSearchResults", {
-                searchResults: data,
+            searchResults: data
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
@@ -187,7 +216,10 @@ angular.module('main.controllers', ['main.services'])
             $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
           }
         });
+      }
     };
+    // End methods
+
   })
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Dispatch addFeed message to a Topic
@@ -207,6 +239,7 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addFeedToTopic = function(feed) {
       // Add the feed to the local side of things
+      // Is the feed in the topic already?
       if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
         $scope.topic["feeds"].push(feed.id);
         $scope.feeds.push(feed);
@@ -262,8 +295,6 @@ angular.module('main.controllers', ['main.services'])
     $scope.fetchPosts = function() {
       APIService.fetchPosts($scope.feedID).success(function(data) {
         // This for loop removes unnecessary line breaks
-        // TESTED WITH NYT US FEED
-        // TODO: TEST THIS WITH OTHER FEEDS
         for(var i=0; i<data.length; i++){
           //create dummy div
           var tmp = document.createElement('div');
@@ -339,6 +370,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
+    // feedID is actually entire feed
     $scope.showTopicOptions = function(feedID) {
       $scope.topics = $scope.$parent.topics;
       $scope.showPopup(feedID);
@@ -355,7 +387,7 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeedObject = function() { // formerly passed url as an argument
+    $scope.addFeedObject = function() {
       var feedID = parseInt($(".feedID").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
       topic.feeds.push(feedID);
@@ -371,7 +403,16 @@ angular.module('main.controllers', ['main.services'])
         }).error(function(data, status, headers, config){
           //if user already subscribed
           if (status == 409) {
-            $("#topicsForm").append("<div class='error'>You are already subscribed to that feed</div>");
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
+            $scope.hidePopup();            
+
+            // fade out the alert
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                  $(this).remove();
+              });
+            }, 3000);
           }
         });
     };

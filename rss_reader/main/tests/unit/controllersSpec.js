@@ -6,9 +6,10 @@ describe("User controllers", function() {
 
     var userScope, httpBackend, userController;
     beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
         userScope = $rootScope.$new();
         userController = $controller('UserController', {$scope: userScope});
-        httpBackend = $httpBackend;
 
         userScope.$digest();
     }));
@@ -29,6 +30,16 @@ describe("User controllers", function() {
         httpBackend.flush();
         // Make sure that the user variable has been properly set
         expect(userScope.user).toEqual({"topics": 12});
+        // Try it again to make sure it doesn't break anything
+        httpBackend.expectGET('/user/').respond(200, {"topics":12});
+        userScope.refreshUser();
+        httpBackend.flush();
+        expect(userScope.user).toEqual({"topics":12});
+        // What if the user has somehow changed on the server?
+        httpBackend.expectGET('/user/').respond(200, {"topics":21});
+        userScope.refreshUser();
+        httpBackend.flush();
+        expect(userScope.user).toEqual({"topics":21});
     });
 
     it("should getTopicIds", function() {
@@ -40,6 +51,9 @@ describe("User controllers", function() {
         httpBackend.flush();
         // Make sure it's what we expect
         expect(userScope.user["topics"]).toEqual([]);
+        // Make sure it exists when we already have the user
+        userScope.getTopicIds();
+        expect(userScope.user["topics"]).toEqual([]);
     });
 });
 
@@ -48,18 +62,16 @@ describe("Navigation controllers", function() {
     var userScope, navScope, httpBackend;
 
     beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
-
         navScope = userScope.$new();
         $controller('NavigationController', {$scope: navScope});
-
-        httpBackend = $httpBackend;
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
-        userScope.refreshUser();
-        httpBackend.flush();
+
         userScope.$digest();
-        navScope.$digest();
+        httpBackend.flush();
     }));
 
     afterEach(function() {
@@ -71,6 +83,7 @@ describe("Navigation controllers", function() {
         navScope.fetchTopics();
         expect(navScope.topicIds).toEqual([]);
         expect(navScope.topics).toEqual([]);
+        // this is where i'm working
     });
 
     it("should add topics", function() {
@@ -275,9 +288,7 @@ describe("Topic controllers", function() {
     it("should add and remove feeds", function() {
         // add foofeed
         var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.expectPUT('/topics/12').respond(200, '');
         topicScope.addFeedToTopic(foofeed);
-        httpBackend.flush();
         expect(topicScope.topic["feeds"][0]).toEqual(12);
         expect(topicScope.feeds[0]).toEqual(foofeed);
         // check fetching feeds when there are feeds
@@ -363,7 +374,6 @@ describe("Search controllers", function($rootScope) {
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
 
-        httpBackend.expectPUT('/topics/12', {"name":"Uncategorized", "id":12, "user":1, "feeds":[42]}).respond(200, '');
         searchScope.addFeed();
         searchScope.$on("addedFeed", function (event, message) {
             success = true;
