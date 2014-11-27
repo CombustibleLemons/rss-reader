@@ -148,28 +148,28 @@ angular.module('main.controllers', ['main.services'])
   })
 
   .controller('SearchController', function($scope, $rootScope, APIService) {
-
     // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
     };
 
-    $scope.addFeed = function() { // formerly passed url as an argument
-      APIService.addFeedByUrl($scope.query).success(function(data) {
-          // How do we figure out where to put it if this creates a new feed?
-          $rootScope.$broadcast("addedFeed", {
-                feed: data,
-                topicName: "Uncategorized"
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-        }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
-          }
-        });
-    };
+ //    Deprecated
+ // $scope.addFeed = function() { // formerly passed url as an argument
+ //      APIService.addFeedByUrl($scope.query).success(function(data) {
+ //          // How do we figure out where to put it if this creates a new feed?
+ //          $rootScope.$broadcast("addedFeed", {
+ //                feed: data,
+ //                topicName: "Uncategorized"
+ //          });
+ //          if ($("#searchForm").find(".error")) {
+ //            $("#searchForm").find(".error").remove();
+ //          }
+ //        }).error(function(data, status, headers, config){
+ //          if (status == 409) {
+ //            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+ //          }
+ //        });
+ //    };
 
     $scope.search = function() {
       var testSuccess = false;
@@ -218,16 +218,17 @@ angular.module('main.controllers', ['main.services'])
         });
       }
     };
-    // End methods
+    // End Methods
 
   })
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
+    // Event handlers
     // Dispatch addFeed message to a Topic
-    $rootScope.$on("addedFeed", function (event, message) {
-        if ($scope.topic.name == message.topicName){
-          $scope.addFeedToTopic(message.feed);
-        }
-    });
+    // $rootScope.$on("addedFeed", function (event, message) {
+    //     if ($scope.topic.name == message.topicName){
+    //       $scope.addFeedToTopic(message.feed);
+    //     }
+    // });
 
     $rootScope.$on("addedFeedObject", function (event, message) {
         if ($scope.topic.name == message.topic.name){
@@ -236,17 +237,20 @@ angular.module('main.controllers', ['main.services'])
           //$scope.fetchFeeds();
         }
     });
+    // End Event handlers
 
-    $scope.addFeedToTopic = function(feed) {
-      // Add the feed to the local side of things
-      // Is the feed in the topic already?
-      if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
-        $scope.topic["feeds"].push(feed.id);
-        $scope.feeds.push(feed);
-      } else {
-        $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
-      }
-    };
+    // Methods
+    // $scope.addFeedToTopic = function(feed) {
+    //   // Add the feed to the local side of things
+    //   // Is the feed in the topic already?
+    //   if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
+    //     $scope.topic["feeds"].push(feed.id);
+    //     $scope.feeds.push(feed);
+    //   } else {
+    //     $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
+    //   }
+    // };
+
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
       $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
@@ -263,10 +267,11 @@ angular.module('main.controllers', ['main.services'])
           $scope.topic["feeds"].push(feedId);
       });
     };
+
     $scope.refreshTopic = function(){
       $scope.topic = $scope.$parent.topics[$scope.$parent.$index];
-      //$timeout(function(){$scope.refreshTopic();}, $scope.refreshInterval * 1000);
-    }
+    };
+
     $scope.fetchFeeds = function() {
       // Get the feed IDs
       var feed_ids = $scope.topic["feeds"];
@@ -280,19 +285,26 @@ angular.module('main.controllers', ['main.services'])
             identifier: feedID
         });
     };
+    // End Methods
+
+    // Initialization
     $scope.refreshTopic();
     $scope.fetchFeeds();
   })
   .controller('FeedController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
+    // Attributes
     $scope.expandedPostIndex = -1;
+    // End Attributes
 
-
+    // Event handlers
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
         $scope.expandedPostIndex = -1;
     });
+    // End Event handlers
 
+    // Methods
     $scope.fetchPosts = function() {
       APIService.fetchPosts($scope.feedID).success(function(data) {
 
@@ -320,20 +332,33 @@ angular.module('main.controllers', ['main.services'])
         $scope.posts = data;
       });
     };
+
     $scope.expandPost = function(index) {
       // Expand the post
       $scope.expandedPostIndex = index;
     };
+    // End Methods
   })
-  .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
+  .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) {
+    // Attributes
     $scope.searchResults = [];
     $scope.numResults = 0;
     $scope.topics = [];
+    $scope.expandedSettingIndex = -1;
+    // End Attributes
+
+    // Event handlers
     $rootScope.$on("showSearchResults", function (event, message) {
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
     });
 
+    $rootScope.$on("clickSettings", function (event, message) {
+      $scope.expandedPostIndex = -1;
+    });
+    // End Event handlers
+
+    // Methods
     // feedID is actually entire feed
     $scope.showTopicOptions = function(feedID) {
       $scope.topics = $scope.$parent.topics;
@@ -357,7 +382,7 @@ angular.module('main.controllers', ['main.services'])
       topic.feeds.push(feedID);
       APIService.updateTopic(topic).success(function(data) {
           $rootScope.$broadcast("addedFeedObject", {
-              topic: data,
+            topic: data,
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
@@ -374,23 +399,16 @@ angular.module('main.controllers', ['main.services'])
             // fade out the alert
             window.setTimeout(function() {
               $(".flash").fadeTo(500, 0).slideUp(500, function(){
-                  $(this).remove();
+                $(this).remove();
               });
             }, 3000);
           }
         });
-    };
-
-    $scope.expandedSettingIndex = -1;
-    $rootScope.$on("clickSettings", function (event, message) {
-            $scope.expandedPostIndex = -1;
-        });
-
+      };
 
       $scope.expandSettingsUser = function() {
-      // Expand the post
-      $scope.expandedSettingIndex = 1;
-    };
+        $scope.expandedSettingIndex = 1;
+      };
 
       $scope.expandSettingsFeed = function() {
         $scope.expandedSettingIndex = 2;
@@ -399,6 +417,6 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandSettingsReading = function() {
         $scope.expandedSettingIndex = 3;
       };
-  });
-
+      // End Methods
+    });
 //*/
