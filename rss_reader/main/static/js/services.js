@@ -79,10 +79,6 @@ angular.module('main.services', []).
           var promise = $http.post('/topics/', {"name":topicName});
           return promise;
         },
-        renameTopic : function(newTopicName, topicID) {
-          var promise = $http.put('/topics/' + topicID, {"name":newTopicName, "index":topicID});
-          return promise;
-        },
         removeTopic : function(topicID) {
           var promise = $http.delete('/topics/' + topicID, {"index":topicID});
           return promise;

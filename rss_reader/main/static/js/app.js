@@ -32,4 +32,5 @@ angular.module('main', ['main.filters', 'main.services', 'main.directives', 'mai
    */
   .run(['$http', '$cookies', function($http, $cookies) {
     $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
+    $http.defaults.headers.put['X-CSRFToken'] = $cookies.csrftoken;
   }]);
