@@ -160,9 +160,7 @@ body {
 	float:right;
 	padding-right: 28px;
 	padding-top: 10px;
-	}
-
-
+}
 
 .searchbox {
 	height: 30%;
@@ -171,7 +169,7 @@ body {
 
 #searchInput {
 	height: 30%;
-	width: 100%;
+	width: 90%;
 }
 
 #popupQueueWrapper{
