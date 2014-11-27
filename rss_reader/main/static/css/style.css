@@ -36,10 +36,10 @@ body {
 #navbar .navbar-right {
 	margin-right: 0;
 }
-.feeds {
+.feeds,
+.sidebar ul {
 	list-style-type: none;
 }
-
 .dropbox li {
   list-style-type: none;
 }
@@ -147,7 +147,10 @@ body {
 }
 
 .nav li a[class^='editTopic'],
-.nav input[class^='editTopic'] {
+.nav li a[class^='editBtn'],
+.nav li a[class^='removeTopic'], 
+.nav input[class^='editTopic'],
+.saveBtn {
 	display:none;
 }
 .error {
@@ -252,4 +255,11 @@ body {
 }
 .fade.in {
   opacity: 1;
+}
+.topicButton div{
+	width:60%;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+	display:inline;
 }

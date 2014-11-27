@@ -33,7 +33,7 @@ angular.module('main.controllers', ['main.services'])
     // Attributes
     $scope.topics = [];
     $scope.topicIds = [];
-    $scope.expandedIndex = -1;
+    $scope.expandedIndex = [-1];
     $scope.predicate = "";
     $scope.activeView = "feedResults"
     // End Attributes
@@ -76,6 +76,12 @@ angular.module('main.controllers', ['main.services'])
     });
     // End Event handlers
 
+    // Attributes
+    $scope.expandedIndex = [-1];
+    $scope.predicate = "";
+    $scope.activeView = "feedResults"
+    // End Attributes
+
     // Methods
     $scope.showPopup = function() {
       $("#popupWrapper").show();
@@ -90,6 +96,80 @@ angular.module('main.controllers', ['main.services'])
     $scope.toggleEdit = function(topicID) {
       $(".editTopic"+topicID).show();
       $(".editBtn"+topicID).hide();
+    };
+
+    $scope.saveEdits = function() {
+      var listOfTopics = $(".topicHolder");
+
+      // zero out each topic's feed list  to avoid conflicts  
+      $.each( listOfTopics, function( i, val ) {
+        var topic = $.parseJSON($(val).attr("data"));
+
+        topic.feeds = [];
+        APIService.updateTopic(topic).success(function(data) {
+          console.log("cleared out feeds");
+        }).error(function(data, status, headers, config){
+          console.log(topic);
+          console.log(status);
+        });
+      });
+
+
+      // update the topics with the actual feeds
+      $.each( listOfTopics, function( i, val ) {
+        var topic = $.parseJSON($(val).attr("data"));
+
+        var divList = $($(val).next("ul")[0]).find("div");
+        var feedList = []
+        if (divList){
+          $.each( divList, function(j, stuff) {
+            feedList.push(parseInt($(stuff).attr("id")));
+          });
+        }
+
+        topic.feeds = feedList;
+
+        APIService.updateTopic(topic).success(function(data) {
+          console.log("success");
+        }).error(function(data, status, headers, config){
+          console.log(status);
+        });
+      });
+      $scope.toggleEditMode();
+    };
+
+    $scope.toggleEditMode = function() {
+      if($(".nav-sidebar").hasClass("sortable")) {
+        $(".nav-sidebar").removeClass("sortable");
+        $(".nav-sidebar").removeClass("ui-sortable");
+        $(".nav li a[class^='removeTopic']").hide(); 
+        $(".nav li a[class^='editBtn']").hide();
+        $(".saveBtn").hide()
+
+        $scope.expandedIndex = [];
+
+        $(".nav-sidebar").nestedSortable('destroy');
+        $(".toggleEdit").text("Edit");
+      } else {
+        $(".nav-sidebar").addClass("sortable");
+        $(".nav li a[class^='removeTopic']").show(); 
+        $(".nav li a[class^='editBtn']").show();
+        $(".saveBtn").show()
+
+        for (var i = 0; i <= $(".nav li").length; i++) {
+            $scope.expandedIndex.push(i);
+        }
+
+        $('.sortable').nestedSortable({
+            handle: 'div',
+            items: 'li',
+            toleranceElement: '> div',
+            listType: 'ul',
+            protectRoot: true,
+            maxLevels: 2,
+        });
+        $(".toggleEdit").text("Exit edit mode");
+      }
     };
 
     $scope.addTopic = function(topicName) {
@@ -139,7 +219,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.expandTopic = function(index) {
-      $scope.expandedIndex = index;
+      $scope.expandedIndex = [index];
     };
     //End Methods
 
@@ -231,9 +311,8 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("addedFeedObject", function (event, message) {
         if ($scope.topic.name == message.topic.name){
-          //somehow refresh the topics
           $scope.topic = message.topic;
-          //$scope.fetchFeeds();
+          $scope.feeds.push(message.feed);
         }
     });
 
@@ -370,14 +449,13 @@ angular.module('main.controllers', ['main.services'])
         $scope.numResults = message.searchResults.length;
     });
 
-    // feedID is actually entire feed
-    $scope.showTopicOptions = function(feedID) {
+    $scope.showTopicOptions = function(feed) {
       $scope.topics = $scope.$parent.topics;
-      $scope.showPopup(feedID);
+      $scope.showPopup(feed);
     };
 
-    $scope.showPopup = function(feedID) {
-      $(".feedID").attr("value", feedID);
+    $scope.showPopup = function(feed) {
+      $(".feedObj").attr("value", JSON.stringify(feed));
       $("#popupWrapperResults").show();
       $("#dimmer").show();
     };
@@ -387,13 +465,14 @@ angular.module('main.controllers', ['main.services'])
       $("#dimmer").hide();
     };
 
-    $scope.addFeedObject = function() {
-      var feedID = parseInt($(".feedID").attr("value"));
+    $scope.addFeedObject = function() { // formerly passed url as an argument
+      var feed = $.parseJSON($(".feedObj").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feedID);
+      topic.feeds.push(feed.id);
       APIService.updateTopic(topic).success(function(data) {
           $rootScope.$broadcast("addedFeedObject", {
               topic: data,
+              feed: feed
           });
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
