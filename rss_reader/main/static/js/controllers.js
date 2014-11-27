@@ -181,16 +181,20 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.renameTopic = function(newTopicName, topic) {
-      topic.name = newTopicName;
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("renamedTopic", {
-            topic: data,
-            identifier: topic.id
+      if(newTopicName) {
+        topic.name = newTopicName;
+        APIService.updateTopic(topic).success(function(data) {
+            $rootScope.$broadcast("renamedTopic", {
+              topic: data,
+              identifier: topic.id
+            });
+            console.log("success");
+          }).error(function(data, status, headers, config){
+            console.log(status);
           });
-          console.log("success");
-        }).error(function(data, status, headers, config){
-          console.log(status);
-        });
+      }
+      $(".editTopic"+topic.id).hide();
+      $(".editBtn"+topic.id).show();
     };
 
     $scope.removeTopic = function(topicID) {
