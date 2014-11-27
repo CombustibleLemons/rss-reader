@@ -103,7 +103,7 @@ class Feed(models.Model):
 
     # URL
     # - URL : string
-    URL = models.URLField(unique=True)
+    URL = models.TextField(unique=True)
 
     # Integer
     # - ttl : int
@@ -287,52 +287,65 @@ class QueueFeed(Feed):
     postNum = models.IntegerField()
     interval = timedelta.fields.TimedeltaField()
     lastUpdate = models.DateTimeField()
+    #print Feed._meta.get_field('URL')
+    #Feed._meta.get_field('URL').unique=False
 
     #list of posts accessible to user, by post.id (posts shoudl be unique to Feeds, cannot be added to QueueFeed directly)
-    qPosts = list()
+    qPosts = ListField(null=True)
 
     #static attribute - if static is True, the number of unread posts will not exceed postNum
     static = False
 
+    # def __init__(self, *args, **kwargs):
+    #     super(QueueFeed, self).__init__(*args, **kwargs)
+    #     self.fields['URL'].unique = False
+
     @classmethod
     def create(cls, feed, postnum, interval):
         # interval constraints - at smallest, will be hours
+
+        #save feed if it is not in the database
         if not(feed.pk):
             feed.save()
 
-        q = cls.objects.create(postNum = postnum, interval = interval, lastUpdate = timezone.now())
+        #create bones of a QueueFeed
+        # Feed URL's must be unique; though QueueFeeds don't need URLs, initialized URL with feed.id to fulfill this constraint
+        # Django won't let us override this
+        # this is our hacky, hacky fate
+        q = cls.objects.create(postNum = postnum, interval = interval, lastUpdate = timezone.now(), URL=str(feed.id))
+
+        #q.URL = str(q.id)
+        #print q.id
 
         q.feed = feed
         fposts = feed.posts.all().order_by('pubDate')
-        #print posts
+        #print fposts[:postnum]
         for p in fposts[:postnum]:
-            #print p.id
+            # print p
+            # print p.id
             q.qPosts.append(p.id)
         #print q.qPosts
         return q
 
     def getPosts(self):
         #returns list of Posts that's ids should be added to qPosts
-
         user = self.user
         qfeed = self.feed
         qPosts = self.qPosts
 
         #calculate timePassed, convert interval from timedelta to hours
-        print "getPosts says:"
-        print timezone.now()
-        print self.lastUpdated
-        print (timezone.now() - self.lastUpdate).seconds()
-        timePassed = (timezone.now() - self.lastUpdate).seconds() / 3600
-        print "time passed is %d" % (timePassed,)
+        # print "getPosts says:"
+        # print timezone.now()
+        # print self.lastUpdated
+        diff =  timezone.now() - self.lastUpdated
+        timePassed = diff.total_seconds() / 3600
+        #print "time passed is %d" % (timePassed,)
         currInt = self.interval.total_seconds() / 3600
-        print "interval is %d" % (currInt,)
+        #print "interval is %d" % (currInt,)
 
         #no posts added if not enough time has passed
         if (timePassed<=currInt):
             return list()
-
-        #interval time has passed
 
         #get entire list of available posts
         ascending_posts = qfeed.posts.all().order_by('pubDate')
@@ -340,14 +353,19 @@ class QueueFeed(Feed):
         #length of list of current qPosts; how far along Feed's Postlist the QueueFeed has gone
         qPostsLen = len(self.qPosts)
 
-        if (self.static):
+        if not(self.static):
             #return list of postNum posts after last Post grabbed
             return list(ascending_posts[qPostsLen:(qPostsLen+self.postNum)])
+
         else:
             #get number of unread posts in qPosts
-            unreadNum = len(qPosts.exclude(id__in=user.readPosts.posts.all()))
+            feedReadPost = user.readPosts.get(feed__id=qfeed.id)
+            feedReadPostSet = list(feedReadPost.posts.all())
+            unread = []
+            unread = [pq_id for pq_id in qPosts if not Post.objects.get(id = pq_id) in feedReadPostSet]
+
             #determine number of Posts that need to be added so that there are postNum unread Posts
-            diff = self.postNum - unreadNum
+            diff = self.postNum - len(unread)
             truncPostNum = diff if (diff < 0) else 0
             return list(ascending_posts[qPostsLen:(qPostsLen+truncPostNum)])
 
@@ -355,7 +373,7 @@ class QueueFeed(Feed):
         # with transaction.atomic():
         #     self.feed.update()
         for p in self.getPosts():
-            self.qPosts.extend(p.id)
+            self.qPosts.append(p.id)
 
 #debugging, takes qPosts and returns list of Posts
 def idsToPosts(qlist):
