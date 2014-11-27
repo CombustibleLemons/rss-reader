@@ -58,7 +58,7 @@ angular.module('main.controllers', ['main.services'])
     //when renamedTopic event is fired
     $rootScope.$on("renamedTopic", function (event, message) {
       $scope.topics = $scope.topics.filter(function(topic){
-        return topic.id != message.identifier;
+        return topic.id != message.topic.id;
       });
       $scope.topics.push(message.topic);
     });
@@ -177,12 +177,12 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.renameTopic = function(newTopicName, topic) {
+      var newTopic = $.extend({}, topic);
+      newTopic.name = newTopicName;
       if(newTopicName) {
-        topic.name = newTopicName;
-        APIService.updateTopic(topic).success(function(data) {
+        APIService.updateTopic(newTopic).success(function(data) {
             $rootScope.$broadcast("renamedTopic", {
-              topic: data,
-              identifier: topic.id
+              topic: data
             });
           }).error(function(data, status, headers, config){
             console.log(status);
@@ -292,7 +292,6 @@ angular.module('main.controllers', ['main.services'])
       }
     };
     // End Methods
-
   })
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Event handlers
