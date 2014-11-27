@@ -39,30 +39,6 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
-    // when addedTopic event is fired
-    $rootScope.$on("addedTopic", function (event, message) {
-      $scope.topicIds.push(message.topic.id);
-      $scope.topics.push(message.topic);
-    });
-
-    // when removedTopic event is fired
-    $rootScope.$on("removedTopic", function (event, message) {
-      $scope.topicIds = $scope.topicIds.filter(function(topicId){
-        return topicId != message.identifier;
-      });
-      $scope.topics = $scope.topics.filter(function(topic){
-        return topic.id != message.identifier;
-      });
-    });
-
-    //when renamedTopic event is fired
-    $rootScope.$on("renamedTopic", function (event, message) {
-      $scope.topics = $scope.topics.filter(function(topic){
-        return topic.id != message.topic.id;
-      });
-      $scope.topics.push(message.topic);
-    });
-
     $rootScope.$on("showSearchResults", function (event, message) {
         $scope.activeView = "searchResults";
     });
@@ -166,9 +142,8 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addTopic = function(topicName) {
       APIService.addTopic(topicName).success(function(data) {
-        $rootScope.$broadcast("addedTopic", {
-          topic: data
-        });
+        $scope.topicIds.push(data.id);
+        $scope.topics.push(data);
         $scope.hidePopup();
         $("#popupTopic input").val('');
       }).error(function(data, status, headers, config){
@@ -181,9 +156,10 @@ angular.module('main.controllers', ['main.services'])
       newTopic.name = newTopicName;
       if(newTopicName) {
         APIService.updateTopic(newTopic).success(function(data) {
-            $rootScope.$broadcast("renamedTopic", {
-              topic: data
+            $scope.topics = $scope.topics.filter(function(topic){
+              return topic.id != data.id;
             });
+            $scope.topics.push(data);
           }).error(function(data, status, headers, config){
             console.log(status);
           });
@@ -194,8 +170,11 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.removeTopic = function(topicID) {
       APIService.removeTopic(topicID).success(function(data) {
-          $rootScope.$broadcast("removedTopic", {
-                identifier: topicID
+          $scope.topicIds = $scope.topicIds.filter(function(identifier){
+            return identifier != topicID;
+          });
+          $scope.topics = $scope.topics.filter(function(topic){
+            return topic.id != topicID;
           });
         }).error(function(data, status, headers, config){
           console.log(status);
@@ -223,7 +202,86 @@ angular.module('main.controllers', ['main.services'])
     // Must be called to populate topics
     $scope.fetchTopics();
   })
+  .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) {
+    // Attributes
+    $scope.searchResults = [];
+    $scope.numResults = 0;
+    $scope.topics = [];
+    $scope.expandedSettingIndex = -1;
+    // End Attributes
 
+    // Event handlers
+    $rootScope.$on("showSearchResults", function (event, message) {
+        $scope.searchResults = message.searchResults;
+        $scope.numResults = message.searchResults.length;
+    });
+
+    $rootScope.$on("clickSettings", function (event, message) {
+      $scope.expandedPostIndex = -1;
+    });
+    // End Event handlers
+
+    // Methods
+    $scope.showTopicOptions = function(feed) {
+      $scope.topics = $scope.$parent.topics;
+      $scope.showPopup(feed);
+    };
+
+    $scope.showPopup = function(feed) {
+      $(".feedObj").attr("value", JSON.stringify(feed));
+      $("#popupWrapperResults").show();
+      $("#dimmer").show();
+    };
+
+    $scope.hidePopup = function() {
+      $("#popupWrapperResults").hide();
+      $("#dimmer").hide();
+    };
+
+    $scope.addFeedObject = function() { // formerly passed url as an argument
+      var feed = $.parseJSON($(".feedObj").attr("value"));
+      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
+      topic.feeds.push(feed.id);
+      APIService.updateTopic(topic).success(function(data) {
+          $rootScope.$broadcast("addedFeedObject", {
+              topic: data,
+              feed: feed
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $scope.hidePopup();
+          $("#topicsForm")[0].reset();
+        }).error(function(data, status, headers, config){
+          //if user already subscribed
+          if (status == 409) {
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
+            $scope.hidePopup();            
+
+            // fade out the alert
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+              });
+            }, 3000);
+          }
+        });
+      };
+
+    $scope.expandSettingsUser = function() {
+      $scope.expandedSettingIndex = 1;
+    };
+
+    $scope.expandSettingsFeed = function() {
+      $scope.expandedSettingIndex = 2;
+    };
+
+    $scope.expandSettingsReading = function() {
+      $scope.expandedSettingIndex = 3;
+    };
+    // End Methods
+  })
   .controller('SearchController', function($scope, $rootScope, APIService) {
     // Methods
     $scope.expandSettings = function() {
@@ -443,85 +501,5 @@ angular.module('main.controllers', ['main.services'])
       });
     };
 	// End Methods
-  })
-  .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) {
-    // Attributes
-    $scope.searchResults = [];
-    $scope.numResults = 0;
-    $scope.topics = [];
-    $scope.expandedSettingIndex = -1;
-    // End Attributes
-
-    // Event handlers
-    $rootScope.$on("showSearchResults", function (event, message) {
-        $scope.searchResults = message.searchResults;
-        $scope.numResults = message.searchResults.length;
-    });
-
-    $rootScope.$on("clickSettings", function (event, message) {
-      $scope.expandedPostIndex = -1;
-    });
-    // End Event handlers
-
-    // Methods
-    $scope.showTopicOptions = function(feed) {
-      $scope.topics = $scope.$parent.topics;
-      $scope.showPopup(feed);
-    };
-
-    $scope.showPopup = function(feed) {
-      $(".feedObj").attr("value", JSON.stringify(feed));
-      $("#popupWrapperResults").show();
-      $("#dimmer").show();
-    };
-
-    $scope.hidePopup = function() {
-      $("#popupWrapperResults").hide();
-      $("#dimmer").hide();
-    };
-
-    $scope.addFeedObject = function() { // formerly passed url as an argument
-      var feed = $.parseJSON($(".feedObj").attr("value"));
-      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feed.id);
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("addedFeedObject", {
-              topic: data,
-              feed: feed
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $scope.hidePopup();
-          $("#topicsForm")[0].reset();
-        }).error(function(data, status, headers, config){
-          //if user already subscribed
-          if (status == 409) {
-
-            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
-            $scope.hidePopup();            
-
-            // fade out the alert
-            window.setTimeout(function() {
-              $(".flash").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove();
-              });
-            }, 3000);
-          }
-        });
-      };
-
-    $scope.expandSettingsUser = function() {
-      $scope.expandedSettingIndex = 1;
-    };
-
-    $scope.expandSettingsFeed = function() {
-      $scope.expandedSettingIndex = 2;
-    };
-
-    $scope.expandSettingsReading = function() {
-      $scope.expandedSettingIndex = 3;
-    };
-    // End Methods
   });
 //*/
