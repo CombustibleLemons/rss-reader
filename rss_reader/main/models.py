@@ -17,8 +17,11 @@ from django import forms
 
 # RSS Parsing
 import feedparser
+import timedelta
 import time
+import datetime
 from datetime import datetime
+import pytz
 
 # Grabbed from http://stackoverflow.com/questions/5216162/how-to-create-list-field-in-django
 import ast
@@ -60,7 +63,7 @@ class UserSettings(models.Model):
         return self.readtime
 
     user = models.OneToOneField(User, primary_key=True, related_name = "settings")
-
+    timeOnline = timedelta.fields.TimedeltaField(null=True, blank=True)
     readtime = models.IntegerField(default = 300) #words per minute
 
 class FeedURLInvalid(Exception):
@@ -522,9 +525,6 @@ class Atom(Post):
         atom.save()
         return atom
 
-import timedelta
-import datetime
-import pytz
 class PostsRead(models.Model):
     # Model Attributes
     posts = models.ManyToManyField(Post, related_name="+", blank=True)

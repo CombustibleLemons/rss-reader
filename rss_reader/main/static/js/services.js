@@ -22,6 +22,9 @@ angular.module('main.services', []).
         getUser: function() {
             return this.getSingle('', '/user/');
         },
+        getUserSettings: function() {
+            return this.getSingle('', '/user/settings');
+        },
         getTopic: function(topic_num) {
             return this.getSingle(topic_num, '/topics/');
         },
@@ -110,6 +113,10 @@ angular.module('main.services', []).
         },
         getPostsRead : function(feedID){
           var promise = $http.get("/feeds/" + feedID + "/posts/read");
+          return promise;
+        },
+        updateUserSettings : function(userSettings){
+          var promise = $http.put("/user/settings", userSettings);
           return promise;
         }
     };

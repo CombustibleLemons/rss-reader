@@ -9,6 +9,9 @@
 		<!--Navigation Section -->
 		<div class="row-fluid row-offcanvas row-offcanvas-left" ng-controller="NavigationController">
 			<div class="col-sm-3 col-md-2 sidebar">
+        <div class="stats">
+          <hp><a href="" ng-click="showStats()">Stats</a></p>
+        </div>
 				<!-- Search Section -->
 
 		        <div ng-controller="SearchController">
@@ -238,6 +241,13 @@
 						</a>
 					</div>
 				</div>
+        <div ng-controller="StatsController" ng-show="activeView == 'stats'">
+          <h1>Stats go here!</h1>
+          <input class="dial" data-width="75" data-displayPrevious=true data-fgColor="#ffec03" data-skin="tron" data-cursor=true value="75" data-thickness=".2">
+          <script>
+            $(".dial").knob();
+          </script>
+        </div>
 			</div>
 			<div id="popupWrapper">
 				<div id="popupTopic">

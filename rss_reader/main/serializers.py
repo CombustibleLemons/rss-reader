@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
-        fields = ('readtime',)
+        fields = ('readtime','timeOnline',)
 
 class TopicSerializer(serializers.ModelSerializer):
     #feeds = serializers.PrimaryKeyRelatedField(many=True, read_only=True)

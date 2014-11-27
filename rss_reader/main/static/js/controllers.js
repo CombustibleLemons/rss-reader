@@ -4,17 +4,30 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
+    // Intervals will be multiplied by 1000, so these values are in seconds.
     $scope.refreshInterval = 5;
+    $scope.statisticsInterval = 5;
     $scope.refreshUser = function(){
       // Return a function that will keep refreshing the feeds
       var promise = APIService.getUser().then(function(user){
         $scope.user = user;
+        APIService.getUserSettings().then(function(userSettings){
+          $scope.userSettings = userSettings;
+          $timeout(function(){$scope.updateUserSettingsStatistics();}, $scope.statisticsInterval * 1000);
+        })
       });
       //$timeout(function(){$scope.refreshUser();}, $scope.refreshInterval * 1000);
       // I have no idea where this returns to when the function calls itself, and what
       // Angular does to garbage collect. But it works.
       return promise;
     };
+    $scope.updateUserSettingsStatistics = function(){
+      $scope.userSettings["timeOnline"] = $scope.userSettings["timeOnline"] + $scope.statisticsInterval;
+      APIService.updateUserSettings($scope.userSettings).success(function(data){
+        // Update this data in one statistics interval
+        $timeout(function(){$scope.updateUserSettingsStatistics();}, $scope.statisticsInterval * 1000);
+      });
+    }
     $scope.getTopicIds = function(){
       if (this.user == null){
         // Force a refresh
@@ -30,6 +43,9 @@ angular.module('main.controllers', ['main.services'])
         return deferred.promise;
       }
     };
+  })
+  .controller('StatsController', function($scope, $rootScope, $timeout, APIService) {
+    
   })
   .controller('NavigationController', function($scope, $rootScope, $timeout, APIService) {
     $scope.topics = [];
@@ -71,6 +87,9 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickSettings", function (event, message) {
         $scope.activeView = "settingsGroups";
+    });
+    $rootScope.$on("clickStats", function (event, message) {
+        $scope.activeView = "stats";
     });
     // End Event handlers
 
@@ -145,6 +164,10 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = index;
+    };
+
+    $scope.showStats = function() {
+      $rootScope.$broadcast("clickStats", {});
     };
 
     //End Methods
