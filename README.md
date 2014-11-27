@@ -63,24 +63,82 @@ To run AngularJS unit tests, navigate to the `~/rss-reader/rss_reader/` director
     3. Make sure you are running the server as per above and access `localhost:8000` in a web browser
     4. Click on the 'Register here!' link. You will be redirected to a register page. Enter the Username **lemon** and Password **lemon** and press the **register** button. You will be redirected back to the login page. Enter the username and password that you just registered. You should see a blank page with only an Uncategorized section on the left side. 
     5. Click on **Add a topic** and enter **Science**. Click **Add Topic** directly underneath it. The **Science** topic should be on the left side now. Follow the same process to add the **Comics** topic. 
-    6. Enter the url "http://xkcd.com/rss.xml" in the search box on the left top of the page. Press enter and choose **xkcd** from the list of results that are displayed. In the popup that displays, select the topic **Comics** and click **Subscribe**. Follow the same sequence of events to add the urls "http://www.questionablecontent.net/QCRSS.xml", "http://broodhollow.chainsawsuit.com/feed/", and "http://rss.escapistmagazine.com/videos/list/1.xml" to the **Comics** topic.
-    7. Enter the url "http://rss.nytimes.com/services/xml/rss/nyt/Science.xml" in the search box on the left top of the page. Press enter and choose **NYT > Science** from the list of results that are displayed. In the popup that displays, select the topic **Science** and lick **Subscribe** Follow the same sequence of events to add the urls "http://feeds.feedburner.com/kernelmag?format=xml" and "http://www.popsci.com/taxonomy/term/100136/feed" to the **Science** topic.
+    6. Enter the url "http://xkcd.com/rss.xml" in the search box on the top of the page. Press enter and choose **xkcd** from the list of results that are displayed. In the popup that displays, select the topic **Comics** and click **Subscribe**. Follow the same sequence of events to add the urls "http://www.questionablecontent.net/QCRSS.xml", "http://broodhollow.chainsawsuit.com/feed/", and "http://rss.escapistmagazine.com/videos/list/1.xml" to the **Comics** topic.
+    7. Enter the url "http://rss.nytimes.com/services/xml/rss/nyt/Science.xml" in the search box on the top of the page. Press enter and choose **NYT > Science** from the list of results that are displayed. In the popup that displays, select the topic **Science** and lick **Subscribe** Follow the same sequence of events to add the urls "http://feeds.feedburner.com/kernelmag?format=xml" and "http://www.popsci.com/taxonomy/term/100136/feed" to the **Science** topic.
+3. If desired, you can skip both of these and experiment directly on your own. However, bear in mind that some of the later acceptance tests assume that you either run the script or set everything up manually. If you choose this option, please play around on your own, then run `./flush_database.sh` and choose one of the previous options.
+
+Note: if mistakes (typing or otherwise) are made in setting up everything for some reason, please run `./flush_database.sh` and retry.
 
 ##### Register/Login Tests
 1. Registering
-    1. If you are logged in, press the logout button. Click the **Register here!** link.
-    2. Enter **Supercalifragilisticexpialidocious** in the Username field and **lemon** in the Password field. Press the **register** button. FINISHHHHHH
-    3. Enter **~bubbles~** in the Username field and **bub** in the Password field. Press the **register** button. FINISHHHHHH
-    4. Re-navigate to the register page and enter the valid Username **Chris** and the Password **bro**. Press the **register** button. You should now have been redirected to the login page.
+    * If you are logged in, press the logout button. Click the **Register here!** link.
+    * Enter **Supercalifragilisticexpialidocious** in the Username field and **lemon** in the Password field. Press the **register** button. FINISHHHHHH
+    * Enter **~bubbles~** in the Username field and **bub** in the Password field. Press the **register** button. FINISHHHHHH
+    * Re-navigate to the register page and enter the valid Username **Chris** and the Password **bro**. Press the **register** button. You should now have been redirected to the login page.
 5. Logging In
-    6. Enter **Daisy** in the Username field and **flower** in the Password field. Press the **login** button. You will be redirected back to the same login page because the User **Daisy** does not exist.
-    6. Enter **Christopher** in the Username field and **bro** in the Password field. Press the **login** button. You will be redirected back to the same login page again because the username was incorrect.
-    6. Enter **Chris** in the Username field and **bub** in the Password field. Press the **login** button. You will be redirected back to the same login page again because the password was incorrect.
-    7. Enter correct fields this time (Username=**lemon**, Password=**lemon**). You will be redirected to the rss reader's home page, with your previously-added topics on the left side.
+    * Enter **Daisy** in the Username field and **flower** in the Password field. Press the **login** button. You will be redirected back to the same login page because the User **Daisy** does not exist.
+    * Enter **Christopher** in the Username field and **bro** in the Password field. Press the **login** button. You will be redirected back to the same login page again because the username was incorrect.
+    * Enter **Chris** in the Username field and **bub** in the Password field. Press the **login** button. You will be redirected back to the same login page again because the password was incorrect.
+    * Enter correct fields this time (Username=**lemon**, Password=**lemon**). You will be redirected to the rss reader's home page, with your previously-added topics on the left side.
 
+##### Uncategorized Topic Tests
+* Look to the navigation bar on the left side. An **Uncategorized** Topic should be automatically present.
+* Clicking on the **x** next to **Uncategorized** should have no effect; **Uncategorized** cannot be removed.
+
+##### General Navigation Bar Tests
+* Click on **Comics**. The Topic should expand to show 4 feeds: **xkcd.com**, **QC RSS**, **Broodhollow**, and **Zero Punctuation**.
+* Click on **Science**. The Topic should expand, and the **Comics** Topic should collapse.
+* Click on **Comics** again to expand the Topic again. Click on the **xkcd.com** Feed, and a list of Posts should appear on the right.
+* Click on the first Post in the **xkcd.com** Feed's Post list. It should expand to show a the post's content, in this case a comic, and a link labeled **View Source**.
+* Click on **View Source** - you should be redirected to the Post's website.
+
+##### Adding, Editing, and Deleting Topics Tests
+* Click on **Add a Topic**. You should see a popup asking you to enter a topic name. Click on **Cancel**. The popup should close with no topics having been added.
+* Click on **Add a Topic** again. This time, enter **News** and press **Add Topic**. The popup should close, with the new Topic **News** now present on the left side navigation bar. 
+* Click on **News**. Click on the **edit** button next to the name. A field should now appear in which the user can enter a new name for the Topic. Type **Sports News** and press enter. The name of the Topic should now be **Sports News**.
+* Click on the **x** next **Sports News**. The topic should now no longer be seen on the navigation bar.
+* BLANK INPUT
+* LONG INPUT
+
+##### Adding, Searching, and Deleting Feeds Tests
+* Copy "http://www.eurekalert.org/rss/technology_engineering.xml" to the search box at the top of the page. Press enter. A list of results should display underneath.
+* Click on the top link, **Eurekalert**. A popup should display and ask which Topic to enter the feed into. Click on the radio button next to **Science** and press the **Subscribe** button at the bottom. The popup should close. Click on the **Science** topic to the left. It should expand and have **Eurekalert** as a feed in it now.
+* Click on **Eurekalert**. It should display the posts in this feed to the right.
+* Copy "http://www.eurekalert.org/rss/technology_engineering.xml" once again into the top search box and press enter. Once again, click on the top **Eurekalert** link. Red text should display saying "You are already subscribed to that feed" and the feed should not be added again.
+* Click on the **-** (minus) sign before the name of the feed (**Eurekalert**). The feed should now disppear from the list.
+* In the search box at the top of the page, enter the keyword **eurekalert** and press enter. Underneath should display the link to **eurekalert** that we saw before when we entered the link. Click on it again. Choose the **Science** topic from the list and again click **Subscribe**.
+* In the navigation bar, click the **x** next to the Topic **Science**. This should eliminate **Science** and all of the feeds that it contains, including the newly-added **Eurekalert**.
+* INCORRECT INPUT URL
+* KEYWORD WITH NO RESULTS
+* MOVING FEEDS BETWEEN TOPICS?
+
+
+
+##### Settings Tests
+* Click on the gear at the top right of the screen. The settings view should display.
+* Click on **User Settings**. The selection should expand and display a box in which a new password can be entered
+* Type in **carrot** to the field. Press enter. Nothing should happen because this part has not been implemented.
+* Click on **Feed Settings**. The selection should expand to show nothing because we have not implemented feed settings.
+* Click on **Reading Test**. A group of three buttons should be displayed
+* Click on the **Test 1** button. A popup should display some text. Read the text and press the **Ok** button at the bottom when you have finished. The line "You read at xx words per minute" where xx is the number of words you read at should be displayed underneath the buttons.
+* Take **Test 2** and **Test 3** in a similar manner. For each, the wpm it took you to complete the given task should be displayed.
+
+
+##### Side Dropdown Box Tests
+1. Sorting
+    * Click on the Topic **Comics** and click on **xkcd.com**. Posts should display to the right in newest to oldest order.
+    * Click on the dropbox **Sort by** and choose **Alphabetical**. The posts should not display in alphabetical order.
+    * Click on the same dropbox and choose **Time (newest)**. The same order as was initially displayed should now appear.
+    * Click on the same dropbox and choose **Time (oldest)**. The reverse of the order you originally saw should appear.
+2. Settings
+    * Click on the **Feed Settings** dropbox and click on **Queue**. You should be shown the view of the settings page.
+    * Navigate back to a feed of your choosing and click on the **Feed Settings** dropbox again. This time, click on **Autodelete**. You should likewise see the same settings page as before.
+
+
+#####Unread/Read Tests
 
 ### What Is Implemented
-Laterrrrr
+????????????????
 
 ### Roles and Tasks
 Views and front-end controllers: Michelle, Jawwad
@@ -92,7 +150,9 @@ API and back-end controllers: Justyn
 Models, API, and model unit tests: Lucia and Justyn
 
 ### Changes
-Not that we are aware of?
+Queue???
+
+
 
 # RSS-reader
 ## Milestone 3.B
