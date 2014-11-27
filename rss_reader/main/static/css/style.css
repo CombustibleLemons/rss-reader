@@ -8,14 +8,17 @@
 	border-color: #e7e7e7;
 	border-top: #e7e7e7 solid 1px;
 }
+
 .text-muted {
-		
+
 		float: bottom;
 }
+
 body {
   padding-top: 51px;
 	margin-bottom: 81px; /* Height of the footer */
 }
+
 .text-center {
   padding-top: 20px;
 }
@@ -33,10 +36,10 @@ body {
 #navbar .navbar-right {
 	margin-right: 0;
 }
-.feeds {
+.feeds,
+.sidebar ul {
 	list-style-type: none;
 }
-
 .dropbox li {
   list-style-type: none;
 }
@@ -47,6 +50,18 @@ body {
 }
 .post:hover {
 	background: #eee;
+}
+.post-header{
+	display: inline;
+}
+.mini {
+	padding:15px;
+	width:90%;
+	display: inline-block;
+
+}
+.full {
+	padding: 15px;
 }
 
 @media (min-width: 768px) {
@@ -63,6 +78,8 @@ body {
 		background-color: #f5f5f5;
 		border-right: 1px solid #eee;
 	}
+
+
 	.main-content {
 
 	}
@@ -84,7 +101,6 @@ body {
 .settings-btn {
 	max-height: 10%;
 	max-width: 10%;
-	float: right;
 	padding-left: 5px;
 }
 .navbar-default .navbar-nav>.login-btn>a {
@@ -94,11 +110,13 @@ body {
 	color: #fff;
 }
 
-#popupWrapper{
+#popupWrapper,
+#popupWrapperResults {
 	display: none;
 }
 
-#popupTopic {
+#popupTopic,
+#popupTopicResults {
 	position:absolute;
 	left:50%;
 	top:17%;
@@ -106,7 +124,8 @@ body {
 	z-index:1031;
 
 }
-#popupTopic form {
+#popupTopic form,
+#popupTopicResults form {
 	max-width:300px;
 	min-width:250px;
 	padding:10px 50px;
@@ -127,8 +146,11 @@ body {
     z-index:1031; /* may not be necessary */
 }
 
-.nav li a[class^='editTopic'], 
-.nav input[class^='editTopic'] {
+.nav li a[class^='editTopic'],
+.nav li a[class^='editBtn'],
+.nav li a[class^='removeTopic'], 
+.nav input[class^='editTopic'],
+.saveBtn {
 	display:none;
 }
 .error {
@@ -136,7 +158,7 @@ body {
 }
 .dropbox {
 	float:right;
-	padding-right: 100px;
+	padding-right: 28px;
 	padding-top: 10px;
 }
 
@@ -144,6 +166,77 @@ body {
 	height: 30%;
 	width: 100%;
 }
+
+#searchInput {
+	height: 30%;
+	width: 90%;
+}
+
+#popupQueueWrapper{
+	display: none;
+}
+
+#popupQueue {
+	position:absolute;
+	left:50%;
+ }
+.onoffswitch {
+    position: relative; width: 64px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    float: right;
+		margin:15px 15px 0px 0px;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 0px solid #999999; border-radius: 0px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+    -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner > span {
+    display: block; float: left; position: relative; width: 50%; height: 19px; padding: 0; line-height: 19px;
+    font-size: 9px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+.onoffswitch-inner .onoffswitch-active {
+    padding-left: 15px;
+    background-color: #C2C2C2; color: #FFFFFF;
+}
+.onoffswitch-inner .onoffswitch-inactive {
+    padding-right: 15px;
+    background-color: #C2C2C2; color: #FFFFFF;
+    text-align: right;
+}
+
+
+.onoffswitch-switch {
+    display: block; width: 37px; margin: 0px; text-align: center;
+    border: 0px solid #999999;border-radius: 0px;
+    position: absolute; top: 0; bottom: 0;
+}
+.onoffswitch-active .onoffswitch-switch {
+    background: #FF78AE; left: 0;
+}
+.onoffswitch-inactive .onoffswitch-switch {
+    background: #A1A1A1; right: 0;
+}
+.onoffswitch-active .onoffswitch-switch:before {
+    content: " "; position: absolute; top: 0; left: 37px;
+    border-style: solid; border-color: #FF78AE transparent transparent #FF78AE; border-width: 9px 6px;
+}
+.onoffswitch-inactive .onoffswitch-switch:before {
+    content: " "; position: absolute; top: 0; right: 37px;
+    border-style: solid; border-color: transparent #A1A1A1 #A1A1A1 transparent; border-width: 9px 6px;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+
 /*
 .black-swirls {
 	float: left;
@@ -151,3 +244,20 @@ body {
 	max-height: 10%;
 	padding-right: 25px;
 }*/
+.fade {
+  opacity: 0;
+  -webkit-transition: opacity 0.15s linear;
+  -moz-transition: opacity 0.15s linear;
+  -o-transition: opacity 0.15s linear;
+  transition: opacity 0.15s linear;
+}
+.fade.in {
+  opacity: 1;
+}
+.topicButton div{
+	width:60%;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+	display:inline;
+}

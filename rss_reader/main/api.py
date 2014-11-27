@@ -11,6 +11,9 @@ from django.contrib.auth.models import User, UserManager
 # For overriding response when a User is requested
 from django.shortcuts import get_object_or_404
 
+# Exceptions to handle
+from django.core.exceptions import ValidationError
+
 # Models and Serializers
 from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer, PostsReadSerializer
 from .models import Topic, Feed, Post, UserSettings, PostsRead
@@ -104,37 +107,41 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+        obj = self.get_object()
         # Check if topic name is uncategorized, if so we can't delete it
-        if instance.name == "Uncategorized":
+        if obj.name == "Uncategorized":
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        self.perform_destroy(instance)
+        self.pre_delete(obj)
+        obj.delete()
+        self.post_delete(obj)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         self.object = self.get_object_or_none()
-        # Check to make sure this is not an uncategorized Topic
-        if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(self.object, data=request.DATA,
-                                        files=request.FILES, partial=partial)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            self.pre_save(serializer.object)
-        except ValidationError as err:
-            # full_clean on model instance may be called in pre_save,
-            # so we have to handle eventual errors.
-            return Response(err.message_dict, status=status.HTTP_400_BAD_REQUEST)
-        if self.object is None:
-            self.object = serializer.save(force_insert=True)
-            self.post_save(self.object, created=True)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        self.object = serializer.save(force_update=True)
-        self.post_save(self.object, created=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            # Check to make sure this is not an uncategorized Topic
+            if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serializer = self.get_serializer(self.object, data=request.DATA,
+                                            files=request.FILES, partial=partial)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                self.pre_save(serializer.object)
+            except ValidationError as err:
+                # full_clean on model instance may be called in pre_save,
+                # so we have to handle eventual errors.
+                return Response(err.message_dict, status=status.HTTP_400_BAD_REQUEST)
+            if self.object is None:
+                self.object = serializer.save(force_insert=True)
+                self.post_save(self.object, created=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            self.object = serializer.save(force_update=True)
+            self.post_save(self.object, created=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({"error" : e.message}, status=status.HTTP_409_CONFLICT)
 
 class TopicFeedList(generics.ListAPIView):
     model = Feed
@@ -171,6 +178,7 @@ def feed_create(request):
     if request.method == "POST":
         # Create feed using input URL
         url = request.DATA["url"]
+        print url
         try:
             # Try creating a Feed with the url
             f = Feed.createByURL(url)
@@ -180,29 +188,11 @@ def feed_create(request):
             fs = FeedSerializer(f)
             return Response(fs.data, status=status.HTTP_200_OK)
         except IntegrityError as e:
-            # Check if user already subscribed, then we have a genuine error
-            user = User.objects.get(id="1")
-            existsInOtherTopic = False
-            for topic in user.topics.all():
-                if topic.feeds.filter(URL=url).exists():
-                    existsInOtherTopic = True
-                    break
-            if not existsInOtherTopic:
-                # Find the feed
-                f = Feed.objects.get(URL=url)
-                try:
-                    # If uncategorized already exists
-                    t = user.topics.get(name="Uncategorized")
-                except Topic.DoesNotExist as e:
-                    # If it doesn't create it
-                    t = Topic(name="Uncategorized", user=user)
-                    t.save()
-                t.addFeed(f)
-                fs = FeedSerializer(f)
-                return Response(fs.data, status=status.HTTP_200_OK)
-            # User is already subscribed to feed elsewhere,
+            # Feed already exists, return 409 with feed data
+            f = Feed.objects.get(URL=url)
+            fs = FeedSerializer(f)
             # Return 409 CONFLICT
-            return Response(status=status.HTTP_409_CONFLICT)
+            return Response(fs.data, status=status.HTTP_409_CONFLICT)
         except Exception as e:
             print e
             # Return bad request if we get a general exception
@@ -338,7 +328,6 @@ def remove_repeats(seq):
 import watson
 @api_view(['GET', 'POST'])
 def search(request):
-    #print "entered search"
     if request.method == "POST":
         # Create feed using input URL
         #print "getting search string"

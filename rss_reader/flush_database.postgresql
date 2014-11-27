@@ -1,0 +1,4 @@
+drop database feeddb;
+create database feeddb;
+grant all privileges on database feeddb to combustible;
+

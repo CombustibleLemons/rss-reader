@@ -53,6 +53,10 @@ class ListField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
+# User class exists in Django, with email, username attributes; and
+# User.objects.create_user(...),check_password(raw pwd),login(),logout(), authenticate() methods
+# user.topics.create(name="topicname")
+
 class UserSettings(models.Model):
 
     def __unicode__(self):
@@ -295,7 +299,7 @@ class QueueFeed(Feed):
     static = False
 
     @classmethod
-    def create(cls, feed, postnum, interval):
+    def create(cls, feed, postnum, interval, user):
         # interval constraints - at smallest, will be hours
 
         #save feed if it is not in the database
@@ -306,7 +310,7 @@ class QueueFeed(Feed):
         # Feed URL's must be unique; though QueueFeeds don't need URLs, initialized URL with feed.id to fulfill this constraint
         # Django won't let us override this
         # this is our hacky, hacky fate
-        q = cls.objects.create(postNum = postnum, interval = interval, lastUpdate = timezone.now(), URL=str(feed.id))
+        q = cls.objects.create(postNum = postnum, interval = interval, lastUpdate = timezone.now(), user = user, URL=str(feed.id))
 
         #q.URL = str(q.id)
         #print q.id
@@ -352,15 +356,23 @@ class QueueFeed(Feed):
             return list(ascending_posts[qPostsLen:(qPostsLen+self.postNum)])
 
         else:
-            #get number of unread posts in qPosts
+            # print "entered static"
+            #get qfeed's read posts from readPosts
             feedReadPost = user.readPosts.get(feed__id=qfeed.id)
             feedReadPostSet = list(feedReadPost.posts.all())
+            # print "ReadPosts:"
+            # print feedReadPostSet
+            # make list of unread posts
             unread = []
             unread = [pq_id for pq_id in qPosts if not Post.objects.get(id = pq_id) in feedReadPostSet]
+            # print "unread and len:"
+            # print idsToPosts(unread)
+            # print len(unread)
 
             #determine number of Posts that need to be added so that there are postNum unread Posts
             diff = self.postNum - len(unread)
-            truncPostNum = diff if (diff < 0) else 0
+            # print diff
+            truncPostNum = diff if (diff > 0) else 0
             return list(ascending_posts[qPostsLen:(qPostsLen+truncPostNum)])
 
     def update(self):
@@ -406,24 +418,83 @@ class Topic(models.Model):
     # - addFeed (feed : Feed)
     # - will take advantage of ManytoMany relationships
     # - must check that Feed is not already owned in Topic or in User
-    def addFeed(self, feed):
-        # Remember to exclude self from the checking!
-        for t in self.user.topics.all().exclude(id=self.id):
-            # Check if the feed is in any other topic
-            if t.feeds.filter(id=feed.id).exists():
-                raise FeedExistsInTopic
-        # Check if feed is in this Topic's feed list
-        if self.feeds.all().filter(id=feed.id).exists():
-            # Fail to add silently, it's okay if a feed is already in a topic and we add it
-            return
-        self.feeds.add(feed)
-        self.save()
+    # def get_feeds(self):
+    #     # import pdb; pdb.set_trace()
+    #     return self._feeds.all()
+    #
+    # def set_feeds(self, feed):
+    #     # import pdb; pdb.set_trace()
+    #     # Remember to exclude self from the checking!
+    #     for t in self.user.topics.all().exclude(id=self.id):
+    #         # Check if the feed is in any other topic
+    #         if t.feeds.filter(id=feed.id).exists():
+    #             raise FeedExistsInTopic
+    #     # Check if feed is in this Topic's feed list
+    #     if self._feeds.all().filter(id=feed.id).exists():
+    #         # Fail to add silently, it's okay if a feed is already in a topic and we add it
+    #         return
+    #     self._feeds.add(feed)
+    #     self.save()
+    # feeds = property(get_feeds, set_feeds)
 
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
     def deleteFeed(self, feed):
             self.feeds.remove(feed)
             self.save()
+
+# Enforces validation of feeds that are to be added
+from django.core.exceptions import ValidationError
+from django.db.models.signals import m2m_changed
+# TODO: This workaround using Django signals will still add feeds that are correct if we are adding
+# multiple feeds at once. We don't do this in the controller code, but that behavior is not
+# well defined elsewhere
+def topicFeedsChanged(sender, instance, **kwargs):
+    #import pdb; pdb.set_trace()
+    # Remember to exclude self from the checking!
+    if kwargs['action'] == 'pre_add':
+        # We have to keep track of a failed set, since just throwing a ValidationError would cause
+        # the Topic objects to lose all of its feeds.
+        failed = []
+        pk_set = kwargs.get("pk_set").copy()
+        for pk in kwargs.get("pk_set"):
+            for t in instance.user.topics.all().exclude(id=instance.id):
+                # Check if the feed is in any other topic
+                if t.feeds.filter(id=pk).exists():
+                    # Add the pk to failed list and remove it from the pk_set
+                    pk_set.remove(pk)
+                    failed.append(pk)
+                    break
+            # Check if feed is in this Topic's feed list
+            if instance.feeds.all().filter(id=pk).exists():
+                # Fail to add silently, it's okay if a feed is already in a topic and we add it
+                pass
+        kwargs["pk_set"] = pk_set
+        # Since we are forced to use Django signals, put the data into the object and remove it later
+        instance.failed = failed
+    elif kwargs['action'] == 'post_add':
+        # Make sure each added feed is given a PostsRead object to associate with a User
+        user = instance.user
+        for pk in kwargs["pk_set"]:
+            try:
+                feed = Feed.objects.get(id=pk)
+                with transaction.atomic():
+                    pr = PostsRead(user=user, feed=feed)
+                    pr.save()
+            except IntegrityError:
+                # IntegrityError means one already exists, so pass
+                pass
+
+        # Report any failed pks. See TODO above.
+        failed = instance.failed
+        if failed:
+            errMsg = "Feeds %s already exists in another topic" % (str(failed),)
+            failed = []
+            raise ValidationError(errMsg)
+        # Cleanup the failed rider, don't want it sticking around with the object forever
+        del instance.failed
+
+m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
 
 class Post(models.Model):
     # Attributes
@@ -573,7 +644,18 @@ class PostsRead(models.Model):
     # Date after which to auto mark as read (TODO: Need a way to handle users marking something as unread
     # and then not just obliterating it everytime this update function is called)
     # dateCutoff defaults to null = True since we do not require posts to be auto-marked-as-read
-    dateCutoff = timedelta.fields.TimedeltaField(null=True)
+    dateCutoff = timedelta.fields.TimedeltaField(null=False, blank=True) # Blank so serializer doesn't have to keep track
+
+    class Meta:
+        unique_together = (('user', 'feed'),);
+
+    @classmethod
+    def create(cls, user, feedID, posts):
+        cls.user = user
+        cls.feed = Feed.objects.get(id=feedID)
+        cls.save()
+        cls.posts = posts
+        return cls
 
     def update(self):
         # Auto-update the posts read according to the setting for feed ranges

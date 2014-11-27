@@ -6,9 +6,10 @@ describe("User controllers", function() {
 
     var userScope, httpBackend, userController;
     beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
         userScope = $rootScope.$new();
         userController = $controller('UserController', {$scope: userScope});
-        httpBackend = $httpBackend;
 
         userScope.$digest();
     }));
@@ -29,6 +30,16 @@ describe("User controllers", function() {
         httpBackend.flush();
         // Make sure that the user variable has been properly set
         expect(userScope.user).toEqual({"topics": 12});
+        // Try it again to make sure it doesn't break anything
+        httpBackend.expectGET('/user/').respond(200, {"topics":12});
+        userScope.refreshUser();
+        httpBackend.flush();
+        expect(userScope.user).toEqual({"topics":12});
+        // What if the user has somehow changed on the server?
+        httpBackend.expectGET('/user/').respond(200, {"topics":21});
+        userScope.refreshUser();
+        httpBackend.flush();
+        expect(userScope.user).toEqual({"topics":21});
     });
 
     it("should getTopicIds", function() {
@@ -40,6 +51,9 @@ describe("User controllers", function() {
         httpBackend.flush();
         // Make sure it's what we expect
         expect(userScope.user["topics"]).toEqual([]);
+        // Make sure it exists when we already have the user
+        userScope.getTopicIds();
+        expect(userScope.user["topics"]).toEqual([]);
     });
 });
 
@@ -48,18 +62,16 @@ describe("Navigation controllers", function() {
     var userScope, navScope, httpBackend;
 
     beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
-
         navScope = userScope.$new();
         $controller('NavigationController', {$scope: navScope});
-
-        httpBackend = $httpBackend;
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
-        userScope.refreshUser();
-        httpBackend.flush();
+
         userScope.$digest();
-        navScope.$digest();
+        httpBackend.flush();
     }));
 
     afterEach(function() {
@@ -71,6 +83,7 @@ describe("Navigation controllers", function() {
         navScope.fetchTopics();
         expect(navScope.topicIds).toEqual([]);
         expect(navScope.topics).toEqual([]);
+        // this is where i'm working
     });
 
     it("should add topics", function() {
@@ -272,38 +285,35 @@ describe("Topic controllers", function() {
         expect(topicScope.topic).toEqual(origTopic);
     });
 
-    it("should add and remove feeds", function() {
-        // add foofeed
-        var foofeed = {"name":"foofeed", "id":12};
-        httpBackend.expectPUT('/topics/12').respond(200, '');
-        topicScope.addFeedToTopic(foofeed);
-        httpBackend.flush();
-        expect(topicScope.topic["feeds"][0]).toEqual(12);
-        expect(topicScope.feeds[0]).toEqual(foofeed);
-        // check fetching feeds when there are feeds
-        httpBackend.expectGET('/feeds/12').respond(200, foofeed);
-        var origTopic = topicScope.topic;
-        topicScope.fetchFeeds();
-        httpBackend.flush();
-        expect(topicScope.topic).toEqual(origTopic);
+    // it("should add and remove feeds", function() {
+    //     // add foofeed
+    //     var foofeed = {"name":"foofeed", "id":12};
+    //     topicScope.addFeedToTopic(foofeed);
+    //     expect(topicScope.topic["feeds"][0]).toEqual(12);
+    //     expect(topicScope.feeds[0]).toEqual(foofeed);
+    //     // check fetching feeds when there are feeds
+    //     httpBackend.expectGET('/feeds/12').respond(200, foofeed);
+    //     var origTopic = topicScope.topic;
+    //     topicScope.fetchFeeds();
+    //     httpBackend.flush();
+    //     expect(topicScope.topic).toEqual(origTopic);
 
-        // remove nonexistent feed
-        httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
-        topicScope.removeFeedFromTopic(28);
-        httpBackend.flush();
-        expect(topicScope.feeds[0]).toEqual(foofeed);
-        // remove foofeed unsuccessfully
-        httpBackend.expectPUT('/topics/12', topicScope.topic).respond(400, '');
-        topicScope.removeFeedFromTopic(12);
-        httpBackend.flush();
-        expect(topicScope.feeds[0]).toEqual(foofeed);
-        // remove foofeed successfully
-        httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
-        topicScope.removeFeedFromTopic(12);
-        httpBackend.flush();
-        dump(topicScope.feeds);
-        expect(topicScope.feeds).toEqual([]);
-    });
+    //     // remove nonexistent feed
+    //     httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
+    //     topicScope.removeFeedFromTopic(28);
+    //     httpBackend.flush();
+    //     expect(topicScope.feeds[0]).toEqual(foofeed);
+    //     // remove foofeed unsuccessfully
+    //     httpBackend.expectPUT('/topics/12', topicScope.topic).respond(400, '');
+    //     topicScope.removeFeedFromTopic(12);
+    //     httpBackend.flush();
+    //     expect(topicScope.feeds[0]).toEqual(foofeed);
+    //     // remove foofeed successfully
+    //     httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
+    //     topicScope.removeFeedFromTopic(12);
+    //     httpBackend.flush();
+    //     expect(topicScope.feeds).toEqual([]);
+    // });
 
     it("should test that the expand feed signal is properly sent", function() {
         var success = false;
@@ -318,16 +328,39 @@ describe("Topic controllers", function() {
         expect(success).toBe(true);
     });
 });
-/* Commented to facilitate me fixing other tests - Devon
+
 describe("Search controllers", function($rootScope) {
     beforeEach(module("main.controllers"));
-    var searchScope, httpBackend;
+    var httpBackend, userScope, navScope, topicScope, searchScope;
 
-    beforeEach(inject(function($controller, $rootScope, $httpBackend) {
-        searchScope = $rootScope.$new();
-        $controller('SearchController', {$scope: searchScope});
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
         httpBackend = $httpBackend;
 
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        userScope.refreshUser();
+        httpBackend.flush();
+
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          topicScope = navScope.$new();
+          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope});
+          
+          searchScope = $rootScope.$new();
+          $controller('SearchController', {$scope: searchScope});
+        });
+
+        userScope.$digest();
+        navScope.$digest();
+        topicScope.$digest();
         searchScope.$digest();
     }));
 
@@ -335,27 +368,22 @@ describe("Search controllers", function($rootScope) {
        httpBackend.verifyNoOutstandingExpectation();
        httpBackend.verifyNoOutstandingRequest();
     });
-
+/*
     it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, 'pretend this is feed data');
+        httpBackend.expectPOST('/feeds/create/', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, {'id':42});
         searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
         var success;
 
-        //searchScope.addFeed();
-        searchScope.search();
-
+        searchScope.addFeed();
         searchScope.$on("addedFeed", function (event, message) {
-            // check message
             success = true;
         });
         httpBackend.flush();
         expect(success).toBe(true);
-        // var newFeedSet = scope.user.topic_set['uncategorized']; // yet again
-        // expect(originalFeedSet.length).toEqual(newFeedSet.length + 1);
-        // expect feed to be in uncategorized topic, uncertain of syntax at this time
-    });
+        expect(topicScope.topic).toEqual({"name":'Uncategorized',"id":12,"user":1,"feeds":[42]});
+    }); */
 });
-*/
+
 describe("Feed controllers", function() {
     beforeEach(module("main.controllers"));
     var userScope, navScope, topicScope, feedScope, httpBackend;
@@ -404,17 +432,18 @@ describe("Feed controllers", function() {
 
     it("should fetch posts", function() {
         // feed has no posts
-        httpBackend.expectGET('feeds/12/posts').respond(200, []);
+        httpBackend.expectGET('/feeds/12/posts/').respond(200, []);
         topicScope.expandFeed(12);
         httpBackend.flush();
         expect(feedScope.posts).toEqual([]);
         var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
-        httpBackend.expectGET('feeds/12/posts').respond(200, fake_post_array);
+        httpBackend.expectGET('/feeds/12/posts/').respond(200, fake_post_array);
         topicScope.expandFeed(12);
         httpBackend.flush();
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": ""}, {"bill": "murray", "content":""}]);
     });
 });
+
 /*
 describe("Speedtest controllers", function() {
     beforeEach(module("main.controllers"));
@@ -470,13 +499,5 @@ describe("Speedtest controllers", function() {
     // Actually if the user stuff moved, then maybe we should test setting
     // the wpm variable here
 
-});
-/*
-    it("should fetch posts", function() {
-        var posts = scope.fetchPosts(validFeed);
-        expect(posts).toBe(true);
-        expect(scope.foofeed.post_set.length).toBeGreaterThan(0);
-        expect(scope.view.div.ul['posts']).toBeGreaterThan(0); // syntax???
-    });
 });
 */
