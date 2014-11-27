@@ -302,7 +302,6 @@ class CreateQueueFeedTestCase(TestCase):
         """Creates Queue with correct number of posts, correct posts, correct interval and postNum"""
         #make feed
         q = QueueFeed.create(self.f1, self.postNum, self.interval)
-        q.save()
 
         #test postNum, interval, feed
         self.assertEqual(q.postNum, self.postNum)
@@ -322,8 +321,6 @@ class CreateQueueFeedTestCase(TestCase):
 
         #make QueueFeed with pNum as postNum
         q = QueueFeed.create(self.f1, pNum, self.interval)
-        q.save()
-        #print q.qPosts
 
         #check accuracy of postNum, interval, feed
         self.assertEqual(q.postNum, pNum)
