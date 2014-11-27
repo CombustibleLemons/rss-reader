@@ -29,8 +29,9 @@ class FeedSerializer(serializers.ModelSerializer):
             "skipHours", "pubDate", "updated", "posts", )
 
 class PostSerializer(serializers.ModelSerializer):
-    class Meta:
+
     Length = serializers.SerializerMethodField('get_post_length')
+    class Meta:
         model = Post
         # fields = ("feedURL", "author", "category", "rights", "title",
         #     "subtitle", "content", "generator", "guid", "url", "contributor",
