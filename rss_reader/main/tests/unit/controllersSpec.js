@@ -24,27 +24,35 @@ describe("User controllers", function() {
         expect(userScope.user).toBe(undefined);
         // Set it up to return a very fake user object
         httpBackend.expectGET('/user/').respond(200, {"topics": 12});
+        httpBackend.expectGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         // Call the function
         userScope.refreshUser();
         // Send the response back from fake-server to client
         httpBackend.flush();
         // Make sure that the user variable has been properly set
         expect(userScope.user).toEqual({"topics": 12});
+
         // Try it again to make sure it doesn't break anything
         httpBackend.expectGET('/user/').respond(200, {"topics":12});
+        httpBackend.expectGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         userScope.refreshUser();
         httpBackend.flush();
         expect(userScope.user).toEqual({"topics":12});
+        expect(userScope.userSettings).toEqual({"user":1, "readtime":300});
+
         // What if the user has somehow changed on the server?
         httpBackend.expectGET('/user/').respond(200, {"topics":21});
+        httpBackend.expectGET('/user/settings/').respond(200, {"user":4, "readtime":400});
         userScope.refreshUser();
         httpBackend.flush();
         expect(userScope.user).toEqual({"topics":21});
+        expect(userScope.userSettings).toEqual({"user":4, "readtime":400});
     });
 
     it("should getTopicIds", function() {
         // Set it up to return fake user object when refreshUser is called inside getTopicIds
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         // Call the function
         userScope.getTopicIds();
         // Send the response
@@ -69,6 +77,7 @@ describe("Navigation controllers", function() {
         navScope = userScope.$new();
         $controller('NavigationController', {$scope: navScope});
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/settings/').respond(200, {"user":1, "readtime":300});
 
         userScope.$digest();
         httpBackend.flush();
@@ -83,33 +92,22 @@ describe("Navigation controllers", function() {
         navScope.fetchTopics();
         expect(navScope.topicIds).toEqual([]);
         expect(navScope.topics).toEqual([]);
-        // this is where i'm working
     });
 
     it("should add topics", function() {
-        // need to initialize some topic variables to mimic things
-        navScope.fetchTopics();
-
         // should add a first topic
         httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
-        var success = false;
         expect(navScope.topics.length).toEqual(0);
         navScope.addTopic("topic1");
-        navScope.$on("addedTopic", function (event, message) {
-            success = true;
-        });
         httpBackend.flush();
-        expect(success).toBe(true);
         expect(navScope.topics[0]["name"]).toEqual("topic1");
         expect(navScope.topics[0]["id"]).toEqual(12);
 
         // should add a second topic
-        success = false;
         httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         expect(navScope.topics.length).toEqual(1);
         navScope.addTopic("topic2");
         httpBackend.flush();
-        expect(success).toBe(true);
         expect(navScope.topics.length).toEqual(2);
         expect(navScope.topics[0]["name"]).toEqual("topic1");
         expect(navScope.topics[0]["id"]).toEqual(12);
@@ -117,17 +115,14 @@ describe("Navigation controllers", function() {
         expect(navScope.topics[1]["id"]).toEqual(13);
 
         // shouldn't add a topic that already exists
-        success = false;
         httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(409, '');
         navScope.addTopic("topic2");
         httpBackend.flush();
-        expect(success).toBe(false);
         expect(navScope.topics.length).toEqual(2);
     });
 
     it("should rename topics", function() {
         // need to initialize some variables to mimic things
-        navScope.fetchTopics();
         httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
         navScope.addTopic("topic1");
         httpBackend.flush();
@@ -136,8 +131,18 @@ describe("Navigation controllers", function() {
         httpBackend.flush();
 
         // should rename a topic
-        httpBackend.expectPUT('/topics/12', {"name":"topic3", "index":12}).respond(200, {"name":"topic3", "id":12});
-        navScope.renameTopic("topic3", 12);
+        httpBackend.expectPUT('/topics/12', {"name":"topic3", "id":12}).respond(200, {"name":"topic3", "id":12});
+        navScope.renameTopic("topic3", navScope.topics[0]);
+        httpBackend.flush();
+        expect(navScope.topics.length).toEqual(2);
+        expect(navScope.topics[0]["name"]).toEqual("topic2");
+        expect(navScope.topics[0]["id"]).toEqual(13);
+        expect(navScope.topics[1]["name"]).toEqual("topic3");
+        expect(navScope.topics[1]["id"]).toEqual(12);
+
+        // will not allow name to be changed to same as another topic
+        httpBackend.expectPUT('/topics/13', {"name":"topic3", "id":13}).respond(409, '');
+        navScope.renameTopic("topic3", navScope.topics[0]);
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
         expect(navScope.topics[0]["name"]).toEqual("topic2");
@@ -148,18 +153,12 @@ describe("Navigation controllers", function() {
 
     it("should remove topics", function() {
         // need to initialize some variables to mimic things
-        navScope.fetchTopics();
         httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
         navScope.addTopic("topic1");
         httpBackend.flush();
         httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         navScope.addTopic("topic2");
         httpBackend.flush();
-        expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic1");
-        expect(navScope.topics[0]["id"]).toEqual(12);
-        expect(navScope.topics[1]["name"]).toEqual("topic2");
-        expect(navScope.topics[1]["id"]).toEqual(13);
 
         // shouldn't change anything if the topic doesn't exist
         httpBackend.expectDELETE('/topics/14').respond(409, '');
@@ -182,57 +181,65 @@ describe("Navigation controllers", function() {
 
     it("should expand and minimize topics", function() {
         // need to initialize some variables to mimic things
-        navScope.fetchTopics();
         httpBackend.expectPOST('/topics/', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
         navScope.addTopic("topic1");
         httpBackend.flush();
         httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
         navScope.addTopic("topic2");
         httpBackend.flush();
-        expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic1");
-        expect(navScope.topics[0]["id"]).toEqual(12);
-        expect(navScope.topics[1]["name"]).toEqual("topic2");
-        expect(navScope.topics[1]["id"]).toEqual(13);
 
+        // Testing expandedIndex
         expect(navScope.expandedIndex).toEqual([-1]);
         navScope.expandTopic(0);
         expect(navScope.expandedIndex).toEqual([0]);
         navScope.expandTopic(1);
         expect(navScope.expandedIndex).toEqual([1]);
     });
+});
 
-    it("should move feeds from topic to topic", inject(function($controller) {
-        var topicScope1 = navScope.$new();
-        var topic1 = {"name":"topic1", "id":12, "user":1, "feeds": []};
-        topicScope1.$parent.topics.push(topic1);
-        topicScope1.$parent.$index = 0;
-        $controller('TopicController', {$scope: topicScope1});
+describe("Search controllers", function($rootScope) {
+    beforeEach(module("main.controllers"));
+    var httpBackend, userScope, navScope, topicScope, searchScope;
 
-        var topicScope2 = navScope.$new();
-        var topic2 = {"name":"topic2", "id":13, "user":1, "feeds": []};
-        topicScope2.$parent.topics.push(topic2);
-        topicScope2.$parent.$index = 1;
-        $controller('TopicController', {$scope: topicScope2});
-        dump('moving feeds tests not fully implemented, because moving feeds not fully implemented');
-/*
-        // need to initialize some variables to mimic things
-        navScope.fetchTopics();
-        httpBackend.flush();
-        httpBackend.expectPOST('/topics/create', {"name":"topic1"}).respond(200, {"name": "topic1", "id": 12});
-        navScope.addTopic("topic1");
-        httpBackend.flush();
-        httpBackend.expectPOST('/topics/create', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
-        navScope.addTopic("topic2");
-        httpBackend.flush();
-        expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic1");
-        expect(navScope.topics[0]["id"]).toEqual(12);
-        expect(navScope.topics[1]["name"]).toEqual("topic2");
-        expect(navScope.topics[1]["id"]).toEqual(13);
-        */
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          topicScope = navScope.$new();
+          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope});
+          
+          searchScope = $rootScope.$new();
+          $controller('SearchController', {$scope: searchScope});
+        });
+
+        userScope.$digest();
     }));
 
+    afterEach(function() {
+       httpBackend.verifyNoOutstandingExpectation();
+       httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it("should add URL feeds", function() {
+        // Obviously not an RSS feed, but I control the server responses
+        var URL = 'http://www.goodURL.com/rss.xml';
+        var foofeed = {"name":"foofeed", "id":12};
+        searchScope.query = URL;
+        httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(200, foofeed);
+        searchScope.search();
+        httpBackend.flush();
+        // will return once results controller is tested
+    })
 });
 
 describe("Topic controllers", function() {
@@ -244,10 +251,6 @@ describe("Topic controllers", function() {
 
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
-        httpBackend.whenGET('/user/').respond(200, {"topics": []});
-        userScope.refreshUser();
-        httpBackend.flush();
-
         navScope = userScope.$new();
         $.when(function(){
           var deferred = $q.defer();
@@ -262,8 +265,6 @@ describe("Topic controllers", function() {
         });
 
         userScope.$digest();
-        navScope.$digest();
-        topicScope.$digest();
     }));
 
     afterEach(function() {
@@ -329,60 +330,7 @@ describe("Topic controllers", function() {
     });
 });
 
-describe("Search controllers", function($rootScope) {
-    beforeEach(module("main.controllers"));
-    var httpBackend, userScope, navScope, topicScope, searchScope;
 
-    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
-        httpBackend = $httpBackend;
-
-        userScope = $rootScope.$new();
-        $controller('UserController', {$scope: userScope});
-        httpBackend.whenGET('/user/').respond(200, {"topics": []});
-        userScope.refreshUser();
-        httpBackend.flush();
-
-        navScope = userScope.$new();
-        $.when(function(){
-          var deferred = $q.defer();
-          deferred.resolve($controller('NavigationController', {$scope: navScope}));
-          return deferred.promise;
-        }).then(function(x){
-          topicScope = navScope.$new();
-          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
-          topicScope.$parent.topics = [topic];
-          topicScope.$parent.$index = 0;
-          $controller('TopicController', {$scope: topicScope});
-          
-          searchScope = $rootScope.$new();
-          $controller('SearchController', {$scope: searchScope});
-        });
-
-        userScope.$digest();
-        navScope.$digest();
-        topicScope.$digest();
-        searchScope.$digest();
-    }));
-
-    afterEach(function() {
-       httpBackend.verifyNoOutstandingExpectation();
-       httpBackend.verifyNoOutstandingRequest();
-    });
-/*
-    it("should add feeds", function() {
-        httpBackend.expectPOST('/feeds/create/', '{"url":"http://home.uchicago.edu/~jharriman/rss20.xml"}').respond(200, {'id':42});
-        searchScope.query = 'http://home.uchicago.edu/~jharriman/rss20.xml';
-        var success;
-
-        searchScope.addFeed();
-        searchScope.$on("addedFeed", function (event, message) {
-            success = true;
-        });
-        httpBackend.flush();
-        expect(success).toBe(true);
-        expect(topicScope.topic).toEqual({"name":'Uncategorized',"id":12,"user":1,"feeds":[42]});
-    }); */
-});
 
 describe("Feed controllers", function() {
     beforeEach(module("main.controllers"));
@@ -394,6 +342,7 @@ describe("Feed controllers", function() {
         userScope = $rootScope.$new();
         $controller('UserController', {$scope: userScope});
         httpBackend.whenGET('/user/').respond(200, {"topics": []});
+        httpBackend.whenGET('/user/settings/').respond(200, {"user":1, "readtime":300});
         userScope.refreshUser();
         httpBackend.flush();
 
