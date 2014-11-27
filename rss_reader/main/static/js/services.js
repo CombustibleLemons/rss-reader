@@ -107,6 +107,14 @@ angular.module('main.services', []).
         getPostsRead : function(feedID){
           var promise = $http.get("/feeds/" + feedID + "/posts/read");
           return promise;
+        },
+        getUserSettings : function() {
+          var promise = $http.get("/user/settings/");
+          return promise;
+        },
+        updateUserSettings : function(userSetttings) {
+          var promise = $http.put("/user/settings/", userSetttings);
+          return promise;
         }
     };
   })
