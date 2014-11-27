@@ -197,22 +197,23 @@ Models, API, and model unit tests: Lucia and Justyn
 
 ### Changes
 
-* Ability to mark read and unread has been added
+* Ability to mark posts read and unread
 
-* Much improved topic controllers
+* Add feed to topic with search bar
 
-* User can now sort feeds by various criteria
+* Controllers are more efficient
 
-* Settings available to the user
+* Can now search for feeds within a search view
 
-* Implemented reading speed test
+* Autodelete **UI bug**
 
-* Search is now available
+* Settings available to user
 
-* Various UI tweaks
+* Integrated read time **Will be implemented in queue**
 
-* Queue feeds
+* Sort-by moved to a dropdown
 
+* Queue feeds **BUG**
 
 # RSS-reader
 ## Milestone 3.B
