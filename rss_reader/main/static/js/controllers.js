@@ -184,12 +184,15 @@ angular.module('main.controllers', ['main.services'])
       });
     };
 
-    $scope.renameTopic = function(newTopicName, topicID) {
-      APIService.renameTopic(newTopicName, topicID).success(function(data) {
+    $scope.renameTopic = function(newTopicName, topic) {
+      topic.name = newTopicName;
+      console.log(topic);
+      APIService.updateTopic(topic).success(function(data) {
           $rootScope.$broadcast("renamedTopic", {
             topic: data,
-            identifier: topicID
+            identifier: topic.id
           });
+          console.log("success");
         }).error(function(data, status, headers, config){
           console.log(status);
         });
