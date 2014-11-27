@@ -100,9 +100,7 @@ angular.module('main.controllers', ['main.services'])
         var topic = $.parseJSON($(val).attr("data"));
 
         topic.feeds = [];
-        APIService.updateTopic(topic).success(function(data) {
-          console.log("cleared out feeds");
-        }).error(function(data, status, headers, config){
+        APIService.updateTopic(topic).error(function(data, status, headers, config){
           console.log(topic);
           console.log(status);
         });
@@ -123,9 +121,7 @@ angular.module('main.controllers', ['main.services'])
 
         topic.feeds = feedList;
 
-        APIService.updateTopic(topic).success(function(data) {
-          console.log("success");
-        }).error(function(data, status, headers, config){
+        APIService.updateTopic(topic).error(function(data, status, headers, config){
           console.log(status);
         });
       });
@@ -188,7 +184,6 @@ angular.module('main.controllers', ['main.services'])
               topic: data,
               identifier: topic.id
             });
-            console.log("success");
           }).error(function(data, status, headers, config){
             console.log(status);
           });
@@ -265,7 +260,6 @@ angular.module('main.controllers', ['main.services'])
           if ($("#searchForm").find(".error")) {
             $("#searchForm").find(".error").remove();
           }
-          console.log(data);
           $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
         }).error(function(data, status, headers, config) {
           // Feed already exists in the database, add it
@@ -273,9 +267,6 @@ angular.module('main.controllers', ['main.services'])
             if ($("#searchForm").find(".error")) {
               $("#searchForm").find(".error").remove();
             }
-            console.log('Hey');
-            console.log(data);
-            console.log('ho');
             $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
           }
           // URL isn't a feed
@@ -412,7 +403,6 @@ angular.module('main.controllers', ['main.services'])
         $scope.posts = data;
         /* Grab the PostsRead object from the server */
         APIService.getPostsRead($scope.feedID).success(function(data){
-          console.log(data);
           $scope.postsRead = data;
           angular.forEach($scope.posts, function(post){
             if (data["posts"].indexOf(post.id) == -1){
@@ -448,10 +438,9 @@ angular.module('main.controllers', ['main.services'])
         return previousValue;
       }, new Array());
       $scope.postsRead["posts"] = postsReadArr;
-      APIService.updatePostsRead($scope.feedID, $scope.postsRead).success(function(data){
-        console.log("Success");
-      }).error(function(data, status, headers, config){
-        console.log(status);
+      APIService.updatePostsRead($scope.feedID, $scope.postsRead)
+        .error(function(data, status, headers, config){
+          console.log(status);
       });
     };
 	// End Methods
@@ -466,7 +455,6 @@ angular.module('main.controllers', ['main.services'])
 
     // Event handlers
     $rootScope.$on("showSearchResults", function (event, message) {
-        console.log(message.searchResults);
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
     });

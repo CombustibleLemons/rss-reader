@@ -136,8 +136,8 @@ describe("Navigation controllers", function() {
         httpBackend.flush();
 
         // should rename a topic
-        httpBackend.expectPUT('/topics/12', {"name":"topic3", "index":12}).respond(200, {"name":"topic3", "id":12});
-        navScope.renameTopic("topic3", 12);
+        httpBackend.expectPUT('/topics/12', {"name":"topic3", "id":12}).respond(200, {"name":"topic3", "id":12});
+        navScope.renameTopic("topic3", navScope.topics[0]);
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
         expect(navScope.topics[0]["name"]).toEqual("topic2");
