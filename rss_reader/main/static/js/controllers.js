@@ -97,7 +97,41 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.saveEdits = function() {
-      console.log("yay!");
+      $scope.toggleEditMode();
+      var listOfTopics = $(".feeds");
+
+      $.each( listOfTopics, function( i, val ) {
+        var topic = $.parseJSON($(val).attr("data"));
+        var divList = $(val).find("div");
+        var feedList = []
+        $.each( divList, function(j, stuff) {
+          feedList.push(parseInt($(stuff).attr("id")));
+        });
+
+        //check if topic has been changed at all
+        var hasChanged = !(($(feedList).not(topic.feeds).length == 0) && ($(topic.feeds).not(feedList).length == 0));
+        if(hasChanged) {
+          console.log(topic);
+          topic.feeds = feedList;
+          APIService.updateTopic(topic).success(function(data) {
+            console.log("success");
+          }).error(function(data, status, headers, config){
+            console.log("fail mofo");
+          });
+        }
+
+      });
+
+      // for each topic in listOfTopics {
+      //   ls = [];
+      //   for each div under topic {
+      //     ls.push(div.attr("data"))
+      //     if (ls != topic.feeds) {
+      //       call updateTopic;
+      //     }
+      //   }
+      // }
+
     };
 
     $scope.toggleEditMode = function() {

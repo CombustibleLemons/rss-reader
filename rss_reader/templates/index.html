@@ -29,9 +29,9 @@
 
 				      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;">x</a>
 				      		</div>
-							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1">
+							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" data="{{topic}}">
 								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
-									<div>
+									<div id="{{feed.id}}">
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
 										<a href="#{{feed.title}}" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
 									</div>
