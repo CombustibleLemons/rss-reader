@@ -41,7 +41,6 @@ class PostSerializer(serializers.ModelSerializer):
         return len(words)
 
 class PostsReadSerializer(serializers.ModelSerializer):
-    Length = serializers.SerializerMethodField('get_post_length')
     # posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = PostsRead
