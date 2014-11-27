@@ -287,18 +287,12 @@ class QueueFeed(Feed):
     postNum = models.IntegerField()
     interval = timedelta.fields.TimedeltaField()
     lastUpdate = models.DateTimeField()
-    #print Feed._meta.get_field('URL')
-    #Feed._meta.get_field('URL').unique=False
 
     #list of posts accessible to user, by post.id (posts shoudl be unique to Feeds, cannot be added to QueueFeed directly)
     qPosts = ListField(null=True)
 
     #static attribute - if static is True, the number of unread posts will not exceed postNum
     static = False
-
-    # def __init__(self, *args, **kwargs):
-    #     super(QueueFeed, self).__init__(*args, **kwargs)
-    #     self.fields['URL'].unique = False
 
     @classmethod
     def create(cls, feed, postnum, interval):
