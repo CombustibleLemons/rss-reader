@@ -400,7 +400,6 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
             # Update the field without posts
             oldPostsRead = queryset.filter(feed_id=feed_id)
             oldPostsRead.update(**data)
-            import pdb; pdb.set_trace()
             newPostsRead = oldPostsRead[0] # It was a QuerySet
             newPostsRead.posts = posts
             newPostsRead.save()
