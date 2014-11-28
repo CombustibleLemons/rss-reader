@@ -180,11 +180,21 @@ These are the things we ran into trouble with:
 
 1) Queue feeds
 
-* Django's models ended up being much more complicated than predicted when it came to implementing queue feeds. When you ask for a feed from the server then call the `UPDATE` method, it calls the feed method rather than the queue feed subclass because subclassing in Django does not work the way we assumed it did. This is a bug we will fix in the Q & A phase.
+* Django's models ended up being much more complicated than predicted when it came to implementing queue feeds. When you ask for a feed from the server then call the `UPDATE` method, it calls the feed method rather than the queue feed subclass because subclassing in Django does not work the way we assumed it did. This is a bug we will fix in the Q&A phase.
 
 2) Removing topics
 
 * There is a known bug in AngularJS (https://github.com/angular/angular.js/issues/2149) that does not allow `DELETE` requests to be made.
+
+3) Readtime data
+* While a User can test their read time, using user reading speeds to compile a list of posts that take a certain amount of time to read has not been implemented. Originally constructing such a list was going to utilize the QueueFeed models/API.
+
+4) Known Bugs
+* QueueFeed is currently subclassed to Feed, will need to be classed differently.
+
+* Autodelete UI bug
+
+* Sort-by order is not entirely accurate
 
 ### Roles and Tasks
 Views and front-end controllers: Michelle, Jawwad
@@ -195,11 +205,11 @@ API and back-end controllers: Justyn
 
 Models, API, and model unit tests: Lucia and Justyn
 
-### Changes
+### Changes from Iteration 1
 
-* Ability to mark posts read and unread
+* Ability to mark posts read and unread is implemented
 
-* Add feed to topic with search bar
+* Add feed to topic with search bar is implemented
 
 * Controllers are more efficient
 
@@ -214,6 +224,8 @@ Models, API, and model unit tests: Lucia and Justyn
 * Sort-by moved to a dropdown
 
 * Queue feeds **BUG**
+
+### Known Bugs
 
 # RSS-reader
 ## Milestone 3.B

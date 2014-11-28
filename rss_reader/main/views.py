@@ -67,12 +67,7 @@ def register(request):
                     'registration/register.html',
                     {'user_form': user_form, 'registered': registered},
                     context)
-
-def about(request):
-	template = "about.html"
-	return render(request, template, {})
-
-
+            
 def user_login(request):
     context = RequestContext(request)
 

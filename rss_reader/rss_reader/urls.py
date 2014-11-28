@@ -63,5 +63,4 @@ urlpatterns = patterns('',
 	# Main
     url(r'^$', MainViews.index),
 
-    url(r'^about/', MainViews.about),
    )
