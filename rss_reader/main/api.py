@@ -15,8 +15,8 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
 # Models and Serializers
-from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer, PostsReadSerializer
-from .models import Topic, Feed, Post, UserSettings, PostsRead
+from .serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer, UserSettingsSerializer, PostsReadSerializer, QueueFeedSerializer
+from .models import Topic, Feed, Post, UserSettings, PostsRead, QueueFeed
 
 from pprint import pprint
 
@@ -24,9 +24,7 @@ from pprint import pprint
 class UserList(generics.ListAPIView):
     model = User
     serializer_class = UserSerializer
-    permission_classes = [
-        permissions.AllowAny
-    ]
+    permission_classes = (permissions.IsAuthenticated,)
 
 class UserDetail(generics.RetrieveUpdateAPIView):
     model = User
@@ -391,10 +389,42 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_queryset(self):
-        feed_id = self.kwargs.get("pk")
-        queryset = super(PostsReadDetail, self).get_queryset()
-        return queryset.filter(feed__pk=feed_id)
+    def update(self, request, *args, **kwargs):
+        try:
+            # Extract posts (b/c ManyToManyField is not easily updated)
+            data = request.DATA
+            posts = data.pop("posts")
+            feed_id = self.kwargs.get("pk")
+            queryset = self.get_queryset()
+
+            # Update the field without posts
+            oldPostsRead = queryset.filter(feed_id=feed_id)
+            oldPostsRead.update(**data)
+            import pdb; pdb.set_trace()
+            newPostsRead = oldPostsRead[0] # It was a QuerySet
+            newPostsRead.posts = posts
+            newPostsRead.save()
+            print PostsReadSerializer(newPostsRead).data
+            return Response(PostsReadSerializer(newPostsRead).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print e
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            user = User.objects.get(username=request.user)
+            feed_id = self.kwargs.get("pk")
+
+            # Limit the query set
+            queryset = queryset.filter(user=user)
+
+            # Grab the PostsRead object by the Feed it represents
+            postsRead = queryset.get(feed_id=feed_id)
+
+            return Response(PostsReadSerializer(postsRead).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Get unread posts
@@ -412,3 +442,43 @@ def unread_posts(request, **kwargs):
         except Exception as e:
             # Return bad request if we get a general exception
             return Response(e, status=status.HTTP_400_BAD_REQUEST)
+
+# Feed API
+class QueueFeedList(generics.ListCreateAPIView):
+    model = QueueFeed
+    serializer_class = QueueFeedSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            # Add the user and feed to the data
+            pk = kwargs.pop["pk"]
+            user = User.objects.get(username=request.user)
+            data = request.DATA
+            data.update({
+                "user" : user.id,
+                "feed" : pk
+            })
+            queueFeed = QueueFeed.create(**data)
+            queueFeed.save()
+            return Response(QueueFeedSerializer(queueFeed).data, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            # Return 409 if the url already exist
+            return Response(status=status.HTTP_409_CONFLICT)
+        except Exception as e:
+            print e
+            # Return bad request if we get a general exception
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class QueueFeedDetail(generics.RetrieveUpdateDestroyAPIView):
+    model = QueueFeed
+    serializer_class = QueueFeedSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+class QueueFeedPostList(generics.ListAPIView):
+    model = Post
+    serializer_class = PostSerializer
+    def get_queryset(self):
+        queueFeedId = self.kwargs.get("pk")
+        queueFeed = QueueFeed.objects.get(id=queueFeedId)
+        return queueFeed.queuedPosts.all()

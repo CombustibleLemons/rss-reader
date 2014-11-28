@@ -74,7 +74,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.saveEdits = function() {
       var listOfTopics = $(".topicHolder");
 
-      // zero out each topic's feed list  to avoid conflicts  
+      // zero out each topic's feed list  to avoid conflicts
       $.each( listOfTopics, function( i, val ) {
         var topic = $.parseJSON($(val).attr("data"));
 
@@ -123,7 +123,7 @@ angular.module('main.controllers', ['main.services'])
         $(".toggleEdit").text("Edit");
       } else {
         $(".nav-sidebar").addClass("sortable");
-        $(".nav li a[class^='removeTopic']").show(); 
+        $(".nav li a[class^='removeTopic']").show();
         $(".nav li a[class^='editBtn']").show();
         $(".saveBtn").show()
 
@@ -260,7 +260,7 @@ angular.module('main.controllers', ['main.services'])
           if (status == 409) {
 
             $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
-            $scope.hidePopup();            
+            $scope.hidePopup();
 
             // fade out the alert
             window.setTimeout(function() {
@@ -291,24 +291,6 @@ angular.module('main.controllers', ['main.services'])
       $rootScope.$broadcast("clickSettings", {});
     };
 
- //    Deprecated
- // $scope.addFeed = function() { // formerly passed url as an argument
- //      APIService.addFeedByUrl($scope.query).success(function(data) {
- //          // How do we figure out where to put it if this creates a new feed?
- //          $rootScope.$broadcast("addedFeed", {
- //                feed: data,
- //                topicName: "Uncategorized"
- //          });
- //          if ($("#searchForm").find(".error")) {
- //            $("#searchForm").find(".error").remove();
- //          }
- //        }).error(function(data, status, headers, config){
- //          if (status == 409) {
- //            $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
- //          }
- //        });
- //    };
-
     $scope.search = function() {
       var testSuccess = false;
       // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
@@ -335,7 +317,7 @@ angular.module('main.controllers', ['main.services'])
             testSuccess = false;
           }
         });
-      } 
+      }
       // Query is not a valid URL
       if(testSuccess == false) {
         APIService.search($scope.query).success(function(data) {
@@ -356,13 +338,6 @@ angular.module('main.controllers', ['main.services'])
   })
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Event handlers
-    // Dispatch addFeed message to a Topic
-    // $rootScope.$on("addedFeed", function (event, message) {
-    //     if ($scope.topic.name == message.topicName){
-    //       $scope.addFeedToTopic(message.feed);
-    //     }
-    // });
-
     $rootScope.$on("addedFeedObject", function (event, message) {
         if ($scope.topic.name == message.topic.name){
           $scope.topic = message.topic;
@@ -370,18 +345,6 @@ angular.module('main.controllers', ['main.services'])
         }
     });
     // End Event handlers
-
-    // Methods
-    // $scope.addFeedToTopic = function(feed) {
-    //   // Add the feed to the local side of things
-    //   // Is the feed in the topic already?
-    //   if ($.inArray( feed.id, $scope.topic["feeds"] ) == -1) {
-    //     $scope.topic["feeds"].push(feed.id);
-    //     $scope.feeds.push(feed);
-    //   } else {
-    //     $("#searchForm").append("<div class='error'>You are already subscribed to that feed</div>");
-    //   }
-    // };
 
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
@@ -407,14 +370,27 @@ angular.module('main.controllers', ['main.services'])
     $scope.fetchFeeds = function() {
       // Get the feed IDs
       var feed_ids = $scope.topic["feeds"];
+      var queue_feed_ids = $scope.topic["queue_feeds"];
+      // Remember, the ByIds service adds a type attribute to each object
       APIService.getFeedsByIds(feed_ids).then(function(data){
         $scope.feeds = data;
+        APIService.getQueueFeedsByIds(queue_feed_ids).then(function(data){
+          $scope.queue_feeds = data;
+          $scope.feeds = $scope.feeds.concat($scope.queue_feeds)
+        });
       });
     };
     //this just updates the feedService which the feedController pulls from
     $scope.expandFeed = function(feedID) {
       $rootScope.$broadcast("clickFeed", {
             identifier: feedID
+        });
+    };
+    $scope.expandQueueFeed = function(feedID, queueFeedID, queuePostsRead, postsReadInQueue) {
+      $rootScope.$broadcast("clickQueueFeed", {
+            identifier: feedID,
+            queue_identifier: queueFeedID,
+            queue_posts_read: postsReadInQueue
         });
     };
     // End Methods
@@ -434,33 +410,41 @@ angular.module('main.controllers', ['main.services'])
         $scope.fetchPosts();
         $scope.expandedPostIndex = -1;
     });
+    $rootScope.$on("clickQueueFeed", function (event, message) {
+        $scope.queuePostsRead = message.queues_posts_read;
+        $scope.queueFeedID = message.queue_identifier;
+        $scope.fetchQueuedPosts();
+        $scope.expandedPostIndex = -1;
+    });
     // End Event handlers
 
     // Methods
+    $scope.cleanPostsContent = function(data){
+      // This for loop removes unnecessary line breaks
+      for(var i=0; i<data.length; i++){
+        //create dummy div
+        var tmp = document.createElement('div');
+
+        // Populate dummy div with post content
+        $(tmp).html(data[i].content);
+
+        // Get list of line breaks
+        var breakList = $(tmp).find("br");
+
+        // If more than 5 line breaks
+        if (breakList.length >= 5) {
+          //remove all of them
+          $(tmp).find("br").remove();
+        }
+        // Put cleaned post content back into data array
+        data[i].content = $(tmp).html();
+      }
+      return data
+    };
+
     $scope.fetchPosts = function() {
       APIService.fetchPosts($scope.feedID).success(function(data) {
-        // This for loop removes unnecessary line breaks
-        for(var i=0; i<data.length; i++){
-          //create dummy div
-          var tmp = document.createElement('div');
-
-          // console.log(data[i])
-
-          // Populate dummy div with post content
-          $(tmp).html(data[i].content);
-
-          // Get list of line breaks
-          var breakList = $(tmp).find("br");
-
-          // If more than 5 line breaks
-          if (breakList.length >= 5) {
-            //remove all of them
-            $(tmp).find("br").remove();
-          }
-          // Put cleaned post content back into data array
-          data[i].content = $(tmp).html();
-        }
-        $scope.posts = data;
+        $scope.posts = $scope.cleanPostsContent(data);
         /* Grab the PostsRead object from the server */
         APIService.getPostsRead($scope.feedID).success(function(data){
           $scope.postsRead = data;
@@ -475,6 +459,21 @@ angular.module('main.controllers', ['main.services'])
           /* Update the 'unread' field of the posts */
         }).error(function(data, status, headers, config){
           console.log(status);
+        });
+      });
+    };
+
+    $scope.fetchQueuedPosts = function() {
+      APIService.fetchQueuedPosts($scope.queueFeedID).success(function(data) {
+        $scope.posts = $scope.cleanPostsContent(data);
+        /* Grab the QueuePostsRead from the model */
+        angular.forEach($scope.queuePostsRead, function(post){
+          if (data["posts"].indexOf(post.id) == -1){
+            post.unread = true;
+          }
+          else{
+            post.unread = false;
+          }
         });
       });
     };

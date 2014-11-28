@@ -31,10 +31,11 @@
 					      		</div>
 				      		</div>
 							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
-								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
+								<li ng-repeat="feed in feeds" ng-switch="feed.type" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
-										<a href="#" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+										<a href="#" ng-click="expandFeed(feed.id)" ng-switch-when="feed">{{feed.title}}</a>
+                    <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
 									</div>
 								</li>
 							</ul>
@@ -44,7 +45,7 @@
 					<a href="#" ng-click="saveEdits()" class="saveBtn">Save changes</a>
 				</div>
 			</div>
-			
+
 
 			<div class="col-sm-8 col-sm-offset-3 col-md-9 col-md-offset-2 main-content" >
 				<!-- Search Section -->
@@ -72,7 +73,7 @@
 									<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
 									<li><a href="">Length</a></li>
 									<li><a href="">Rating</a></li>
-									<li><a href="">Unread</a></li>
+									<li><a href="" ng-click="predicate = 'unread'; reverse=true">Unread</a></li>
 								</ul>
 							</span>
 							&nbsp;&nbsp;
@@ -180,7 +181,7 @@
 							<div class="row-fluid post" ng-show="expandedSettingIndex == 3">
 								<p>Press the "Start timer" button to begin the reading speed test.
 										You only need to press it at the beginning.
-										At the end of each passage, press the "End timer" button.</p> 
+										At the end of each passage, press the "End timer" button.</p>
 								<p><button ng-click="startTime()">Start timer</button></p>
 								<p id="testArea"></p>
 								<p><button ng-click="endTime()">End timer</button></p>

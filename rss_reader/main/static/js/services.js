@@ -43,15 +43,18 @@ angular.module('main.services', []).
             });
         },
         getTopicsByIds : function(topic_ids){
-          return this.urlsDeferred(topic_ids, '/topics/');
+          return this.urlsDeferred(topic_ids, '/topics/', 'topic');
         },
         getFeedsByIds : function(feed_ids){
-          return this.urlsDeferred(feed_ids, '/feeds/');
+          return this.urlsDeferred(feed_ids, '/feeds/', 'feed');
+        },
+        getQueueFeedsByIds : function(feed_ids){
+          return this.urlsDeferred(feed_ids, '/queue_feeds/', 'queue_feed');
         },
         getPostsByIds : function(post_ids){
-          return this.urlsDeferred(post_ids, '/posts/');
+          return this.urlsDeferred(post_ids, '/posts/', 'post');
         },
-        urlsDeferred : function(ids, leadUrl) {
+        urlsDeferred : function(ids, leadUrl, type) {
           var deferred = $q.defer();
           var urlCalls = [];
           angular.forEach(ids, function(id){
@@ -62,7 +65,9 @@ angular.module('main.services', []).
               // For each result pluck out the data
               // TODO: This should probably check that the status codes are all 200s
               var ret = results.map(function(res){
-                return res["data"];
+                var data = res["data"];
+                data["type"] = type;
+                return data;
               });
               deferred.resolve(ret);
             },
@@ -99,6 +104,10 @@ angular.module('main.services', []).
         // Feed controller functions
         fetchPosts : function(feedID) {
           var promise = $http.get('/feeds/' + feedID + '/posts/');
+          return promise;
+        },
+        fetchQueuedPosts : function(queueFeedID) {
+          var promise = $http.get('/queue_feeds/' + queueFeedID + '/posts/');
           return promise;
         },
         updatePostsRead : function(feedID, postsRead){
