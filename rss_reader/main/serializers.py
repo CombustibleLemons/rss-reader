@@ -14,10 +14,9 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         fields = ('readtime',)
 
 class TopicSerializer(serializers.ModelSerializer):
-    #feeds = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = Topic
-        #fields = ('id', 'name', 'user', 'feeds', )
+        fields = ('id', 'name', 'user', 'feeds', 'queue_feeds')
 
 class FeedSerializer(serializers.ModelSerializer):
     posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -38,7 +37,6 @@ class QueueFeedSerializer(serializers.ModelSerializer):
         #     "skipHours", "pubDate", "updated", "posts", )
 
 class PostSerializer(serializers.ModelSerializer):
-
     Length = serializers.SerializerMethodField('get_post_length')
     class Meta:
         model = Post
@@ -53,4 +51,4 @@ class PostsReadSerializer(serializers.ModelSerializer):
     # posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = PostsRead
-        #fields = ('id', 'user', 'feed', 'posts' )
+        # fields = ('id', 'user', 'feed', 'posts' )

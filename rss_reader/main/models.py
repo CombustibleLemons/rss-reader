@@ -380,9 +380,11 @@ def topicFeedsChanged(sender, instance, **kwargs):
                 with transaction.atomic():
                     pr = PostsRead(user=user, feed=feed)
                     pr.save()
-            except IntegrityError:
+            except IntegrityError as e:
                 # IntegrityError means one already exists, so pass
-                pass
+                print "IntegrityError", feed.id, e
+            except Exception as e:
+                print e
 
 m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
 
@@ -528,7 +530,7 @@ import datetime
 import pytz
 class PostsRead(models.Model):
     # Model Attributes
-    posts = models.ManyToManyField(Post, related_name="+", blank=True)
+    posts = models.ManyToManyField(Post, null=True, related_name="+readPosts")
     feed = models.ForeignKey(Feed, related_name="+")
     user = models.ForeignKey(User, related_name="readPosts")
     # Date after which to auto mark as read (TODO: Need a way to handle users marking something as unread
@@ -557,12 +559,13 @@ class PostsRead(models.Model):
             return feedPosts.exclude(id__in=self.posts.all())
         return feedPosts
 
-
 class QueueFeed(models.Model):
     # QueueFeeds, unlike other Feeds, are unique to a User
     user = models.ForeignKey(User, null=True, related_name="queues")
     feed = models.ForeignKey(Feed, null=True, related_name="feed")
-    topic = models.ForeignKey(Topic, null=True, related_name="queueFeeds")
+    topic = models.ForeignKey(Topic, null=True, related_name="queue_feeds")
+
+    name = models.TextField()
 
     # Update data
     postNum = models.IntegerField()
@@ -576,12 +579,12 @@ class QueueFeed(models.Model):
     static = models.BooleanField(default=False)
 
     @classmethod
-    def create(cls, feed, postnum, interval, user):
+    def create(cls, feed, postnum, interval, topic, user):
         """Create a QueueFeed object that makes `postnum` posts available every `interval`"""
         # Interval constraints - at smallest, will be hours.
         # For debugging and tests, we may set it lower
         # Initialize a QueueFeed
-        queue = cls.objects.create(postNum=postnum, interval=interval, lastUpdate=timezone.now(), user=user, feed=feed)
+        queue = cls.objects.create(postNum=postnum, interval=interval, lastUpdate=timezone.now(), topic=topic, user=user, feed=feed, name="Queue:" + feed.title)
 
         # Fill the queue
         feedPosts = feed.posts.all().order_by('pubDate')

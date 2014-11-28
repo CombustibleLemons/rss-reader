@@ -31,10 +31,11 @@
 					      		</div>
 				      		</div>
 							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
-								<li ng-repeat="feed in feeds" class="mjs-nestedSortable-leaf">
+								<li ng-repeat="feed in feeds" ng-switch="feed.type" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
-										<a href="#" ng-click="expandFeed(feed.id)">{{feed.title}}</a>
+										<a href="#" ng-click="expandFeed(feed.id)" ng-switch-when="feed">{{feed.title}}</a>
+                    <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id)" ng-switch-when="queue_feed">{{feed.name}}</a>
 									</div>
 								</li>
 							</ul>
