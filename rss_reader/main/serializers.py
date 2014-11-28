@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Topic, Feed, Post, UserSettings, PostsRead
+from .models import User, Topic, Feed, Post, UserSettings, PostsRead, QueueFeed
 
 class UserSerializer(serializers.ModelSerializer):
     topics = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -27,6 +27,15 @@ class FeedSerializer(serializers.ModelSerializer):
             "editorAddr", "generator", "guid", "language", "logo", "rights",
             "subtitle", "title", "webmaster", "URL", "ttl", "skipDays",
             "skipHours", "pubDate", "updated", "posts", )
+
+class QueueFeedSerializer(serializers.ModelSerializer):
+    # posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = QueueFeed
+        # fields = ("id", "author", "category", "contributor", "description", "docURL",
+        #     "editorAddr", "generator", "guid", "language", "logo", "rights",
+        #     "subtitle", "title", "webmaster", "URL", "ttl", "skipDays",
+        #     "skipHours", "pubDate", "updated", "posts", )
 
 class PostSerializer(serializers.ModelSerializer):
 
