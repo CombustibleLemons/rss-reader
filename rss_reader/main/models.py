@@ -304,36 +304,11 @@ class Topic(models.Model):
             self.name = tmp
             raise e
 
-    # - deleteTopic(topic : topic)
-    # --- already exists as Topic.delete(), ManytoMany relationship means the feeds are dissociated, but not deleted
-
-    # - addFeed (feed : Feed)
-    # - will take advantage of ManytoMany relationships
-    # - must check that Feed is not already owned in Topic or in User
-    # def get_feeds(self):
-    #     # import pdb; pdb.set_trace()
-    #     return self._feeds.all()
-    #
-    # def set_feeds(self, feed):
-    #     # import pdb; pdb.set_trace()
-    #     # Remember to exclude self from the checking!
-    #     for t in self.user.topics.all().exclude(id=self.id):
-    #         # Check if the feed is in any other topic
-    #         if t.feeds.filter(id=feed.id).exists():
-    #             raise FeedExistsInTopic
-    #     # Check if feed is in this Topic's feed list
-    #     if self._feeds.all().filter(id=feed.id).exists():
-    #         # Fail to add silently, it's okay if a feed is already in a topic and we add it
-    #         return
-    #     self._feeds.add(feed)
-    #     self.save()
-    # feeds = property(get_feeds, set_feeds)
-
     # - deleteFeed (feed : Feed)
     # - will take advantage of ManytoMany relationship (feed will dissociate)
     def deleteFeed(self, feed):
-            self.feeds.remove(feed)
-            self.save()
+        self.feeds.remove(feed)
+        self.save()
 
 # Enforces validation of feeds that are to be added
 from django.core.exceptions import ValidationError
@@ -382,9 +357,7 @@ def topicFeedsChanged(sender, instance, **kwargs):
                     pr.save()
             except IntegrityError as e:
                 # IntegrityError means one already exists, so pass
-                print "IntegrityError", feed.id, e
-            except Exception as e:
-                print e
+                pass
 
 m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
 
@@ -564,6 +537,7 @@ class QueueFeed(models.Model):
     user = models.ForeignKey(User, null=True, related_name="queues")
     feed = models.ForeignKey(Feed, null=True, related_name="feed")
     topic = models.ForeignKey(Topic, null=True, related_name="queue_feeds")
+    postsReadInQueue = models.ManyToManyField(Post, null=True, related_name="+QueueFeedReadPosts")
 
     name = models.TextField()
 

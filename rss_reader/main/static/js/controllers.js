@@ -386,10 +386,11 @@ angular.module('main.controllers', ['main.services'])
             identifier: feedID
         });
     };
-    $scope.expandQueueFeed = function(feedID, queueFeedID) {
+    $scope.expandQueueFeed = function(feedID, queueFeedID, queuePostsRead, postsReadInQueue) {
       $rootScope.$broadcast("clickQueueFeed", {
             identifier: feedID,
-            queue_identifier: queueFeedID
+            queue_identifier: queueFeedID,
+            queue_posts_read: postsReadInQueue
         });
     };
     // End Methods
@@ -410,7 +411,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.expandedPostIndex = -1;
     });
     $rootScope.$on("clickQueueFeed", function (event, message) {
-        $scope.feedID = message.identifier;
+        $scope.queuePostsRead = message.queues_posts_read;
         $scope.queueFeedID = message.queue_identifier;
         $scope.fetchQueuedPosts();
         $scope.expandedPostIndex = -1;
@@ -465,20 +466,14 @@ angular.module('main.controllers', ['main.services'])
     $scope.fetchQueuedPosts = function() {
       APIService.fetchQueuedPosts($scope.queueFeedID).success(function(data) {
         $scope.posts = $scope.cleanPostsContent(data);
-        /* Grab the PostsRead object from the server */
-        APIService.getPostsRead($scope.feedID).success(function(data){
-          $scope.postsRead = data;
-          angular.forEach($scope.posts, function(post){
-            if (data["posts"].indexOf(post.id) == -1){
-              post.unread = true;
-            }
-            else{
-              post.unread = false;
-            }
-          });
-          /* Update the 'unread' field of the posts */
-        }).error(function(data, status, headers, config){
-          console.log(status);
+        /* Grab the QueuePostsRead from the model */
+        angular.forEach($scope.queuePostsRead, function(post){
+          if (data["posts"].indexOf(post.id) == -1){
+            post.unread = true;
+          }
+          else{
+            post.unread = false;
+          }
         });
       });
     };
