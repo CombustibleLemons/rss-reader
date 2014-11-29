@@ -4,7 +4,7 @@
 describe("User controllers", function() {
     beforeEach(module("main.controllers"));
 
-    var userScope, httpBackend, userController;
+    var userScope, httpBackend, userController, userSettings;
     beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
         httpBackend = $httpBackend;
 
@@ -394,9 +394,4 @@ describe("Feed controllers", function() {
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true},
            {"bill": "murray", "content":"", "unread":true}]);
     });
-});
-
-describe("User settings", function() {
-    // Should this be in User controller testing?
-    beforeEach(module("main.controllers"));
 });
