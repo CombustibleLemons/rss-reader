@@ -124,6 +124,10 @@ angular.module('main.services', []).
         updateUserSettings : function(userSetttings) {
           var promise = $http.put("/user/settings/", userSetttings);
           return promise;
+        },
+        createQueueFeed : function(queueFeed, feedID){
+          var promise = $http.post("/queue_feeds/create/" + feedID + "/", queueFeed);
+          return promise;
         }
     };
   })

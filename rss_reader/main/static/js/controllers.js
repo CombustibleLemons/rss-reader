@@ -38,7 +38,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.topicIds = [];
     $scope.expandedIndex = [-1];
     $scope.predicate = "";
-    $scope.activeView = "feedResults"
+    $scope.activeView = ""
     // End Attributes
 
     // Event handlers
@@ -52,6 +52,10 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickSettings", function (event, message) {
         $scope.activeView = "settingsGroups";
+    });
+
+    $rootScope.$on("clickQueueSettings", function (event, message) {
+        $scope.activeView = "queueSettings";
     });
     // End Event handlers
 
@@ -200,6 +204,18 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = [index];
     };
+
+    $scope.activeFeed = function(feedID) {
+      $rootScope.$broadcast("activeFeedIs", {
+        identifier: feedID
+      });
+    }
+
+    $scope.activeTopic = function(topicID) {
+      $rootScope.$broadcast("activeTopicIs", {
+        identifier: topicID
+      });
+    }
     //End Methods
 
     // Must be called to populate topics
@@ -262,7 +278,7 @@ angular.module('main.controllers', ['main.services'])
             $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
             $scope.hidePopup();
 
-            // fade out the alert
+            // fade out the alerue
             window.setTimeout(function() {
               $(".flash").fadeTo(500, 0).slideUp(500, function(){
                 $(this).remove();
@@ -283,6 +299,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandSettingsReading = function() {
       $scope.expandedSettingIndex = 3;
     };
+
     // End Methods
   })
   .controller('SearchController', function($scope, $rootScope, APIService) {
@@ -290,6 +307,13 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
     };
+
+    $scope.expandSettingsQueue = function(feedID) {
+      $rootScope.$broadcast("clickQueueSettings", {
+        identifier: feedID
+      });
+    };
+
 
     $scope.search = function() {
       var testSuccess = false;
@@ -503,5 +527,133 @@ angular.module('main.controllers', ['main.services'])
       });
     };
 	// End Methods
+  })
+
+.controller('QueueController', function($scope, $rootScope,FeedService, APIService) {
+    // Attributes
+    $scope.searchResults = [];
+    $scope.numResults = 0;
+    $scope.topics = [];
+    $scope.expandedSettingIndex = -1;
+
+    $scope.activeFeed = 0;
+    $scope.activeTopic = 0;
+    // End Attributes
+
+    // Event handlers
+    $rootScope.$on("clickQueueSettings", function (event, message) {
+      $scope.feedID = message.identifier;
+    });
+
+    $rootScope.$on("activeFeedIs", function (event, message) {
+      $scope.activeFeed = message.identifier;
+    });
+
+    $rootScope.$on("activeTopicIs", function (event, message) {
+      $scope.activeTopic = message.identifier;
+    });
+    // End Event handlers
+
+    // Methods
+
+    $scope.addQueueFeedObject = function() { // formerly passed url as an argument
+      var feed = $.parseJSON($(".feedObj").attr("value"));
+      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
+      topic.feeds.push(feed.id);
+      APIService.updateTopic(topic).success(function(data) {
+          $rootScope.$broadcast("addedFeedObject", {
+              topic: data,
+              feed: feed
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $scope.hidePopup();
+          $("#topicsForm")[0].reset();
+        }).error(function(data, status, headers, config){
+          //if user already subscribed
+          if (status == 409) {
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
+            $scope.hidePopup();
+
+            // fade out the alert
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+              });
+            }, 3000);
+          }
+        });
+      };
+
+
+    $scope.expandSettingsUser = function() {
+      $scope.expandedSettingIndex = 1;
+    };
+
+    $scope.expandSettingsFeed = function() {
+      $scope.expandedSettingIndex = 2;
+    };
+
+    $scope.expandSettingsReading = function() {
+      $scope.expandedSettingIndex = 3;
+    };
+
+    $scope.addQueueFeedObject = function() { // formerly passed url as an argument
+      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
+
+      var binSize = getSelectedText("post-choice");
+
+      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
+/*
+      var feed = $.parseJSON($(".feedObj").attr("value"));
+      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
+      topic.feeds.push(feed.id);
+      APIService.updateTopic(topic).success(function(data) {
+          $rootScope.$broadcast("addedFeedObject", {
+              topic: data,
+              feed: feed
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $scope.hidePopup();
+          $("#topicsForm")[0].reset();
+        }).error(function(data, status, headers, config){
+          //if user already subscribed
+          if (status == 409) {
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
+            $scope.hidePopup();
+
+            // fade out the alerue
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+              });
+            }, 3000);
+          }
+        });*/
+      };
+
+    $scope.Range = function(start, end) {
+    var result = [];
+    for (var i = start; i <= end; i++) {
+        result.push(i);
+    }
+    return result;
+    };
+
+    $scope.getSelectedText = function(elementId) {
+    var elt = document.getElementById(elementId);
+
+    if (elt.selectedIndex == -1)
+        return null;
+
+    return elt.options[elt.selectedIndex].text;
+    };
+
+    // End Methods
   });
 //*/

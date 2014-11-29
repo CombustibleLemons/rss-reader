@@ -261,3 +261,8 @@ body {
 	white-space: nowrap;
 	display:inline;
 }
+
+.cdbl-slider {
+    width: 200px;
+    margin: 10px;    
+}
