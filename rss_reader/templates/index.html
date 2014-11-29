@@ -73,7 +73,7 @@
 									<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
 									<li><a href="">Length</a></li>
 									<li><a href="">Rating</a></li>
-									<li><a href="" ng-click="predicate = 'unread'; reverse=true">Unread</a></li>
+									<li><a href="" ng-click="predicate = '[sortByUnread, pubDate, id]'; reverse=true">Unread</a></li>
 								</ul>
 							</span>
 							&nbsp;&nbsp;
@@ -118,23 +118,23 @@
 					<div class="row-fluid post" ng-repeat="post in posts | orderBy:predicate:reverse">
 					<span>
 						<div style="width:100%">
-                  <a ng-click="expandPost($index); post.unread=false; updatePostsRead()">
-                  <div class="mini" ng-hide="expandedPostIndex == $index" >
-                    <h3 class="post-header">{{post.title}}</h3>
-                  </div>
-                  </a>
-                <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead()" class="onoffswitch-checkbox" id="readunread{{$index}}">
-                    <label class="onoffswitch-label" for="readunread{{$index}}">
-                        <span class="onoffswitch-inner">
-                            <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
-                            <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
-                        </span>
-                    </label>
+              <a ng-click="expandPost(post); post.unread = false; updatePostsRead();">
+                <div class="mini">
+                  <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
+                  <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
                 </div>
+              </a>
+              <div class="onoffswitch">
+                  <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead(); closeIfExpanded(post)" class="onoffswitch-checkbox" id="readunread{{$index}}">
+                  <label class="onoffswitch-label" for="readunread{{$index}}">
+                      <span class="onoffswitch-inner">
+                          <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
+                          <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+                      </span>
+                  </label>
+              </div>
             </div>
-						<div class="full" ng-show="expandedPostIndex == $index">
-							<h3>{{post.title}}<span ng-if="!post.unread">Read</span></h3>
+						<div class="full" ng-show="expandedPostIndex == post.id">
 							<p ng-bind-html="post.content" >{{post.content}}</p>
 							<p><a href="{{post.url}}" target="_blank">View source</a></p>
 							<p style="display:none">{{post.pub}}</p>

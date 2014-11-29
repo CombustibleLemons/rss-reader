@@ -63,6 +63,9 @@ body {
 .full {
 	padding: 15px;
 }
+.full * {
+	max-width:100%;
+}
 
 @media (min-width: 768px) {
 	.sidebar {
@@ -148,7 +151,7 @@ body {
 
 .nav li a[class^='editTopic'],
 .nav li a[class^='editBtn'],
-.nav li a[class^='removeTopic'], 
+.nav li a[class^='removeTopic'],
 .nav input[class^='editTopic'],
 .saveBtn {
 	display:none;
@@ -260,4 +263,8 @@ body {
 	text-overflow:ellipsis;
 	white-space: nowrap;
 	display:inline;
+}
+
+span.read{
+	color:#686868;
 }
