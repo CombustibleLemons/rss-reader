@@ -43,15 +43,15 @@ angular.module('main.controllers', ['main.services'])
 
     // Event handlers
     $rootScope.$on("showSearchResults", function (event, message) {
-        $scope.activeView = "searchResults";
+      $scope.activeView = "searchResults";
     });
 
     $rootScope.$on("clickFeed", function (event, message) {
-        $scope.activeView = "feedResults";
+      $scope.activeView = "feedResults";
     });
 
     $rootScope.$on("clickSettings", function (event, message) {
-        $scope.activeView = "settingsGroups";
+      $scope.activeView = "settingsGroups";
     });
     // End Event handlers
 
@@ -84,7 +84,6 @@ angular.module('main.controllers', ['main.services'])
           console.log(status);
         });
       });
-
 
       // update the topics with the actual feeds
       $.each( listOfTopics, function( i, val ) {
@@ -128,16 +127,16 @@ angular.module('main.controllers', ['main.services'])
         $(".saveBtn").show()
 
         for (var i = 0; i <= $(".nav li").length; i++) {
-            $scope.expandedIndex.push(i);
+          $scope.expandedIndex.push(i);
         }
 
         $('.sortable').nestedSortable({
-            handle: 'div',
-            items: 'li',
-            toleranceElement: '> div',
-            listType: 'ul',
-            protectRoot: true,
-            maxLevels: 2,
+          handle: 'div',
+          items: 'li',
+          toleranceElement: '> div',
+          listType: 'ul',
+          protectRoot: true,
+          maxLevels: 2,
         });
         $(".toggleEdit").text("Exit edit mode");
       }
@@ -145,12 +144,12 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addTopic = function(topicName) {
       APIService.addTopic(topicName).success(function(data) {
-        $scope.topicIds.push(data.id);
-        $scope.topics.push(data);
-        $scope.hidePopup();
-        $("#popupTopic input").val('');
-      }).error(function(data, status, headers, config){
-        console.log(status);
+          $scope.topicIds.push(data.id);
+          $scope.topics.push(data);
+          $scope.hidePopup();
+          $("#popupTopic input").val('');
+        }).error(function(data, status, headers, config){
+          console.log(status);
       });
     };
 
@@ -165,7 +164,7 @@ angular.module('main.controllers', ['main.services'])
             $scope.topics.push(data);
           }).error(function(data, status, headers, config){
             console.log(status);
-          });
+        });
       }
       $(".editTopic"+topic.id).hide();
       $(".editBtn"+topic.id).show();
@@ -181,7 +180,7 @@ angular.module('main.controllers', ['main.services'])
           });
         }).error(function(data, status, headers, config){
           console.log(status);
-        });
+      });
     };
 
     $scope.fetchTopics = function() {
@@ -205,12 +204,68 @@ angular.module('main.controllers', ['main.services'])
     // Must be called to populate topics
     $scope.fetchTopics();
   })
+  .controller('SearchController', function($scope, $rootScope, APIService) {
+    // Methods
+    $scope.expandSettings = function() {
+      $rootScope.$broadcast("clickSettings", {});
+    };
+
+    $scope.search = function() {
+      var testSuccess = false;
+      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
+      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      // Is the query a valid URL?
+      testSuccess = regexp.test($scope.query);
+      // Query is a valid URL
+      if(testSuccess == true) {
+        APIService.addFeedByUrl($scope.query).success(function(data) {
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+        }).error(function(data, status, headers, config) {
+          // Feed already exists in the database, add it
+          if(status == 409) {
+            if ($("#searchForm").find(".error")) {
+              $("#searchForm").find(".error").remove();
+            }
+            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+          }
+          // URL isn't a feed
+          if(status == 400) {
+            testSuccess = false;
+          }
+        });
+      }
+      // Query is not a valid URL
+      if(testSuccess == false) {
+        APIService.search($scope.query).success(function(data) {
+          $rootScope.$broadcast("showSearchResults", {
+            searchResults: data
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
+          }
+        });
+      }
+    };
+    // End Methods
+  })
   .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) {
     // Attributes
     $scope.searchResults = [];
     $scope.numResults = 0;
     $scope.topics = [];
     $scope.expandedSettingIndex = -1;
+    var wpm = 300;
+    var startTime;
+    var endTime;
+    var numClicks = 0;
+    var wordCount = 501;
     // End Attributes
 
     // Event handlers
@@ -269,8 +324,8 @@ angular.module('main.controllers', ['main.services'])
               });
             }, 3000);
           }
-        });
-      };
+      });
+    };
 
     $scope.expandSettingsUser = function() {
       $scope.expandedSettingIndex = 1;
@@ -320,49 +375,25 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
     };
-
-    $scope.search = function() {
-      var testSuccess = false;
-      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
-      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-      // Is the query a valid URL?
-      testSuccess = regexp.test($scope.query);
-      // Query is a valid URL
-      if(testSuccess == true) {
-        APIService.addFeedByUrl($scope.query).success(function(data) {
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
-        }).error(function(data, status, headers, config) {
-          // Feed already exists in the database, add it
-          if(status == 409) {
-            if ($("#searchForm").find(".error")) {
-              $("#searchForm").find(".error").remove();
-            }
-            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
-          }
-          // URL isn't a feed
-          if(status == 400) {
-            testSuccess = false;
-          }
-        });
+    
+    $scope.endTime = function() {
+      numClicks++;
+      if (numClicks == 1) {
+        document.getElementById("testArea").innerHTML = "It wasn't until a number of years later, when they both wound up working at Black Sun Systems, Inc., that he put the other half of the equation together. At the time, both of them were working on avatars. He was working on bodies, she was working on faces. She was the face department, because nobody thought that faces were all that important— they were just flesh-toned busts on top of the avatars. She was just in the process of proving them all desperately wrong. But at this phase, the all-male society of bitheads that made up the power structure of Black Sun Systems said that the face problem was trivial and superficial. It was, of course, nothing more than sexism, the especially virulent type espoused by male techies who sincerely believe that they are too smart to be sexists.";
       }
-      // Query is not a valid URL
-      if(testSuccess == false) {
-        APIService.search($scope.query).success(function(data) {
-          $rootScope.$broadcast("showSearchResults", {
-            searchResults: data
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-        }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
-          }
-        });
+      if (numClicks == 2) {
+        document.getElementById("testArea").innerHTML = "Most of the members of the convent were old-fashioned Satanists, like their parents and grandparents before them. They’d been brought up to it and weren’t, when you got right down to it, particularly evil. Human beings mostly aren’t. They just get carried away by new ideas, like dressing up in jackboots and shooting people, or dressing up in white sheets and lynching people, or dressing up in tie-dye jeans and playing guitars at people. Offer people a new creed with a costume and their hearts and minds will follow. Anyway, being brought up as a Satanist tended to take the edge off it. It was something you did on Saturday nights. And the rest of the time you simply got on with life as best you could, just like everyone else. Besides, Sister Mary was a nurse and nurses, whatever their creed, are primarily nurses, which had a lot to do with wearing your watch upside down, keeping calm in emergencies, and dying for a cup of tea. She hoped someone would come soon; she’d done the important bit, now she wanted her tea.<br>It may help to understand human affairs to be clear that most of the great triumphs and tragedies of history are caused, not by people being fundamentally good or fundamentally bad, but by people being fundamentally people.";
       }
+      if (numClicks == 3) {
+        endTime = new Date();
+        var elapsed = (endTime - startTime) / 1000;
+        wpm = Math.round(wordCount / elapsed * 60);
+        document.getElementById("testArea").innerHTML = "You read at " + wpm + " words per minute";
+        $scope.userSettings["readtime"] = wpm;
+        APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config){
+          console.log(status_code);
+        });
+      };
     };
     // End Methods
   })
@@ -410,12 +441,14 @@ angular.module('main.controllers', ['main.services'])
         });
       });
     };
+
     //this just updates the feedService which the feedController pulls from
     $scope.expandFeed = function(feedID) {
       $rootScope.$broadcast("clickFeed", {
             identifier: feedID
         });
     };
+
     $scope.expandQueueFeed = function(feedID, queueFeedID, queuePostsRead, postsReadInQueue) {
       $rootScope.$broadcast("clickQueueFeed", {
             identifier: feedID,
@@ -479,12 +512,8 @@ angular.module('main.controllers', ['main.services'])
         APIService.getPostsRead($scope.feedID).success(function(data){
           $scope.postsRead = data;
           angular.forEach($scope.posts, function(post){
-            if (data["posts"].indexOf(post.id) == -1){
-              post.unread = true;
-            }
-            else{
-              post.unread = false;
-            }
+            post.sortByUnread = data["posts"].indexOf(post.id) == -1;
+            post.unread = post.sortByUnread;
           });
           /* Update the 'unread' field of the posts */
         }).error(function(data, status, headers, config){
@@ -498,28 +527,38 @@ angular.module('main.controllers', ['main.services'])
         $scope.posts = $scope.cleanPostsContent(data);
         /* Grab the QueuePostsRead from the model */
         angular.forEach($scope.queuePostsRead, function(post){
-          if (data["posts"].indexOf(post.id) == -1){
-            post.unread = true;
-          }
-          else{
-            post.unread = false;
-          }
+          post.sortByUnread = data["posts"].indexOf(post.id) == -1;
+          post.unread = post.sortByUnread;
         });
       });
     };
 
-    $scope.expandPost = function(index) {
-      $scope.expandedPostIndex = index;
-    };
-
-    $scope.clickPostHeader = function(post) {
-      if(post.unread){
-        post.unread = false;
-        $scope.updatePostsRead();
+    $scope.expandPost = function(post) {
+      // We have to use temporary variables because ngRepeat cannot be delayed
+      // on updates
+      if ($scope.expandedPostIndex != -1){
+        // Get the post from the previous event and mark it as read.
+        $scope.posts.map(function(p){
+          if (p.id == $scope.expandedPostIndex){
+            p.sortByUnread = p.unread;
+          }
+        });
       }
+      $scope.expandedPostIndex = post.id;
     };
 
-    $scope.updatePostsRead = function() {
+    $scope.unexpandPost = function(){
+      $scope.expandedPostIndex = -1;
+    }
+
+    $scope.closeIfExpanded = function(post) {
+      if ($scope.expandedPostIndex == post.id && post.unread == true){
+        $scope.unexpandPost();
+      }
+      post.sortByUnread = post.unread;
+    };
+
+    $scope.updatePostsRead = function(isTmp) {
       var postsReadArr = $scope.posts.reduce(function(previousValue, currentValue, index, array){
         if(!currentValue.unread){
           previousValue.push(currentValue.id);
