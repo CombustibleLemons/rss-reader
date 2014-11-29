@@ -526,6 +526,8 @@ angular.module('main.controllers', ['main.services'])
         return previousValue;
       }, new Array());
       $scope.postsRead["posts"] = postsReadArr;
+
+      console.log($scope.postsRead);
       APIService.updatePostsRead($scope.feedID, $scope.postsRead)
         .error(function(data, status, headers, config){
           console.log(status);

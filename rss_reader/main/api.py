@@ -399,7 +399,13 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
 
             # Update the field without posts
             oldPostsRead = queryset.filter(feed_id=feed_id)
+
+            print data
+
             oldPostsRead.update(**data)
+
+            print "checkpoint 1"
+
             newPostsRead = oldPostsRead[0] # It was a QuerySet
             newPostsRead.posts = posts
             newPostsRead.save()
@@ -407,7 +413,7 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
             return Response(PostsReadSerializer(newPostsRead).data, status=status.HTTP_200_OK)
         except Exception as e:
             print e
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(e.message, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
         try:
