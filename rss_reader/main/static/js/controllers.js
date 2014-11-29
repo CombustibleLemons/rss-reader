@@ -43,15 +43,15 @@ angular.module('main.controllers', ['main.services'])
 
     // Event handlers
     $rootScope.$on("showSearchResults", function (event, message) {
-        $scope.activeView = "searchResults";
+      $scope.activeView = "searchResults";
     });
 
     $rootScope.$on("clickFeed", function (event, message) {
-        $scope.activeView = "feedResults";
+      $scope.activeView = "feedResults";
     });
 
     $rootScope.$on("clickSettings", function (event, message) {
-        $scope.activeView = "settingsGroups";
+      $scope.activeView = "settingsGroups";
     });
     // End Event handlers
 
@@ -127,16 +127,16 @@ angular.module('main.controllers', ['main.services'])
         $(".saveBtn").show()
 
         for (var i = 0; i <= $(".nav li").length; i++) {
-            $scope.expandedIndex.push(i);
+          $scope.expandedIndex.push(i);
         }
 
         $('.sortable').nestedSortable({
-            handle: 'div',
-            items: 'li',
-            toleranceElement: '> div',
-            listType: 'ul',
-            protectRoot: true,
-            maxLevels: 2,
+          handle: 'div',
+          items: 'li',
+          toleranceElement: '> div',
+          listType: 'ul',
+          protectRoot: true,
+          maxLevels: 2,
         });
         $(".toggleEdit").text("Exit edit mode");
       }
@@ -144,12 +144,12 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.addTopic = function(topicName) {
       APIService.addTopic(topicName).success(function(data) {
-        $scope.topicIds.push(data.id);
-        $scope.topics.push(data);
-        $scope.hidePopup();
-        $("#popupTopic input").val('');
-      }).error(function(data, status, headers, config){
-        console.log(status);
+          $scope.topicIds.push(data.id);
+          $scope.topics.push(data);
+          $scope.hidePopup();
+          $("#popupTopic input").val('');
+        }).error(function(data, status, headers, config){
+          console.log(status);
       });
     };
 
@@ -164,7 +164,7 @@ angular.module('main.controllers', ['main.services'])
             $scope.topics.push(data);
           }).error(function(data, status, headers, config){
             console.log(status);
-          });
+        });
       }
       $(".editTopic"+topic.id).hide();
       $(".editBtn"+topic.id).show();
@@ -180,7 +180,7 @@ angular.module('main.controllers', ['main.services'])
           });
         }).error(function(data, status, headers, config){
           console.log(status);
-        });
+      });
     };
 
     $scope.fetchTopics = function() {
@@ -203,6 +203,57 @@ angular.module('main.controllers', ['main.services'])
 
     // Must be called to populate topics
     $scope.fetchTopics();
+  })
+  .controller('SearchController', function($scope, $rootScope, APIService) {
+    // Methods
+    $scope.expandSettings = function() {
+      $rootScope.$broadcast("clickSettings", {});
+    };
+
+    $scope.search = function() {
+      var testSuccess = false;
+      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
+      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      // Is the query a valid URL?
+      testSuccess = regexp.test($scope.query);
+      // Query is a valid URL
+      if(testSuccess == true) {
+        APIService.addFeedByUrl($scope.query).success(function(data) {
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+        }).error(function(data, status, headers, config) {
+          // Feed already exists in the database, add it
+          if(status == 409) {
+            if ($("#searchForm").find(".error")) {
+              $("#searchForm").find(".error").remove();
+            }
+            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+          }
+          // URL isn't a feed
+          if(status == 400) {
+            testSuccess = false;
+          }
+        });
+      }
+      // Query is not a valid URL
+      if(testSuccess == false) {
+        APIService.search($scope.query).success(function(data) {
+          $rootScope.$broadcast("showSearchResults", {
+            searchResults: data
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
+          }
+        });
+      }
+    };
+    // End Methods
   })
   .controller('ResultsController', function($scope, $rootScope,FeedService, APIService) {
     // Attributes
@@ -273,8 +324,8 @@ angular.module('main.controllers', ['main.services'])
               });
             }, 3000);
           }
-        });
-      };
+      });
+    };
 
     $scope.expandSettingsUser = function() {
       $scope.expandedSettingIndex = 1;
@@ -311,57 +362,6 @@ angular.module('main.controllers', ['main.services'])
           console.log(status_code);
         });
       };
-    };
-    // End Methods
-  })
-  .controller('SearchController', function($scope, $rootScope, APIService) {
-    // Methods
-    $scope.expandSettings = function() {
-      $rootScope.$broadcast("clickSettings", {});
-    };
-
-    $scope.search = function() {
-      var testSuccess = false;
-      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
-      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-      // Is the query a valid URL?
-      testSuccess = regexp.test($scope.query);
-      // Query is a valid URL
-      if(testSuccess == true) {
-        APIService.addFeedByUrl($scope.query).success(function(data) {
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
-        }).error(function(data, status, headers, config) {
-          // Feed already exists in the database, add it
-          if(status == 409) {
-            if ($("#searchForm").find(".error")) {
-              $("#searchForm").find(".error").remove();
-            }
-            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
-          }
-          // URL isn't a feed
-          if(status == 400) {
-            testSuccess = false;
-          }
-        });
-      }
-      // Query is not a valid URL
-      if(testSuccess == false) {
-        APIService.search($scope.query).success(function(data) {
-          $rootScope.$broadcast("showSearchResults", {
-            searchResults: data
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-        }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
-          }
-        });
-      }
     };
     // End Methods
   })
@@ -416,7 +416,7 @@ angular.module('main.controllers', ['main.services'])
             identifier: feedID
         });
     };
-    
+
     $scope.expandQueueFeed = function(feedID, queueFeedID, queuePostsRead, postsReadInQueue) {
       $rootScope.$broadcast("clickQueueFeed", {
             identifier: feedID,

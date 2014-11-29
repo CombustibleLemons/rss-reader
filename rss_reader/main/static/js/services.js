@@ -90,7 +90,7 @@ angular.module('main.services', []).
       updateUserSettings : function(userSetttings) {
         var promise = $http.put("/user/settings/", userSetttings);
         return promise;
-      }
+      },
       // End User functions
 
       // Topic functions
@@ -134,7 +134,7 @@ angular.module('main.services', []).
       getPostsRead : function(feedID){
         var promise = $http.get("/feeds/" + feedID + "/posts/read");
         return promise;
-      },
+      }
       // End Feed functions
     };
   });

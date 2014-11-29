@@ -88,6 +88,8 @@ describe("Navigation controllers", function() {
         httpBackend.verifyNoOutstandingRequest();
     });
 
+    // saveEdits and toggleEditMode are acceptance tested
+
     it("should fetch all of the topics", function() {
         navScope.fetchTopics();
         expect(navScope.topicIds).toEqual([]);
@@ -100,8 +102,8 @@ describe("Navigation controllers", function() {
         expect(navScope.topics.length).toEqual(0);
         navScope.addTopic("topic1");
         httpBackend.flush();
-        expect(navScope.topics[0]["name"]).toEqual("topic1");
-        expect(navScope.topics[0]["id"]).toEqual(12);
+        expect(navScope.topics[0]).toEqual({"name":"topic1","id":12});
+        expect(navScope.topicIds[0]).toEqual(12);
 
         // should add a second topic
         httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(200, {"name":"topic2", "id":13});
@@ -109,16 +111,17 @@ describe("Navigation controllers", function() {
         navScope.addTopic("topic2");
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic1");
-        expect(navScope.topics[0]["id"]).toEqual(12);
-        expect(navScope.topics[1]["name"]).toEqual("topic2");
-        expect(navScope.topics[1]["id"]).toEqual(13);
+        expect(navScope.topics[0]).toEqual({"name":"topic1","id":12});
+        expect(navScope.topics[1]).toEqual({"name":"topic2","id":13});
+        expect(navScope.topicIds[0]).toEqual(12);
+        expect(navScope.topicIds[1]).toEqual(13);
 
         // shouldn't add a topic that already exists
         httpBackend.expectPOST('/topics/', {"name":"topic2"}).respond(409, '');
         navScope.addTopic("topic2");
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
+        expect(navScope.topicIds).toEqual([12,13]);
     });
 
     it("should rename topics", function() {
@@ -135,20 +138,16 @@ describe("Navigation controllers", function() {
         navScope.renameTopic("topic3", navScope.topics[0]);
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic2");
-        expect(navScope.topics[0]["id"]).toEqual(13);
-        expect(navScope.topics[1]["name"]).toEqual("topic3");
-        expect(navScope.topics[1]["id"]).toEqual(12);
+        expect(navScope.topics[0]).toEqual({"name":"topic2","id":13});
+        expect(navScope.topics[1]).toEqual({"name":"topic3","id":12});
 
         // will not allow name to be changed to same as another topic
         httpBackend.expectPUT('/topics/13', {"name":"topic3", "id":13}).respond(409, '');
         navScope.renameTopic("topic3", navScope.topics[0]);
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic2");
-        expect(navScope.topics[0]["id"]).toEqual(13);
-        expect(navScope.topics[1]["name"]).toEqual("topic3");
-        expect(navScope.topics[1]["id"]).toEqual(12);
+        expect(navScope.topics[0]).toEqual({"name":"topic2","id":13});
+        expect(navScope.topics[1]).toEqual({"name":"topic3","id":12});
     });
 
     it("should remove topics", function() {
@@ -165,18 +164,22 @@ describe("Navigation controllers", function() {
         navScope.removeTopic(14);
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(2);
-        expect(navScope.topics[0]["name"]).toEqual("topic1");
-        expect(navScope.topics[0]["id"]).toEqual(12);
-        expect(navScope.topics[1]["name"]).toEqual("topic2");
-        expect(navScope.topics[1]["id"]).toEqual(13);
+        expect(navScope.topics[0]).toEqual({"name":"topic1","id":12});
+        expect(navScope.topics[1]).toEqual({"name":"topic2","id":13});
 
         // delete the topic without breaking anything
         httpBackend.expectDELETE('/topics/12').respond(204, '');
         navScope.removeTopic(12);
         httpBackend.flush();
         expect(navScope.topics.length).toEqual(1);
-        expect(navScope.topics[0]["name"]).toEqual("topic2");
-        expect(navScope.topics[0]["id"]).toEqual(13);
+        expect(navScope.topics[0]).toEqual({"name":"topic2","id":13});
+
+        // what if we remove everything though?
+        httpBackend.expectDELETE('/topics/13').respond(204, '');
+        navScope.removeTopic(13);
+        httpBackend.flush();
+        expect(navScope.topics.length).toEqual(0);
+        expect(navScope.topics).toEqual([]);
     });
 
     it("should expand and minimize topics", function() {
@@ -329,8 +332,6 @@ describe("Topic controllers", function() {
         expect(success).toBe(true);
     });
 });
-
-
 
 describe("Feed controllers", function() {
     beforeEach(module("main.controllers"));
