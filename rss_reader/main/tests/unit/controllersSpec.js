@@ -395,3 +395,8 @@ describe("Feed controllers", function() {
            {"bill": "murray", "content":"", "unread":true}]);
     });
 });
+
+describe("User settings", function() {
+    // Should this be in User controller testing?
+    beforeEach(module("main.controllers"));
+});
