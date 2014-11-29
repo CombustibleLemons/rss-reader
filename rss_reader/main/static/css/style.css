@@ -264,3 +264,7 @@ body {
 	white-space: nowrap;
 	display:inline;
 }
+
+span.read{
+	color:#686868;
+}

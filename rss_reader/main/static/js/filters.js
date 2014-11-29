@@ -9,10 +9,11 @@ angular.module('main.filters', []).
     }
   }])
   .filter('unreadSort', function(){
-    return function(post, scope){
-      console.log(post.pubDate);
+    return function(post){
+      date = new Date(post.pubDate);
+      
       // If post is expanded, keep it where it is.
-      return scope.expandedPostIndex == post.id;
+      return post ? post.id : 0;
     };
   })
   ;

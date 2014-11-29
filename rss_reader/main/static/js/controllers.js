@@ -478,12 +478,8 @@ angular.module('main.controllers', ['main.services'])
         APIService.getPostsRead($scope.feedID).success(function(data){
           $scope.postsRead = data;
           angular.forEach($scope.posts, function(post){
-            if (data["posts"].indexOf(post.id) == -1){
-              post.unread = true;
-            }
-            else{
-              post.unread = false;
-            }
+            post.sortByUnread = data["posts"].indexOf(post.id) == -1;
+            post.unread = post.sortByUnread;
           });
           /* Update the 'unread' field of the posts */
         }).error(function(data, status, headers, config){
@@ -497,28 +493,38 @@ angular.module('main.controllers', ['main.services'])
         $scope.posts = $scope.cleanPostsContent(data);
         /* Grab the QueuePostsRead from the model */
         angular.forEach($scope.queuePostsRead, function(post){
-          if (data["posts"].indexOf(post.id) == -1){
-            post.unread = true;
-          }
-          else{
-            post.unread = false;
-          }
+          post.sortByUnread = data["posts"].indexOf(post.id) == -1;
+          post.unread = post.sortByUnread;
         });
       });
     };
 
-    $scope.expandPost = function(index) {
-      $scope.expandedPostIndex = index;
-    };
-
-    $scope.clickPostHeader = function(post) {
-      if(post.unread){
-        post.unread = false;
-        $scope.updatePostsRead();
+    $scope.expandPost = function(post) {
+      // We have to use temporary variables because ngRepeat cannot be delayed
+      // on updates
+      if ($scope.expandedPostIndex != -1){
+        // Get the post from the previous event and mark it as read.
+        $scope.posts.map(function(p){
+          if (p.id == $scope.expandedPostIndex){
+            p.sortByUnread = p.unread;
+          }
+        });
       }
+      $scope.expandedPostIndex = post.id;
     };
 
-    $scope.updatePostsRead = function() {
+    $scope.unexpandPost = function(){
+      $scope.expandedPostIndex = -1;
+    }
+
+    $scope.closeIfExpanded = function(post) {
+      if ($scope.expandedPostIndex == post.id && post.unread == true){
+        $scope.unexpandPost();
+      }
+      post.sortByUnread = post.unread;
+    };
+
+    $scope.updatePostsRead = function(isTmp) {
       var postsReadArr = $scope.posts.reduce(function(previousValue, currentValue, index, array){
         if(!currentValue.unread){
           previousValue.push(currentValue.id);
