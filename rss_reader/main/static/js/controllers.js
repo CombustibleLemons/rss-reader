@@ -48,6 +48,8 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickFeed", function (event, message) {
       $scope.activeView = "feedResults";
+      $scope.predicate = "";
+      $scope.filterUnread = "";
     });
 
     $rootScope.$on("clickSettings", function (event, message) {
