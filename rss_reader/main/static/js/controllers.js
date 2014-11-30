@@ -38,6 +38,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.topicIds = [];
     $scope.expandedIndex = [-1];
     $scope.predicate = "";
+    $scope.filterUnread = "";
     $scope.activeView = "feedResults"
     // End Attributes
 
@@ -450,6 +451,7 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Methods
+
     $scope.cleanPostsContent = function(data){
       // This for loop removes unnecessary line breaks
       for(var i=0; i<data.length; i++){
@@ -529,6 +531,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.updatePostsRead = function(isTmp) {
       var postsReadArr = $scope.posts.reduce(function(previousValue, currentValue, index, array){
         if(!currentValue.unread){
+          console.log(currentValue);
           previousValue.push(currentValue.id);
         }
         return previousValue;
