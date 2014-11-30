@@ -71,6 +71,7 @@ class PostsReadTests(APITestCase):
         prObj.save()
 
         postsRead = PostsReadSerializer(prObj).data
-        response = cls.client.put("/feeds/{}/posts/read".format(cls.f1.id), dt)
+        print postsRead
+        response = cls.client.put("/feeds/{}/posts/read".format(cls.f1.id), postsRead)
 
         cls.assertEqual(1,1)

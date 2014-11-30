@@ -392,6 +392,8 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
     def update(self, request, *args, **kwargs):
         try:
             # Extract posts (b/c ManyToManyField is not easily updated)
+            print request.DATA
+
             data = request.DATA
             posts = data.pop("posts")
             feed_id = self.kwargs.get("pk")
@@ -399,8 +401,6 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
 
             # Update the field without posts
             oldPostsRead = queryset.filter(feed_id=feed_id)
-
-            print data
 
             oldPostsRead.update(**data)
 
@@ -448,7 +448,7 @@ def unread_posts(request, **kwargs):
             # Return bad request if we get a general exception
             return Response(e, status=status.HTTP_400_BAD_REQUEST)
 
-# Feed API
+# Feed APIx
 class QueueFeedList(generics.ListCreateAPIView):
     model = QueueFeed
     serializer_class = QueueFeedSerializer
