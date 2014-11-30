@@ -118,7 +118,8 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
         partial = kwargs.pop('partial', False)
         self.object = self.get_object_or_none()
         try:
-            # Check to make sure this is not an uncategorized Topic
+            # Check to make sure this is not an Uncategorized Topic
+            # and, if it is, that the request does not change the name
             if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             serializer = self.get_serializer(self.object, data=request.DATA,
