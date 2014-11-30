@@ -531,7 +531,6 @@ angular.module('main.controllers', ['main.services'])
     $scope.updatePostsRead = function(isTmp) {
       var postsReadArr = $scope.posts.reduce(function(previousValue, currentValue, index, array){
         if(!currentValue.unread){
-          console.log(currentValue);
           previousValue.push(currentValue.id);
         }
         return previousValue;
