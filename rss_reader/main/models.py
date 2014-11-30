@@ -572,9 +572,8 @@ class QueueFeed(models.Model):
         queueFeed = self.feed
         queuedPosts = self.queuedPosts
 
-        # USE PYTHONS UTILITIES LIKE THEY ARE PYTHON UTILITIES!!
         # Calculate timePassed, convert interval from timedelta to hours
-        if timezone.now() < (self.lastUpdate + self.interval):
+        if timezone.now() > (self.lastUpdate + self.interval):
             return []
 
         # We are past the time for an update, so update the last update variable
@@ -595,7 +594,7 @@ class QueueFeed(models.Model):
         feedReadPostSet = list(feedReadPost.posts.all())
 
         # Make list of unread posts
-        unread = [post for post in queuedPosts if not queueFeed.posts.get(id=post.id) in feedReadPostSet]
+        unread = [post for post in queuedPosts.all() if not queueFeed.posts.get(id=post.id) in feedReadPostSet]
 
         # Determine number of Posts that need to be added so that there are postNum unread Posts
         diff = self.postNum - len(unread)

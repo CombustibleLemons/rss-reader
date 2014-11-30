@@ -290,17 +290,20 @@ class FeedTestCase(TestCase):
 class CreateQueueFeedTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'bozo8')
+        self.topic = Topic.objects.create(name = 'Comics')
+        self.topic.save()
         self.f1 = Feed.createByURL("http://xkcd.com/rss.xml")
         self.postNum = 2
         self.interval = '2 days'
 
     def tearDown(self):
         self.f1.delete()
+        self.topic.delete()
 
     def test_create_queue(self):
         """Creates Queue with correct number of posts, correct posts, correct interval and postNum"""
         #make feed
-        q = QueueFeed.create(self.f1, self.postNum, self.interval, self.user)
+        q = QueueFeed.create(self.f1, self.postNum, self.interval, self.topic, self.user)
 
         #test postNum, interval, feed
         self.assertEqual(q.postNum, self.postNum)
@@ -309,7 +312,7 @@ class CreateQueueFeedTestCase(TestCase):
 
         #test qPosts
         fPosts = self.f1.posts.all().order_by('pubDate')
-        self.assertItemsEqual(idsToPosts(q.qPosts), [fPosts[0], fPosts[1]])
+        self.assertItemsEqual(q.queuedPosts.all(), [fPosts[0], fPosts[1]])
 
         q.delete()
 
@@ -319,7 +322,7 @@ class CreateQueueFeedTestCase(TestCase):
         pNum = len(self.f1.posts.all()) + 5
 
         #make QueueFeed with pNum as postNum
-        q = QueueFeed.create(self.f1, pNum, self.interval, self.user)
+        q = QueueFeed.create(self.f1, pNum, self.interval, self.topic, self.user)
 
         #check accuracy of postNum, interval, feed
         self.assertEqual(q.postNum, pNum)
@@ -328,7 +331,7 @@ class CreateQueueFeedTestCase(TestCase):
 
         #check that qPosts contains all posts in Feed
         fPosts = self.f1.posts.all().order_by('pubDate')
-        self.assertItemsEqual(idsToPosts(q.qPosts), fPosts)
+        self.assertItemsEqual(q.queuedPosts.all(), fPosts)
 
         q.delete()
 
@@ -337,6 +340,10 @@ class QueueFeedTestCase(TestCase):
         #create User
         self.user = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'bozo8')
         self.user.save()
+
+        #create Topic
+        self.t1 = self.user.topics.create(name = "Comics")
+        self.t1.save()
 
         #create Feeds
         self.f1 = Feed.createByURL("http://broodhollow.chainsawsuit.com/feed/")
@@ -350,18 +357,14 @@ class QueueFeedTestCase(TestCase):
         #create QueueFeeds
         self.q1PostNum = 3
         self.q1Interval = '1 hour'
-        self.q1 = QueueFeed.create(self.f1, self.q1PostNum, self.q1Interval, self.user)
+        self.q1 = QueueFeed.create(self.f1, self.q1PostNum, self.q1Interval, self.t1, self.user)
 
         self.q2PostNum = 2
         self.q2Interval = '2 hours'
-        self.q2 = QueueFeed.create(self.f2, self.q2PostNum, self.q2Interval, self.user)
+        self.q2 = QueueFeed.create(self.f2, self.q2PostNum, self.q2Interval, self.t1, self.user)
 
         #in the interest of testing, set lastUpdated to an hour ago
         self.q1.lastUpdated = timezone.now() - datetime.timedelta(hours = 1)
-
-        self.t1 = self.user.topics.create(name = "Horror")
-        self.t1.feeds.add(self.q1)
-        self.t1.feeds.add(self.q2)
 
     def tearDown(self):
         # since QueueFeed owns the ForeignKey for User, deleting the User deletes its QueueFeeds
@@ -373,21 +376,25 @@ class QueueFeedTestCase(TestCase):
 
     def test_update(self):
         """update should update the qPosts accurately"""
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:3])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:3])
         self.q1.update()
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:6])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:6])
 
     def test_less_than_interval_update(self):
         """update should not change qPosts if the Interval hasn't passed"""
-        self.assertItemsEqual(idsToPosts(self.q2.qPosts), self.f2Posts[:2])
+        self.assertItemsEqual(self.q2.queuedPosts.all(), self.f2Posts[:2])
         self.q1.update()
-        self.assertItemsEqual(idsToPosts(self.q2.qPosts), self.f2Posts[:2])
+        self.assertItemsEqual(self.q2.queuedPosts.all(), self.f2Posts[:2])
 
 class StaticQueueFeedTestCase(TestCase):
     def setUp(self):
         #create User
         self.user = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'bozo8')
         self.user.save()
+
+        #add QueueFeed to User's Topic
+        self.t1 = self.user.topics.create(name = "Horror")
+        self.t1.save()
 
         #create Feed
         self.f1 = Feed.createByURL("http://broodhollow.chainsawsuit.com/feed/")
@@ -397,19 +404,13 @@ class StaticQueueFeedTestCase(TestCase):
         #create QueueFeed
         self.q1PostNum = 3
         self.q1Interval = '1 hour'
-        self.q1 = QueueFeed.create(self.f1, self.q1PostNum, self.q1Interval, self.user)
+        self.q1 = QueueFeed.create(self.f1, self.q1PostNum, self.q1Interval, self.t1, self.user)
 
         #in the interest of testing, set lastUpdated to an hour ago
         self.q1.lastUpdated = timezone.now() - datetime.timedelta(hours = 1)
 
         #A QueueFeed is always created with static = False; only after creation can a user toggle the static attribute
         self.q1.static = True
-
-        #add QueueFeed to User's Topic
-        self.t1 = self.user.topics.create(name = "Horror")
-        #print self.user.topics.all()
-        self.t1.feeds.add(self.q1)
-        #print self.q1.user
 
         #init a list of posts that have been read for the User
         self.postRead = PostsRead(user = self.user, feed = self.q1.feed)
@@ -424,35 +425,35 @@ class StaticQueueFeedTestCase(TestCase):
 
     def test_empty_update(self):
         """if none of the q1PostNum posts have been read and the time interval has passed, qPosts is not refilled"""
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:self.q1PostNum])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:self.q1PostNum])
         self.q1.update()
-        # print idsToPosts(self.q1.qPosts)
+        # print self.q1.queuedPosts.all()
         # print self.f1Posts[:self.q1PostNum]
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:self.q1PostNum])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:self.q1PostNum])
 
     def test_full_update(self):
         """if all available Posts have been read and the time interval has passed, qPosts is refilled"""
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:self.q1PostNum])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:self.q1PostNum])
         #tell postRead that every Post in qPost has been read
-        for post in idsToPosts(self.q1.qPosts):
+        for post in self.q1.queuedPosts.all():
             self.postRead.posts.add(post)
         # print "postRead.posts.all()"
         # print self.postRead.posts.all()
         self.q1.update()
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:(2*self.q1PostNum)])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:(2*self.q1PostNum)])
 
     def test_semi_update(self):
         """if some of the Posts have been read, qPosts is refilled so there are PostNum unread Posts"""
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:(self.q1PostNum)])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:(self.q1PostNum)])
 
         #There are three items in qPosts upon init of QueueFeed; user reads one item in qPosts
-        self.postRead.posts.add(self.q1.qPosts[1])
+        self.postRead.posts.add(self.q1.queuedPosts.all()[1])
 
         self.q1.update()
         #qPosts grows by 1 post instead of 3; the number of unread qPosts is maintained at postNum (3)
-        # print idsToPosts(self.q1.qPosts)
+        # print self.q1.queuedPosts.all()
         # print self.f1Posts[:self.q1PostNum+1]
-        self.assertItemsEqual(idsToPosts(self.q1.qPosts), self.f1Posts[:self.q1PostNum+1])
+        self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:self.q1PostNum+1])
 
 class PostTestCase(TestCase):
     def setUp(self):
