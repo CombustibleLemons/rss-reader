@@ -8,12 +8,17 @@ angular.module('main.filters', []).
       return String(text).replace(/\%VERSION\%/mg, version);
     }
   }])
-  .filter('unreadSort', function(){
-    return function(post){
-      date = new Date(post.pubDate);
-      
-      // If post is expanded, keep it where it is.
-      return post ? post.id : 0;
+  .filter('filterAllUnreadPosts', function(){
+    return function(posts, filterUnread){
+      if (!filterUnread){
+        return posts;
+      }
+      return posts.reduce(function(previous, current){
+        if (current.unread){
+          previous.push(current);
+          return previous;
+        }
+        return previous;
+      }, []);
     };
-  })
-  ;
+  });

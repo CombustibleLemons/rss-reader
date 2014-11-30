@@ -268,3 +268,21 @@ body {
 span.read{
 	color:#686868;
 }
+
+span.labelLink{
+	color: #428BCA;
+	font-weight: normal;
+}
+
+span.labelLink:hover{
+	color: #2A6496;
+	text-decoration: underline;
+}
+
+#filterUnread
+{
+	display: none;
+}
+#filterUnreadLabel{
+	margin-right:5px;
+}
