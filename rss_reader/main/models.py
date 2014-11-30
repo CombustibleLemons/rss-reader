@@ -310,57 +310,6 @@ class Topic(models.Model):
         self.feeds.remove(feed)
         self.save()
 
-# Enforces validation of feeds that are to be added
-from django.core.exceptions import ValidationError
-from django.db.models.signals import m2m_changed
-# TODO: This workaround using Django signals will still add feeds that are correct if we are adding
-# multiple feeds at once. We don't do this in the controller code, but that behavior is not
-# well defined elsewhere
-def topicFeedsChanged(sender, instance, **kwargs):
-    # import pdb; pdb.set_trace()
-    # Remember to exclude self from the checking!
-    if kwargs['action'] == 'pre_add':
-        # We have to keep track of a failed set, since just throwing a ValidationError would cause
-        # the Topic objects to lose all of its feeds.
-        failed = []
-        pk_set = kwargs.pop("pk_set")
-        for pk in pk_set:
-            for t in instance.user.topics.all().exclude(id=instance.id):
-                # Check if the feed is in any other topic
-                if t.feeds.filter(id=pk).exists():
-                    # Add the pk to failed list and remove it from the pk_set
-                    failed.append(pk)
-                    break
-            # Check if feed is in this Topic's feed list
-            if instance.feeds.all().filter(id=pk).exists():
-                # Fail to add silently, it's okay if a feed is already in a topic and we add it
-                pass
-        # Since we are forced to use Django signals, put the data into the object and remove it later
-        instance.failed = failed
-    elif kwargs['action'] == 'post_add':
-	 # Report any failed pks. See TODO above.
-        failed = instance.failed
-        if failed:
-            errMsg = "Feeds %s already exists in another topic" % (str(failed),)
-            # Remove failures
-            instance.feeds.remove(*failed)
-            raise ValidationError(errMsg)
-        # Cleanup the failed rider, don't want it sticking around with the object forever
-        del instance.failed
-
-        # Make sure each added feed is given a PostsRead object to associate with a User
-        user = instance.user
-        for feed in list(instance.feeds.all()):
-            try:
-                with transaction.atomic():
-                    pr = PostsRead(user=user, feed=feed)
-                    pr.save()
-            except IntegrityError as e:
-                # IntegrityError means one already exists, so pass
-                pass
-
-m2m_changed.connect(topicFeedsChanged, sender=Topic.feeds.through)
-
 class Post(models.Model):
     # Attributes
     # Text
@@ -572,8 +521,9 @@ class QueueFeed(models.Model):
         queueFeed = self.feed
         queuedPosts = self.queuedPosts
 
+        # USE PYTHONS UTILITIES LIKE THEY ARE PYTHON UTILITIES!!
         # Calculate timePassed, convert interval from timedelta to hours
-        if timezone.now() > (self.lastUpdate + self.interval):
+        if timezone.now() < (self.lastUpdate + self.interval):
             return []
 
         # We are past the time for an update, so update the last update variable
@@ -594,7 +544,7 @@ class QueueFeed(models.Model):
         feedReadPostSet = list(feedReadPost.posts.all())
 
         # Make list of unread posts
-        unread = [post for post in queuedPosts.all() if not queueFeed.posts.get(id=post.id) in feedReadPostSet]
+        unread = [post for post in queuedPosts if not queueFeed.posts.get(id=post.id) in feedReadPostSet]
 
         # Determine number of Posts that need to be added so that there are postNum unread Posts
         diff = self.postNum - len(unread)
@@ -605,32 +555,3 @@ class QueueFeed(models.Model):
         """Update function to run every interval"""
         for post in self.getPosts():
             self.queuedPosts.add(post)
-
-# Create 'Uncategorized' Topic to put stuff in on user creation
-@receiver(post_save, sender=User)
-def createUncategorized(sender, instance, **kwargs):
-    try:
-        instance.topics.get(name="Uncategorized")
-    except Topic.DoesNotExist:
-        uncat = Topic(name="Uncategorized", user=instance)
-        uncat.save()
-    try:
-        instance.settings
-    except:
-        settings = UserSettings(user = instance)
-        settings.save()
-
-# Register classes that we want to be able to search
-# We will only be returning information about the Feed.
-# from https://github.com/etianen/django-watson/wiki/registering-models
-watson.register(Feed)
-watson.register(Topic)
-watson.register(Post)
-# watson.register(Post.objects.all(), fields = ("title", "subtitle", "author", "content",))
-
-from django.db.models.signals import post_save
-def update_post_index(instance, **kwargs):
-    for post in instance.posts.all():
-        watson.default_search_engine.update_obj_index(post)
-
-post_save.connect(update_post_index, Feed)

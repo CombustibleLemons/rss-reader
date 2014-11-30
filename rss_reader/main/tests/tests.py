@@ -14,6 +14,7 @@ from django.db import transaction
 # Exception
 from main.models import FeedURLInvalid, FeedExistsInTopic
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 # Python built-ins required for tests
 import time
@@ -337,15 +338,15 @@ class CreateQueueFeedTestCase(TestCase):
 
 class QueueFeedTestCase(TestCase):
     def setUp(self):
-        #create User
+        # Create User
         self.user = User.objects.create_user('Devon', 'BAMF@uchicago.edu', 'bozo8')
         self.user.save()
 
-        #create Topic
+        # Create Topic
         self.t1 = self.user.topics.create(name = "Comics")
         self.t1.save()
 
-        #create Feeds
+        # Create Feeds
         self.f1 = Feed.createByURL("http://broodhollow.chainsawsuit.com/feed/")
         self.f1.save()
         self.f1Posts = self.f1.posts.all().order_by('pubDate')
@@ -354,7 +355,7 @@ class QueueFeedTestCase(TestCase):
         self.f2.save()
         self.f2Posts = self.f2.posts.all().order_by('pubDate')
 
-        #create QueueFeeds
+        # Create QueueFeeds
         self.q1PostNum = 3
         self.q1Interval = '1 hour'
         self.q1 = QueueFeed.create(self.f1, self.q1PostNum, self.q1Interval, self.t1, self.user)
@@ -363,11 +364,11 @@ class QueueFeedTestCase(TestCase):
         self.q2Interval = '2 hours'
         self.q2 = QueueFeed.create(self.f2, self.q2PostNum, self.q2Interval, self.t1, self.user)
 
-        #in the interest of testing, set lastUpdated to an hour ago
-        self.q1.lastUpdated = timezone.now() - datetime.timedelta(hours = 1)
+        # To test, lets set lastUpdated to an hour ago
+        self.q1.lastUpdate = timezone.now() - datetime.timedelta(hours=1, minutes=1)
 
     def tearDown(self):
-        # since QueueFeed owns the ForeignKey for User, deleting the User deletes its QueueFeeds
+        # Since QueueFeed owns the ForeignKey for User, deleting the User deletes its QueueFeeds
         self.user.delete()
 
         self.f1.delete()
@@ -377,6 +378,7 @@ class QueueFeedTestCase(TestCase):
     def test_update(self):
         """update should update the qPosts accurately"""
         self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:3])
+        import pdb; pdb.set_trace()
         self.q1.update()
         self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:6])
 
@@ -432,7 +434,7 @@ class StaticQueueFeedTestCase(TestCase):
         self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:self.q1PostNum])
 
     def test_full_update(self):
-        """if all available Posts have been read and the time interval has passed, qPosts is refilled"""
+        """ If all available Posts have been read and the time interval has passed, queuedPosts is refilled """
         self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:self.q1PostNum])
         #tell postRead that every Post in qPost has been read
         for post in self.q1.queuedPosts.all():
@@ -443,7 +445,7 @@ class StaticQueueFeedTestCase(TestCase):
         self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:(2*self.q1PostNum)])
 
     def test_semi_update(self):
-        """if some of the Posts have been read, qPosts is refilled so there are PostNum unread Posts"""
+        """ If some of the Posts have been read, queuedPosts is refilled so there are PostNum unread Posts """
         self.assertItemsEqual(self.q1.queuedPosts.all(), self.f1Posts[:(self.q1PostNum)])
 
         #There are three items in qPosts upon init of QueueFeed; user reads one item in qPosts
