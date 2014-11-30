@@ -370,7 +370,14 @@ angular.module('main.controllers', ['main.services'])
     $rootScope.$on("addedFeedObject", function (event, message) {
         if ($scope.topic.name == message.topic.name){
           $scope.topic = message.topic;
-          $scope.feeds.push(message.feed);
+
+          var flag = 0;
+          for(var j =0; j<$scope.feeds.length; j++) {
+            flag += ($scope.feeds[j].id == message.feed.id)
+          }
+          if (!flag) {
+            $scope.feeds.push(message.feed);
+          }
         }
     });
     // End Event handlers
