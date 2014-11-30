@@ -7,7 +7,6 @@ from django.db.models.signals import m2m_changed, post_save
 def topicFeedsChanged(sender, instance, **kwargs):
     """ Validates a Topic so that no Topic can be modified that does not adhere to constraints"""
     # Remember to exclude self from the checking!
-    import pdb; pdb.set_trace()
     if kwargs['action'] == 'pre_clear':
         # Create a list of the original feed pk_set
         instance.original_pk_set = [feed.id for feed in instance.feeds.all()]
@@ -25,14 +24,20 @@ def topicFeedsChanged(sender, instance, **kwargs):
                     failed.append(pk)
                     break
             # Check if feed is in this Topic's feed list
-            if instance.original_pk_set:
+            try:
                 if pk in instance.original_pk_set:
                     # Present as warning to the user.
                     duplicates.append(pk)
+            except AttributeError:
+                # Just don't do anything, means we are not coming from the clear stage
+                pass
         # Since we are forced to use Django signals, put the data into the object and remove it later
         instance.failed = failed
         instance.duplicates = duplicates
-        del instance.original_pk_set
+        try:
+            del instance.original_pk_set
+        except AttributeError:
+            pass
     elif kwargs['action'] == 'post_add':
      # Report any failed pks. See TODO above.
         failed = instance.failed
