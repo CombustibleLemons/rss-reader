@@ -553,9 +553,13 @@ class QueueFeed(models.Model):
         # Get queueFeed's read posts from readPosts
         feedReadPost = user.readPosts.get(feed__id=queueFeed.id)
         feedReadPostSet = list(feedReadPost.posts.all())
+        # print "feedReadPosts"
+        # print feedReadPostSet
+        # print "queuedPosts"
+        # print queuedPosts.all()
 
         # Make list of unread posts
-        unread = [post for post in queuedPosts if not queueFeed.posts.get(id=post.id) in feedReadPostSet]
+        unread = [post for post in queuedPosts.all() if not queueFeed.posts.get(id=post.id) in feedReadPostSet]
 
         # Determine number of Posts that need to be added so that there are postNum unread Posts
         diff = self.postNum - len(unread)
