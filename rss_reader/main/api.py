@@ -404,7 +404,6 @@ class PostsReadDetail(generics.RetrieveUpdateAPIView, generics.CreateAPIView):
             newPostsRead = oldPostsRead[0] # It was a QuerySet
             newPostsRead.posts = posts
             newPostsRead.save()
-            print PostsReadSerializer(newPostsRead).data
             return Response(PostsReadSerializer(newPostsRead).data, status=status.HTTP_200_OK)
         except Exception as e:
             print e

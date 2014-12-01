@@ -341,12 +341,12 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandSettingsReading = function() {
       $scope.expandedSettingIndex = 3;
     };
-    
+
     $scope.startTime = function() {
       startTime = new Date();
       document.getElementById("testArea").innerHTML = '"Words can be like X-rays, if you use them properly — they’ll go through anything. You read and you’re pierced. That’s one of the things I try to teach my students — how to write piercingly. But what on earth’s the good of being pierced by an article about a Community Sing, or the latest improvement in scent organs? Besides, can you make words really piercing — you know, like the very hardest X-rays — when you’re writing about that sort of thing? Can you say something about nothing? That’s what it finally boils down to. I try and I try …” <br>Hush!” said Bernard suddenly, and lifted a warning finger; they listened. “I believe there’s somebody at the door,” he whispered. Helmholtz got up, tiptoed across the room, and with a sharp quick movement flung the door wide open. There was, of course, nobody there.';
     };
-    
+
     $scope.endTime = function() {
       numClicks++;
       if (numClicks == 1) {
@@ -440,7 +440,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.refreshTopic();
     $scope.fetchFeeds();
   })
-  .controller('FeedController', function($scope, $rootScope,FeedService, APIService) { //scope is an angular template, from base.html, index.html
+  .controller('FeedController', function($scope, $rootScope, $timeout, FeedService, APIService) { //scope is an angular template, from base.html, index.html
     // Attributes
     $scope.expandedPostIndex = -1;
     // End Attributes
@@ -550,6 +550,22 @@ angular.module('main.controllers', ['main.services'])
           console.log(status);
       });
     };
+
+    $scope.$watch('expandedPostIndex', function(newValue, oldValue) {
+      if (newValue != -1) {
+          $scope.$evalAsync(function() {
+            $timeout(function() {
+              $scope.scrollToAnchor('post-' + newValue);
+            });
+          });
+      }
+    });
+    $scope.scrollToAnchor = function(aid){
+      var aTag = $("a[name='"+ aid +"']");
+      var navbarHeight = $(".navbar").height() + 50;
+      console.log(aTag.offset().top);
+      $('html,body').animate({scrollTop: aTag.offset().top - navbarHeight},'slow');
+    }
 	// End Methods
   });
 //*/
