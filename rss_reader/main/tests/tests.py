@@ -342,6 +342,9 @@ class CreateQueueFeedTestCase(TestCase):
 
 class QueueFeedTestCase(TestCase):
     def setUp(self):
+
+        # mock timezone
+        # from http://nedbatchelder.com/blog/201209/mocking_datetimetoday.html
         field = User._meta.get_field('timezone')
         mock_now = lambda: datetime.datetime(2014, 12, 1, 21, 32, 54, 706329, tzinfo=pytz.UTC)
         with patch.object(field, 'now', new=mock_now):
