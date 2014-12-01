@@ -368,13 +368,20 @@ class Post(models.Model):
             categories.append(tag["term"])
         post_dict.update({"category" : categories})
 
+        # Content can sometimes be in the summary or in the content field
+        content = entry.get("content", "")
+        if content == "":
+            content = entry.get("summary", "")
+        else:
+            content = content[0]["value"]
+
         # Text fields (nulls are always empty strings to Django)
         post_dict.update({
             "author" : entry.get("author", ""),
             "rights" : entry.get("rights", ""),
             "title" : entry.get("title", ""),
             "subtitle" : entry.get("subtitle", ""),
-            "content" : entry.get("summary", ""),
+            "content" : content,
             "generator" : entry.get("generator", ""),
             "guid" : entry.get("id", ""),
             "url" : entry.get("link", ""),

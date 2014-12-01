@@ -140,9 +140,10 @@
               </div>
             </div>
 						<div class="full" ng-show="expandedPostIndex == post.id">
+              <h5 ng-show="post.author" class="author">{{post.author}}</h5>
 							<p ng-bind-html="post.content" >{{post.content}}</p>
               <div ng-repeat="enclosure in post.enclosures">
-                <img src="{{enclosure}}"/>
+                <img ng-src="{{enclosure}}"/>
               </div>
 							<p><a href="{{post.url}}" target="_blank">View source</a></p>
 							<p style="display:none">{{post.pub}}</p>
