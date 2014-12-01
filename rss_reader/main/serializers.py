@@ -38,11 +38,18 @@ class QueueFeedSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     Length = serializers.SerializerMethodField('get_post_length')
+    enclosures = serializers.SerializerMethodField('enclosureField')
     class Meta:
         model = Post
         # fields = ("feedURL", "author", "category", "rights", "title",
         #     "subtitle", "content", "generator", "guid", "url", "contributor",
         #     "pubDate", "updated", "ackDate", )
+
+    def enclosureField(self, obj):
+        try:
+            return obj.rss.enclosure
+        except RSS.DoesNotExist:
+            return None
     def get_post_length(self, obj):
         words = obj.content.split()
         return len(words)

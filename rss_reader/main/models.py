@@ -419,9 +419,13 @@ class RSS(Post):
 
         # Enclosures
         enclosures = list()
-        for tag in entry.get("tags", []):
-            enclosures.append(tag["term"])
+        for link in entry.get("links", []):
+            if link["rel"] == "enclosure":
+                enclosures.append(link["href"])
         post_dict.update({"enclosure" : enclosures})
+        # TODO: Functionality for tags
+        # for tag in entry.get("tags", []):
+        # enclosures.append(tag["term"])
 
         # Create object
         return RSS.objects.create(**post_dict)
