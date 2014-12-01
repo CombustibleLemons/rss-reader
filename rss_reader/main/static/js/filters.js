@@ -14,7 +14,7 @@ angular.module('main.filters', []).
         return posts;
       }
       return posts.reduce(function(previous, current){
-        if (current.unread){
+        if (current.sortByUnread){
           previous.push(current);
           return previous;
         }
