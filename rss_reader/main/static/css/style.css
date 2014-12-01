@@ -61,7 +61,7 @@ body {
 
 }
 .full {
-	padding: 15px;
+	padding: 0px 15px 15px 15px;
 }
 .full * {
 	max-width:100%;
@@ -289,4 +289,8 @@ span.labelLink:hover{
 
 a.no-decoration{
 	text-decoration: none;
+}
+
+.author {
+	margin: 0px 0px 10px 0px;
 }
