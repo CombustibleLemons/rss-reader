@@ -312,11 +312,11 @@ a.no-decoration{
 
 .cdbl-slider {
     width: 200px;
-    margin: 10px;    
+    margin: 10px;
 }
 
 .settings-choices {
-	vertical-align: center; 
+	vertical-align: center;
 	display: inline-block;
 	background-color: #FF78AE;
 	color: #FFFFFF;
@@ -344,4 +344,7 @@ a.no-decoration{
 }
 .cancelBtn:hover {
 	background: #9AA9C4;
+}
+.titleDateString {
+	float: right;
 }

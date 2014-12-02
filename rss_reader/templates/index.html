@@ -12,7 +12,7 @@
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
-					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;
+					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;redi
 					<a href="#" ng-click="toggleEditMode()" class="toggleEdit">Edit</a>
 					<ul class="nav nav-sidebar">
 						<li ng-repeat="topic in topics">
@@ -138,7 +138,7 @@
 						<span> days, and </span>
 						<select id="month-choice" class="form-inline settings-choices" ng-model="months" ng-options="months for months in Range(0, 12)"></select>
 						<span>months</span>
-						
+
 						<br><br>
 						<h4>Amount</h4>
 						<span>I want </span>
@@ -147,7 +147,7 @@
 						<a href="#" class="addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
 						</div>
 						</div>
-			
+
 
 
 
@@ -159,6 +159,7 @@
                 <div class="mini">
                   <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
                   <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
+                  <p ng-if="post.pubDate" class="titleDateString">{{printFormattedDateString(post.pubDate)}}</p>
                 </div>
               </a>
               <div class="onoffswitch">
