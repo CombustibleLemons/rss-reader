@@ -452,6 +452,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
         $scope.expandedPostIndex = -1;
+        $("#filterUnreadLabel").show();
     });
     $rootScope.$on("clickQueueFeed", function (event, message) {
         $scope.queuePostsRead = message.queues_posts_read;

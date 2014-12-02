@@ -117,11 +117,6 @@ body {
 	color: #fff;
 }
 
-#popupWrapper,
-#popupWrapperResults {
-	display: none;
-}
-
 #popupTopic,
 #popupTopicResults {
 	position:absolute;
@@ -153,6 +148,10 @@ body {
     z-index:1031; /* may not be necessary */
 }
 
+#popupWrapper,
+#popupWrapperResults,
+#filterUnread,
+#filterUnreadLabel,
 .nav li a[class^='editTopic'],
 .nav li a[class^='editBtn'],
 .nav li a[class^='removeTopic'],
@@ -283,13 +282,9 @@ span.labelLink:hover{
 	color: #2A6496;
 	text-decoration: underline;
 }
-
-#filterUnread
-{
-	display: none;
-}
 #filterUnreadLabel{
 	margin-right:5px;
+	font-weight: normal;
 }
 
 a.no-decoration{
