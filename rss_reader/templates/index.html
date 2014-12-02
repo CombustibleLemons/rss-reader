@@ -228,8 +228,11 @@
 						<h3>Add a topic</h3>
 						<hr>
 						<input ng-model="topic.name "name="name" placeholder="Topic Name" type="text"><br/>
-						<a href="#" class="addTopicBtn" ng-click="addTopic(topic.name)">Add Topic</a>
-						<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+						<span class="error"></span>
+						<div>
+							<a href="#" class="popupBtn addTopicBtn" ng-click="addTopic(topic.name)">Add Topic</a>
+							<a href="#" class="popupBtn cancelBtn" ng-click="hidePopup()">Cancel</a>
+						</div>
 					</form>
 				</div>
 			</div>
