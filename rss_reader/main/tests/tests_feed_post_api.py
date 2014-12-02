@@ -102,29 +102,29 @@ class FeedCreateTests(APITestCase):
 
     def test_create_feed(cls):
         """Test that Feed can be created by URL"""
-        response = cls.client.post('/feeds/create', {"url" : cls.f1_url})
+        response = cls.client.post('/feeds/create/', {"url" : cls.f1_url})
         cls.assertEqual(response.status_code, 200)
 
-        response = cls.client.get('/feeds/')
-        cls.assertEqual(response.status_code, 200)
-        cls.assertEqual(response.data, [{'id': 1, 'author': u'', 'category': u'',
-                                        'contributor': u'', 'description': u'US',
-                                        'docURL': u'http://www.nytimes.com/pages/national/index.html?partner=rss&ampemc=rss',
-                                        'editorAddr': u'', 'generator': u'', 'guid': u'',
-                                        'language': u'en-us',
-                                        'logo': u'http://graphics8.nytimes.com/images/misc/NYT_logo_rss_250x40.png',
-                                        'rights': u'Copyright 2014 The New York Times Company',
-                                        'subtitle': u'US', 'title': u'NYT > U.S.', 'webmaster': u'',
-                                        'URL': u'http://home.uchicago.edu/~jharriman/example-rss.xml',
-                                        'ttl': 5, 'skipDays': None, 'skipHours': None,
-                                        'pubDate': datetime.datetime(2014, 11, 2, 16, 13, 2, tzinfo=pytz.UTC),
-                                        'updated': datetime.datetime(2014, 11, 6, 1, 0, 31, tzinfo=pytz.UTC),
-                                        'posts': [2, 1]}])
-
-        #gets newly created feed object and its id
-        cls.f1 = Feed.objects.get(id=response.data[0]["id"])
-        cls.f1_id = cls.f1.id
-        cls.f1.delete()
+        # response = cls.client.get('/feeds/')
+        # cls.assertEqual(response.status_code, 200)
+        # cls.assertEqual(response.data, [{'id': 1, 'author': u'', 'category': u'',
+        #                                 'contributor': u'', 'description': u'US',
+        #                                 'docURL': u'http://www.nytimes.com/pages/national/index.html?partner=rss&ampemc=rss',
+        #                                 'editorAddr': u'', 'generator': u'', 'guid': u'',
+        #                                 'language': u'en-us',
+        #                                 'logo': u'http://graphics8.nytimes.com/images/misc/NYT_logo_rss_250x40.png',
+        #                                 'rights': u'Copyright 2014 The New York Times Company',
+        #                                 'subtitle': u'US', 'title': u'NYT > U.S.', 'webmaster': u'',
+        #                                 'URL': u'http://home.uchicago.edu/~jharriman/example-rss.xml',
+        #                                 'ttl': 5, 'skipDays': None, 'skipHours': None,
+        #                                 'pubDate': datetime.datetime(2014, 11, 2, 16, 13, 2, tzinfo=pytz.UTC),
+        #                                 'updated': datetime.datetime(2014, 11, 6, 1, 0, 31, tzinfo=pytz.UTC),
+        #                                 'posts': [2, 1]}])
+        #
+        # #gets newly created feed object and its id
+        # cls.f1 = Feed.objects.get(id=response.data[0]["id"])
+        # cls.f1_id = cls.f1.id
+        # cls.f1.delete()
 
 class FeedTests(APITestCase):
     @classmethod
@@ -214,7 +214,7 @@ class FeedTests(APITestCase):
 
     def test_post_list_exists(cls):
         """Test accuracy of post list"""
-        response = cls.client.get("/feeds/%d/posts" % (cls.f1_id, ))
+        response = cls.client.get("/feeds/%d/posts/" % (cls.f1_id, ))
         cls.assertEqual(response.status_code, 200)
         # Delete the ids, since they are added by the server and not really relevant to checking correctness
         for post in response.data:
@@ -226,9 +226,11 @@ class FeedTests(APITestCase):
         """Test feed deletion"""
         response = cls.client.delete("/feeds/%d" % (cls.f1_id,))
         cls.assertEqual(response.status_code, 204)
-        response = cls.client.get("/feeds/")
-        cls.assertEqual(response.status_code, 200)
-        cls.assertEqual(response.data, [])
+
+        # no list of all feeds
+        # response = cls.client.get("/feeds/")
+        # cls.assertEqual(response.status_code, 200)
+        # cls.assertEqual(response.data, [])
 
 class PostTests(APITestCase):
     @classmethod

@@ -8,6 +8,7 @@ from rest_framework.test import APIRequestFactory, APITestCase
 
 # User class from django
 from django.contrib.auth.models import User, UserManager
+from django.contrib.auth.hashers import make_password
 
 # Models and Serializers
 from main.serializers import UserSerializer, TopicSerializer, FeedSerializer, PostSerializer
@@ -26,8 +27,8 @@ import traceback
 class AuthTests(APITestCase):
     @classmethod
     def setUpClass(self):
-        self.user = User.objects.create_user(username="shakespeare", password="shakespeare")
-        self.user.save() #user creation isn't tested in iteration 1, it is assumed a user exists.
+        self.user = User.objects.create_user(username="shakespeare", password= make_password("shakespeare"))
+        self.user.save()
         self.u_id = self.user.id
         self.u_uncat_id = self.user.topics.get(name="Uncategorized").id
         self.model_u = User(username="eecummings")
@@ -57,9 +58,8 @@ class AuthTests(APITestCase):
 
     def test_delete_topic_without_login(self):
         """Trying to delete a topic without login creds should fail"""
-        url = '/topics/'
         self.client.login(username="shakespeare", password="shakespeare")
-        response = self.client.post(url, {"name":"testTopic"}, format = 'json')
+        response = self.client.delete('/topics/%d' % (self.u_uncat_id, ), format = 'json')
         self.assertEqual(response.status_code, 200)
         self.client.logout()
         response = self.client.delete(url, {"name":"testTopic"}, format = 'json')
@@ -68,8 +68,8 @@ class AuthTests(APITestCase):
     def test_get_user(self):
         """Trying to get the user with login creds should pass"""
         url = '/user/'
-        self.client.login(username="shakespeare", password="shakespeare")
-        response = self.client.get(url, {}, format = 'json')
+        self.client.login(username="shakespeare", password= make_password("shakespeare"))
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
@@ -93,14 +93,14 @@ class AuthTests(APITestCase):
         """Trying to delete a topic with login creds should pass"""
         url = '/topics/'
         self.client.login(username="shakespeare", password="shakespeare")
-        
-        
+
+
         response = self.client.get(url, {"name":"testTopic"}, format = 'json')
-        
+
         if response.status_code == 404:
             response = self.client.post(url, {"name":"testTopic"}, format = 'json')
             self.assertEqual(response.status_code, 200)
-        
+
         response = self.client.delete(url, {"name":"testTopic"}, format = 'json')
         self.assertEqual(response.status_code, 200)
         self.client.logout()

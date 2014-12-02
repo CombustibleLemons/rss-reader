@@ -56,7 +56,7 @@ class TopicAddTests(APITestCase):
 
     def test_add_topic(cls):
         """Tests that Topic can be added"""
-        response = cls.client.post('/topics/create', cls.t1_data, format='json')
+        response = cls.client.post('/topics/', cls.t1_data, format='json')
         cls.assertEqual(response.status_code, 201)
         t1Server = Topic.objects.get(name=cls.t1_data["name"])
         t1_id = t1Server.id
@@ -64,10 +64,10 @@ class TopicAddTests(APITestCase):
         response = cls.client.get('/topics/')
         cls.assertEqual(response.status_code, 200)
         # We don't care about the order the server returns things in
-        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[]},
-                                            {u'id': t1_id, 'name': u'sonnets', 'user': cls.u_id, 'feeds': []}])
+        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[], 'queue_feeds': []},
+                                            {u'id': t1_id, 'name': u'sonnets', 'user': cls.u_id, 'feeds': [], 'queue_feeds' : []}])
 
-        response = cls.client.post('/topics/create', cls.t2_data, format = 'json')
+        response = cls.client.post('/topics/', cls.t2_data, format = 'json')
         cls.assertEqual(response.status_code, 201)
         t2Server = Topic.objects.get(name=cls.t2_data["name"])
         t2_id = t2Server.id
@@ -75,9 +75,9 @@ class TopicAddTests(APITestCase):
         response = cls.client.get('/topics/')
         cls.assertEqual(response.status_code, 200)
         # We don't care about the order the server returns things in
-        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[]},
-                                            {u'id':t1_id, 'name':u'sonnets','user':cls.u_id, 'feeds':[]},
-                                            {u'id':t2_id, 'name':u'tragedies','user':cls.u_id, 'feeds':[]}])
+        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[], 'queue_feeds': []},
+                                            {u'id':t1_id, 'name':u'sonnets','user':cls.u_id, 'feeds':[], 'queue_feeds': []},
+                                            {u'id':t2_id, 'name':u'tragedies','user':cls.u_id, 'feeds':[], 'queue_feeds': []}])
         # Cleanup topics on server
         t1Server.delete()
         t2Server.delete()
@@ -86,7 +86,7 @@ class TopicAddTests(APITestCase):
         """Adding a Topic with the same name as an existent Topic will fail"""
         cls.t2_m.save()
         with transaction.atomic():
-            response = cls.client.post('/topics/create', cls.evil_t1_data, format='json')
+            response = cls.client.post('/topics/', cls.evil_t1_data, format='json')
         cls.assertEqual(response.status_code, 409)
         cls.t2_m.delete()
 
@@ -135,7 +135,7 @@ class TopicTests(APITestCase):
         cls.assertEqual(response.status_code, 200)
         response = cls.client.get(url)
         cls.assertEqual(response.status_code, 200)
-        cls.assertEqual(response.data, {u'id':cls.t2_id, 'name':u'comedies', 'user':cls.u_id,'feeds':[]})
+        cls.assertEqual(response.data, {u'id':cls.t2_id, 'name':u'comedies', 'user':cls.u_id,'feeds':[], 'queue_feeds': []})
 
         # Set it back for further tests
         resetTopic = Topic.objects.get(name="comedies")
@@ -156,35 +156,35 @@ class TopicTests(APITestCase):
 
     def test_rename_uncategorized(cls):
         """The Uncategorized Topic cannot be renamed"""
-        response = cls.client.post("/topics/rename", {"index" : cls.user_uncat.id, 'name':u'tragedies'}, format='json')
+        response = cls.client.put(("/topics/%d" % cls.user_uncat.id), {'name':u'tragedies'}, format='json')
         cls.assertEqual(response.status_code, 400)
         response = cls.client.get("/topics/%d" % cls.user_uncat.id)
         cls.assertEqual(response.status_code, 200)
-        cls.assertItemsEqual(response.data, {u'id':cls.user_uncat.id, 'name':u'Uncategorized', 'user':cls.u_id,'feeds':[]})
+        cls.assertItemsEqual(response.data, {u'id':cls.user_uncat.id, 'name':u'Uncategorized', 'user':cls.u_id,'feeds':[], 'queue_feeds':[]})
 
     def test_delete_topic(cls):
         """Tests that Topic can be deleted"""
-        response = cls.client.post("/topics/delete", {"index" : cls.t2_id})
+        response = cls.client.delete("/topics/%d" % cls.t2_id)
         cls.assertEqual(response.status_code, 204)
 
         response = cls.client.get('/topics/')
         cls.assertEqual(response.status_code, 200)
-        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[]}, {u'id': cls.t1_id, 'name': u'sonnets', 'user': cls.u_id, 'feeds': []}])
+        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[], 'queue_feeds':[]},
+                                            {u'id': cls.t1_id, 'name': u'sonnets', 'user': cls.u_id, 'feeds': [], 'queue_feeds':[]} ])
 
-        response = cls.client.post("/topics/delete", {"index" : cls.t1_id})
+        response = cls.client.delete("/topics/%d" % cls.t1_id)
         cls.assertEqual(response.status_code, 204)
 
         response = cls.client.get('/topics/')
         cls.assertEqual(response.status_code, 200)
-        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[]}])
+        cls.assertItemsEqual(response.data, [{u'id':cls.user_uncat.id,'name':u'Uncategorized', 'user':cls.u_id, 'feeds':[], 'queue_feeds': []}])
 
     def test_delete_nonexistent_topic(cls):
         """A Topic that does not exist should fail upon attempted deletion"""
-        url = '/topics/delete'
-        response = cls.client.post(url, {"index" : cls.evil_t1_id})
+        response = cls.client.delete('/topics/%d' % cls.evil_t1_id)
         cls.assertEqual(response.status_code, 400)
 
     def test_delete_uncategorized(cls):
         """The Uncategorized Topic cannot be removed"""
-        response = cls.client.post('/topics/delete', {"index" : cls.user_uncat.id})
+        response = cls.client.delete('/topics/%d' % cls.user_uncat.id)
         cls.assertEqual(response.status_code, 400)

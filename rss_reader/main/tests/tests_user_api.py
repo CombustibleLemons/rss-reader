@@ -51,17 +51,17 @@ class LoggedOutUserTests(APITestCase):
 
     def test_add_topic(self):
         """Adding a Topic should fail when User is not logged in"""
-        response = self.client.post('/topics/create', self.t2_data, format='json')
+        response = self.client.post('/topics/', self.t2_data, format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_rename_topic(self):
         """Renaming a Topic should fail when User is not logged in"""
-        response = response = self.client.patch(('/topics/%d' % (self.t1.id,)), {'name':u'novellas'}, format='json')
+        response = response = self.client.put(('/topics/%d/' % (self.t1.id,)), {'name':u'novellas'}, format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_delete_topic(self):
         """Deleting a Topic should fail when User is not logged in"""
-        response = self.client.post("/topics/delete", {"index" : self.t1.id})
+        response = self.client.post("/topics/%d" % (self.t1.id))
         self.assertEqual(response.status_code, 401)
 
     def test_create_feed(self):
@@ -107,13 +107,13 @@ class UserTests(APITestCase):
         """Check that UserDetail is accurate"""
         response = self.client.get('/user/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'id': self.u_id, 'username':u'shakespeare', 'first_name': u'', 'last_name': u'', 'topics': [self.u_uncat_id]})
+        self.assertEqual(response.data, {'id': self.u_id, 'username':u'shakespeare', 'first_name': u'', 'last_name': u'', 'topics': [self.u_uncat_id], 'readPosts': []})
 
     def test_uncategorized_exists(self):
         """Uncategorized should be a default Topic for a newly created User"""
         response = self.client.get('/topics/')
         self.assertEqual(response.status_code, 200)
-        self.assertItemsEqual(response.data, [{u'id':self.u_uncat_id,'name':u'Uncategorized', 'user':self.u_id, 'feeds':[]}])
+        self.assertItemsEqual(response.data, [{u'id':self.u_uncat_id,'name':u'Uncategorized', 'user':self.u_id, 'feeds':[], 'queue_feeds': []}])
 
     def test_settings_exist(self):
         """Users should be created with settings"""
