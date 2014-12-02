@@ -38,8 +38,12 @@ angular.module('main.controllers', ['main.services'])
     $scope.topicIds = [];
     $scope.expandedIndex = [-1];
     $scope.predicate = "";
+
     $scope.filterUnread = "";
     $scope.activeView = "feedResults"
+
+    $scope.activeView = ""
+
     // End Attributes
 
     // Event handlers
@@ -55,6 +59,10 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickSettings", function (event, message) {
       $scope.activeView = "settingsGroups";
+    });
+
+    $rootScope.$on("clickQueueSettings", function (event, message) {
+        $scope.activeView = "queueSettings";
     });
     // End Event handlers
 
@@ -202,6 +210,18 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandTopic = function(index) {
       $scope.expandedIndex = [index];
     };
+
+    $scope.activeFeed = function(feedID) {
+      $rootScope.$broadcast("activeFeedIs", {
+        identifier: feedID
+      });
+    }
+
+    $scope.activeTopic = function(topicID) {
+      $rootScope.$broadcast("activeTopicIs", {
+        identifier: topicID
+      });
+    }
     //End Methods
 
     // Must be called to populate topics
@@ -320,7 +340,7 @@ angular.module('main.controllers', ['main.services'])
             $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
             $scope.hidePopup();
 
-            // fade out the alert
+            // fade out the alerue
             window.setTimeout(function() {
               $(".flash").fadeTo(500, 0).slideUp(500, function(){
                 $(this).remove();
@@ -342,6 +362,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
+
     $scope.startTime = function() {
       startTime = new Date();
       document.getElementById("testArea").innerHTML = '"Words can be like X-rays, if you use them properly — they’ll go through anything. You read and you’re pierced. That’s one of the things I try to teach my students — how to write piercingly. But what on earth’s the good of being pierced by an article about a Community Sing, or the latest improvement in scent organs? Besides, can you make words really piercing — you know, like the very hardest X-rays — when you’re writing about that sort of thing? Can you say something about nothing? That’s what it finally boils down to. I try and I try …” <br>Hush!” said Bernard suddenly, and lifted a warning finger; they listened. “I believe there’s somebody at the door,” he whispered. Helmholtz got up, tiptoed across the room, and with a sharp quick movement flung the door wide open. There was, of course, nobody there.';
@@ -351,6 +372,49 @@ angular.module('main.controllers', ['main.services'])
       numClicks++;
       if (numClicks == 1) {
         document.getElementById("testArea").innerHTML = "It wasn't until a number of years later, when they both wound up working at Black Sun Systems, Inc., that he put the other half of the equation together. At the time, both of them were working on avatars. He was working on bodies, she was working on faces. She was the face department, because nobody thought that faces were all that important— they were just flesh-toned busts on top of the avatars. She was just in the process of proving them all desperately wrong. But at this phase, the all-male society of bitheads that made up the power structure of Black Sun Systems said that the face problem was trivial and superficial. It was, of course, nothing more than sexism, the especially virulent type espoused by male techies who sincerely believe that they are too smart to be sexists.";
+
+    // End Methods
+  })
+  .controller('SearchController', function($scope, $rootScope, APIService) {
+    // Methods
+    $scope.expandSettings = function() {
+      $rootScope.$broadcast("clickSettings", {});
+    };
+
+    $scope.expandSettingsQueue = function(feedID) {
+      $rootScope.$broadcast("clickQueueSettings", {
+        identifier: feedID
+      });
+    };
+
+
+    $scope.search = function() {
+      var testSuccess = false;
+      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
+      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      // Is the query a valid URL?
+      testSuccess = regexp.test($scope.query);
+      // Query is a valid URL
+      if(testSuccess == true) {
+        APIService.addFeedByUrl($scope.query).success(function(data) {
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+        }).error(function(data, status, headers, config) {
+          // Feed already exists in the database, add it
+          if(status == 409) {
+            if ($("#searchForm").find(".error")) {
+              $("#searchForm").find(".error").remove();
+            }
+            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+          }
+          // URL isn't a feed
+          if(status == 400) {
+            testSuccess = false;
+          }
+        });
+
       }
       if (numClicks == 2) {
         document.getElementById("testArea").innerHTML = "Most of the members of the convent were old-fashioned Satanists, like their parents and grandparents before them. They’d been brought up to it and weren’t, when you got right down to it, particularly evil. Human beings mostly aren’t. They just get carried away by new ideas, like dressing up in jackboots and shooting people, or dressing up in white sheets and lynching people, or dressing up in tie-dye jeans and playing guitars at people. Offer people a new creed with a costume and their hearts and minds will follow. Anyway, being brought up as a Satanist tended to take the edge off it. It was something you did on Saturday nights. And the rest of the time you simply got on with life as best you could, just like everyone else. Besides, Sister Mary was a nurse and nurses, whatever their creed, are primarily nurses, which had a lot to do with wearing your watch upside down, keeping calm in emergencies, and dying for a cup of tea. She hoped someone would come soon; she’d done the important bit, now she wanted her tea.<br>It may help to understand human affairs to be clear that most of the great triumphs and tragedies of history are caused, not by people being fundamentally good or fundamentally bad, but by people being fundamentally people.";
@@ -567,5 +631,133 @@ angular.module('main.controllers', ['main.services'])
       $('html,body').animate({scrollTop: aTag.offset().top - navbarHeight},'slow');
     }
 	// End Methods
+  })
+
+.controller('QueueController', function($scope, $rootScope,FeedService, APIService) {
+    // Attributes
+    $scope.searchResults = [];
+    $scope.numResults = 0;
+    $scope.topics = [];
+    $scope.expandedSettingIndex = -1;
+
+    $scope.activeFeed = 0;
+    $scope.activeTopic = 0;
+    // End Attributes
+
+    // Event handlers
+    $rootScope.$on("clickQueueSettings", function (event, message) {
+      $scope.feedID = message.identifier;
+    });
+
+    $rootScope.$on("activeFeedIs", function (event, message) {
+      $scope.activeFeed = message.identifier;
+    });
+
+    $rootScope.$on("activeTopicIs", function (event, message) {
+      $scope.activeTopic = message.identifier;
+    });
+    // End Event handlers
+
+    // Methods
+
+    $scope.addQueueFeedObject = function() { // formerly passed url as an argument
+      var feed = $.parseJSON($(".feedObj").attr("value"));
+      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
+      topic.feeds.push(feed.id);
+      APIService.updateTopic(topic).success(function(data) {
+          $rootScope.$broadcast("addedFeedObject", {
+              topic: data,
+              feed: feed
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $scope.hidePopup();
+          $("#topicsForm")[0].reset();
+        }).error(function(data, status, headers, config){
+          //if user already subscribed
+          if (status == 409) {
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
+            $scope.hidePopup();
+
+            // fade out the alert
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+              });
+            }, 3000);
+          }
+        });
+      };
+
+
+    $scope.expandSettingsUser = function() {
+      $scope.expandedSettingIndex = 1;
+    };
+
+    $scope.expandSettingsFeed = function() {
+      $scope.expandedSettingIndex = 2;
+    };
+
+    $scope.expandSettingsReading = function() {
+      $scope.expandedSettingIndex = 3;
+    };
+
+    $scope.addQueueFeedObject = function() { // formerly passed url as an argument
+      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
+
+      var binSize = getSelectedText("post-choice");
+
+      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
+/*
+      var feed = $.parseJSON($(".feedObj").attr("value"));
+      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
+      topic.feeds.push(feed.id);
+      APIService.updateTopic(topic).success(function(data) {
+          $rootScope.$broadcast("addedFeedObject", {
+              topic: data,
+              feed: feed
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $scope.hidePopup();
+          $("#topicsForm")[0].reset();
+        }).error(function(data, status, headers, config){
+          //if user already subscribed
+          if (status == 409) {
+
+            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
+            $scope.hidePopup();
+
+            // fade out the alerue
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+              });
+            }, 3000);
+          }
+        });*/
+      };
+
+    $scope.Range = function(start, end) {
+    var result = [];
+    for (var i = start; i <= end; i++) {
+        result.push(i);
+    }
+    return result;
+    };
+
+    $scope.getSelectedText = function(elementId) {
+    var elt = document.getElementById(elementId);
+
+    if (elt.selectedIndex == -1)
+        return null;
+
+    return elt.options[elt.selectedIndex].text;
+    };
+
+    // End Methods
   });
 //*/

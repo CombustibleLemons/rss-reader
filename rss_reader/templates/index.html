@@ -34,7 +34,7 @@
 								<li ng-repeat="feed in feeds" ng-switch="feed.type" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
 										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
-										<a href="#" ng-click="expandFeed(feed.id)" ng-switch-when="feed">{{feed.title}}</a>
+										<a href="#" ng-click="expandFeed(feed.id); activeFeed(feed.id); activeTopic(topic.id)" ng-switch-when="feed">{{feed.title}}</a>
                     <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
 									</div>
 								</li>
@@ -82,11 +82,11 @@
 								</ul>
 							</span>
 							&nbsp;&nbsp;
-							<span class="dropdown">
+							<span  ng-controller="SearchController" class="dropdown" ng-show="activeView == 'feedResults'">
 								<a href="/#" ng-click="" class="dropdown-toggle" data-toggle="dropdown">Settings<span class="caret"></span></a>
 								<ul class="dropdown-menu" role="menu">
-									<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Queue</a></li>
-									<li><a href="" ng-click="expandSettings() && expandSettingsFeed()">Autodelete</a></li>
+									<li><a href="" ng-click="expandSettingsQueue()">Queue</a></li>
+									<li><a href="" ng-click="expandSettings()">Autodelete</a></li>
 								</ul>
 							</span>
 						</div>
@@ -119,6 +119,32 @@
 						</div>
 					</div>
 				</div>
+
+				<div ng-controller="QueueController" ng-show="activeView == 'queueSettings'" class="row-fluid">
+					<div class="row-fluid post">
+					<div>{{activeFeed}}<br>{{activeTopic}}</div>
+						<h3>How would you like to queue this feed?</h3><br>
+						<h4>Interval</h4>
+						<span>Every </span>
+						<select id="hour-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="hours" ng-options="hours for hours in Range(0, 24)"></select>
+						<span>hours, </span>
+						<select id="day-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="days" ng-options="days for days in Range(0, 31)"></select>
+						<span> days, and </span>
+						<select id="month-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="months" ng-options="months for months in Range(0, 12)"></select>
+						<span>months</span>
+						
+						<br><br>
+						<h4>Amount</h4>
+						<span>I want </span>
+						<select id="post-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="amount" ng-options="amount for amount in Range(0, 15)"></select>
+						<span>posts. </span><br><br>
+						<a href="#" class="addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
+						</div>
+						</div>
+			
+
+
+
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'" class="row-fluid">
 					<div class="row-fluid post" ng-repeat="post in posts | filterAllUnreadPosts:filterUnread | orderBy:predicate:reverse">
 					<span>
