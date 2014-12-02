@@ -662,6 +662,13 @@ angular.module('main.controllers', ['main.services'])
     // Methods
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
+
+      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
+
+      var binSize = getSelectedText("post-choice");
+
+      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
+      /*
       var feed = $.parseJSON($(".feedObj").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
       topic.feeds.push(feed.id);
@@ -689,7 +696,7 @@ angular.module('main.controllers', ['main.services'])
               });
             }, 3000);
           }
-        });
+        });*/
       };
 
 

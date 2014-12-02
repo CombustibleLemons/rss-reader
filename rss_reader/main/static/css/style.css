@@ -301,3 +301,10 @@ a.no-decoration{
     margin: 10px;    
 }
 
+.settings-choices {
+	vertical-align: center; 
+	display: inline-block;
+	background-color: #FF78AE;
+	color: #FFFFFF;
+}
+
