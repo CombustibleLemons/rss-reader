@@ -372,7 +372,8 @@ angular.module('main.controllers', ['main.services'])
       numClicks++;
       if (numClicks == 1) {
         document.getElementById("testArea").innerHTML = "It wasn't until a number of years later, when they both wound up working at Black Sun Systems, Inc., that he put the other half of the equation together. At the time, both of them were working on avatars. He was working on bodies, she was working on faces. She was the face department, because nobody thought that faces were all that important— they were just flesh-toned busts on top of the avatars. She was just in the process of proving them all desperately wrong. But at this phase, the all-male society of bitheads that made up the power structure of Black Sun Systems said that the face problem was trivial and superficial. It was, of course, nothing more than sexism, the especially virulent type espoused by male techies who sincerely believe that they are too smart to be sexists.";
-
+      }
+    };
     // End Methods
   })
   .controller('SearchController', function($scope, $rootScope, APIService) {
@@ -661,6 +662,13 @@ angular.module('main.controllers', ['main.services'])
     // Methods
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
+
+      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
+
+      var binSize = getSelectedText("post-choice");
+
+      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
+      /*
       var feed = $.parseJSON($(".feedObj").attr("value"));
       var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
       topic.feeds.push(feed.id);
@@ -688,7 +696,7 @@ angular.module('main.controllers', ['main.services'])
               });
             }, 3000);
           }
-        });
+        });*/
       };
 
 

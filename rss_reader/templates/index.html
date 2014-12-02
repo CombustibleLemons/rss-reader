@@ -121,21 +121,20 @@
 
 				<div ng-controller="QueueController" ng-show="activeView == 'queueSettings'" class="row-fluid">
 					<div class="row-fluid post">
-					<div>{{activeFeed}}<br>{{activeTopic}}</div>
 						<h3>How would you like to queue this feed?</h3><br>
 						<h4>Interval</h4>
 						<span>Every </span>
-						<select id="hour-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="hours" ng-options="hours for hours in Range(0, 24)"></select>
+						<select id="hour-choice" class="form-inline settings-choices" ng-model="hours" ng-options="hours for hours in Range(0, 24)"></select>
 						<span>hours, </span>
-						<select id="day-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="days" ng-options="days for days in Range(0, 31)"></select>
+						<select id="day-choice" class="form-inline settings-choices" ng-model="days" ng-options="days for days in Range(0, 31)"></select>
 						<span> days, and </span>
-						<select id="month-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="months" ng-options="months for months in Range(0, 12)"></select>
+						<select id="month-choice" class="form-inline settings-choices" ng-model="months" ng-options="months for months in Range(0, 12)"></select>
 						<span>months</span>
 						
 						<br><br>
 						<h4>Amount</h4>
 						<span>I want </span>
-						<select id="post-choice" class="form-inline" style="vertical-align: center; display: inline-block;" ng-model="amount" ng-options="amount for amount in Range(0, 15)"></select>
+						<select id="post-choice" class="form-inline settings-choices" ng-model="amount" ng-options="amount for amount in Range(0, 15)"></select>
 						<span>posts. </span><br><br>
 						<a href="#" class="addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
 						</div>
