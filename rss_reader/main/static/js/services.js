@@ -75,6 +75,7 @@ angular.module('main.services', []).
         function(errors){
           deferred.reject(errors);
         },
+
         function(updates){
           deferred.update(updates);
         });
@@ -134,8 +135,13 @@ angular.module('main.services', []).
       getPostsRead : function(feedID){
         var promise = $http.get("/feeds/" + feedID + "/posts/read");
         return promise;
-      }
+      },
       // End Feed functions
+        createQueueFeed : function(queueFeed, feedID){
+          var promise = $http.post("/queue_feeds/create/" + feedID + "/", queueFeed);
+          return promise;
+        }
+
     };
   });
   

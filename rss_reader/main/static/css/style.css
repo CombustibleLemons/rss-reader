@@ -278,6 +278,7 @@ body {
 	display:inline;
 }
 
+
 span.read{
 	color:#686868;
 }
@@ -307,6 +308,18 @@ a.no-decoration{
 
 .author {
 	margin: 0px 0px 10px 0px;
+}
+
+.cdbl-slider {
+    width: 200px;
+    margin: 10px;    
+}
+
+.settings-choices {
+	vertical-align: center; 
+	display: inline-block;
+	background-color: #FF78AE;
+	color: #FFFFFF;
 }
 
 .popupBtn {
