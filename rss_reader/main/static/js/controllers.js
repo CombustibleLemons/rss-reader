@@ -161,6 +161,7 @@ angular.module('main.controllers', ['main.services'])
           $("#popupTopic input").val('');
         }).error(function(data, status, headers, config){
           console.log(status);
+          $("#popupTopic .error").html(data["__all__"][0]);
       });
     };
 
@@ -315,6 +316,7 @@ angular.module('main.controllers', ['main.services'])
     };
 
     $scope.hidePopup = function() {
+      $("#popupTopic .error").html('');
       $("#popupWrapperResults").hide();
       $("#dimmer").hide();
     };

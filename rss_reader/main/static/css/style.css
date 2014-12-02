@@ -308,3 +308,26 @@ a.no-decoration{
 	color: #FFFFFF;
 }
 
+.popupBtn {
+	margin-top: 10px;
+	padding:5px 10px;
+	color:#000;
+	display: inline-block;
+	color: #eee;
+}
+.popupBtn:hover {
+	text-decoration: none;
+	color: #fff;
+}
+.addTopicBtn {
+	background: #428bca;
+}
+.addTopicBtn:hover {
+	background: #3672A6;
+}
+.cancelBtn {
+	background: #B8CAEB;
+}
+.cancelBtn:hover {
+	background: #9AA9C4;
+}
