@@ -19,7 +19,6 @@ def register(request):
     # Like before, get the request's context.
     context = RequestContext(request)
 
-
     if request.user.is_authenticated():
         return HttpResponseRedirect("/")
     else:
