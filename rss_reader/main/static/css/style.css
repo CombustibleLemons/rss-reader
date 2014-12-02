@@ -156,7 +156,7 @@ body {
 .nav li a[class^='editBtn'],
 .nav li a[class^='removeTopic'],
 .nav input[class^='editTopic'],
-.saveBtn
+.saveBtn,
 .removeFeed {
 	display:none;
 }
