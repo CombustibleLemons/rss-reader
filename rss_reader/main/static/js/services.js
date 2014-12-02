@@ -135,37 +135,8 @@ angular.module('main.services', []).
       getPostsRead : function(feedID){
         var promise = $http.get("/feeds/" + feedID + "/posts/read");
         return promise;
-      }
+      },
       // End Feed functions
-
-        search : function(searchString) {
-          var promise = $http.post('/search/', {"searchString" : searchString});
-          return promise;
-        },
-        // Feed controller functions
-        fetchPosts : function(feedID) {
-          var promise = $http.get('/feeds/' + feedID + '/posts/');
-          return promise;
-        },
-        fetchQueuedPosts : function(queueFeedID) {
-          var promise = $http.get('/queue_feeds/' + queueFeedID + '/posts/');
-          return promise;
-        },
-        updatePostsRead : function(feedID, postsRead){
-          return $http.put("/feeds/" + feedID + "/posts/read", postsRead);
-        },
-        getPostsRead : function(feedID){
-          var promise = $http.get("/feeds/" + feedID + "/posts/read");
-          return promise;
-        },
-        getUserSettings : function() {
-          var promise = $http.get("/user/settings/");
-          return promise;
-        },
-        updateUserSettings : function(userSetttings) {
-          var promise = $http.put("/user/settings/", userSetttings);
-          return promise;
-        },
         createQueueFeed : function(queueFeed, feedID){
           var promise = $http.post("/queue_feeds/create/" + feedID + "/", queueFeed);
           return promise;
