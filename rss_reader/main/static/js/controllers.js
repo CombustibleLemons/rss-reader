@@ -281,6 +281,7 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickSettings", function (event, message) {
       $scope.expandedPostIndex = -1;
+      $("#filterUnreadLabel").hide()
     });
     // End Event handlers
 
