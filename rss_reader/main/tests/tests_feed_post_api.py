@@ -223,14 +223,9 @@ class FeedTests(APITestCase):
             cls.assertItemsEqual(res, exp)
 
     def test_delete_feed(cls):
-        """Test feed deletion"""
+        """Feed deletion should fail - to build our database, a feed is never deleted"""
         response = cls.client.delete("/feeds/%d" % (cls.f1_id,))
-        cls.assertEqual(response.status_code, 204)
-
-        # no list of all feeds
-        # response = cls.client.get("/feeds/")
-        # cls.assertEqual(response.status_code, 200)
-        # cls.assertEqual(response.data, [])
+        cls.assertEqual(response.status_code, 405)
 
 class PostTests(APITestCase):
     @classmethod
@@ -240,6 +235,8 @@ class PostTests(APITestCase):
         cls.f1_id = cls.f1.id
         cls.p1_id = cls.f1.posts.all()[0].id
         cls.p1_data = {
+            'Length': 0,
+            'enclosures': [],
             u'id': cls.p1_id,
             'feedURL': u'http://www.nytimes.com/services/xml/rss/nyt/US.xml',
             'author': u'By KATIE HAFNER',
@@ -255,7 +252,7 @@ class PostTests(APITestCase):
             'pubDate': datetime.datetime(2014, 11, 2, 13, 43, 10, tzinfo=pytz.UTC),
             'updated': datetime.datetime(2014, 11, 2, 13, 43, 10, tzinfo=pytz.UTC),
             'ackDate': 1415858199.31228,
-            'feed': cls.f1_id
+            'feed': cls.f1_id,
         }
 
     @classmethod
@@ -264,6 +261,6 @@ class PostTests(APITestCase):
 
     def test_post_detail_exists(cls):
         """Test accuracy of post"""
-        response = cls.client.get('/posts/%d' % (cls.p1_id, ))
+        response = cls.client.get('/feeds/%d/posts/' % (cls.f1_id, ))
         cls.assertEqual(response.status_code, 200)
-        cls.assertItemsEqual(response.data, cls.p1_data)
+        cls.assertItemsEqual([p for p in response.data if p['id'] == cls.p1_id][0], cls.p1_data)

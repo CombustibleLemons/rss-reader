@@ -56,7 +56,7 @@ class LoggedOutUserTests(APITestCase):
 
     def test_rename_topic(self):
         """Renaming a Topic should fail when User is not logged in"""
-        response = response = self.client.put(('/topics/%d/' % (self.t1.id,)), {'name':u'novellas'}, format='json')
+        response = self.client.put(('/topics/%d' % (self.t1.id,)), {'name':u'novellas'}, format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_delete_topic(self):
@@ -67,13 +67,13 @@ class LoggedOutUserTests(APITestCase):
     def test_create_feed(self):
         """Creating a Feed should not fail - we want to improve our database :) """
         #does not add to any User Topic's list of Feeds
-        response = self.client.post('/feeds/create', {"url" : self.f2_url})
+        response = self.client.post('/feeds/create/', {'url' : self.f2_url})
         self.assertEqual(response.status_code, 200)
 
     def test_delete_feed(self):
-        """Deleting a Feed should fail when User is not logged in"""
+        """Deleting a Feed is never allowed, especially if User isn't logged in"""
         response = self.client.delete("/feeds/%d" % (self.f1.id,))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 405)
 
 
 class UserTests(APITestCase):
