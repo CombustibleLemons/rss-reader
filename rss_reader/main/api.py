@@ -122,6 +122,9 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
             # and, if it is, that the request does not change the name
             if self.object.name == "Uncategorized" and request.DATA["name"] != "Uncategorized":
                 return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            # Pop off the feeds since feeds are a ManyToManyField and Django treats those differently
+            feeds = request.DATA.pop("feeds")
             serializer = self.get_serializer(self.object, data=request.DATA,
                                             files=request.FILES, partial=partial)
             if not serializer.is_valid():
@@ -138,6 +141,12 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             self.object = serializer.save(force_update=True)
             self.post_save(self.object, created=False)
+
+            # Add the feeds that we popped off and save
+            self.object.feeds = feeds
+            self.object.save()
+
+            # Send response to server
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({"error" : e.message}, status=status.HTTP_409_CONFLICT)
