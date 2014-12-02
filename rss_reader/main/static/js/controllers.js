@@ -161,9 +161,18 @@ angular.module('main.controllers', ['main.services'])
           $scope.topics.push(data);
           $scope.hidePopup();
           $("#popupTopic input").val('');
+          
         }).error(function(data, status, headers, config){
           console.log(status);
-          $("#popupTopic .error").html(data["__all__"][0]);
+          $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;"+data+"</div>");
+            $scope.hidePopup();
+
+            // fade out the alerue
+            window.setTimeout(function() {
+              $(".flash").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+              });
+            }, 3000);
       });
     };
 
@@ -344,6 +353,7 @@ angular.module('main.controllers', ['main.services'])
 
             $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
             $scope.hidePopup();
+            console.log(status);
 
             // fade out the alerue
             window.setTimeout(function() {
@@ -420,21 +430,35 @@ angular.module('main.controllers', ['main.services'])
             testSuccess = false;
           }
         });
-
       }
-      if (numClicks == 2) {
-        document.getElementById("testArea").innerHTML = "Most of the members of the convent were old-fashioned Satanists, like their parents and grandparents before them. They’d been brought up to it and weren’t, when you got right down to it, particularly evil. Human beings mostly aren’t. They just get carried away by new ideas, like dressing up in jackboots and shooting people, or dressing up in white sheets and lynching people, or dressing up in tie-dye jeans and playing guitars at people. Offer people a new creed with a costume and their hearts and minds will follow. Anyway, being brought up as a Satanist tended to take the edge off it. It was something you did on Saturday nights. And the rest of the time you simply got on with life as best you could, just like everyone else. Besides, Sister Mary was a nurse and nurses, whatever their creed, are primarily nurses, which had a lot to do with wearing your watch upside down, keeping calm in emergencies, and dying for a cup of tea. She hoped someone would come soon; she’d done the important bit, now she wanted her tea.<br>It may help to understand human affairs to be clear that most of the great triumphs and tragedies of history are caused, not by people being fundamentally good or fundamentally bad, but by people being fundamentally people.";
-      }
-      if (numClicks == 3) {
-        endTime = new Date();
-        var elapsed = (endTime - startTime) / 1000;
-        wpm = Math.round(wordCount / elapsed * 60);
-        document.getElementById("testArea").innerHTML = "You read at " + wpm + " words per minute";
-        $scope.userSettings["readtime"] = wpm;
-        APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config){
-          console.log(status_code);
+      // Query is not a valid URL
+      if(testSuccess == false) {
+        APIService.search($scope.query).success(function(data) {
+          $rootScope.$broadcast("showSearchResults", {
+            searchResults: data
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
+          }
         });
-      };
+      }
+      // if (numClicks == 2) {
+      //   document.getElementById("testArea").innerHTML = "Most of the members of the convent were old-fashioned Satanists, like their parents and grandparents before them. They’d been brought up to it and weren’t, when you got right down to it, particularly evil. Human beings mostly aren’t. They just get carried away by new ideas, like dressing up in jackboots and shooting people, or dressing up in white sheets and lynching people, or dressing up in tie-dye jeans and playing guitars at people. Offer people a new creed with a costume and their hearts and minds will follow. Anyway, being brought up as a Satanist tended to take the edge off it. It was something you did on Saturday nights. And the rest of the time you simply got on with life as best you could, just like everyone else. Besides, Sister Mary was a nurse and nurses, whatever their creed, are primarily nurses, which had a lot to do with wearing your watch upside down, keeping calm in emergencies, and dying for a cup of tea. She hoped someone would come soon; she’d done the important bit, now she wanted her tea.<br>It may help to understand human affairs to be clear that most of the great triumphs and tragedies of history are caused, not by people being fundamentally good or fundamentally bad, but by people being fundamentally people.";
+      // }
+      // if (numClicks == 3) {
+      //   endTime = new Date();
+      //   var elapsed = (endTime - startTime) / 1000;
+      //   wpm = Math.round(wordCount / elapsed * 60);
+      //   document.getElementById("testArea").innerHTML = "You read at " + wpm + " words per minute";
+      //   $scope.userSettings["readtime"] = wpm;
+      //   APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config){
+      //     console.log(status_code);
+      //   });
+      // };
     };
     // End Methods
   })

@@ -12,7 +12,7 @@
 
 				<!-- Topics Section -->
 				<div> <!--ng-controller="TopicController"-->
-					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;redi
+					<a href="#" ng-click="showPopup()">Add a topic</a>&nbsp;|&nbsp;
 					<a href="#" ng-click="toggleEditMode()" class="toggleEdit">Edit</a>
 					<ul class="nav nav-sidebar">
 						<li ng-repeat="topic in topics">
@@ -120,6 +120,7 @@
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
 								<input class="feedObj" type="hidden" value="">
+								<span class="error"></span>
 								<a href="#" class="popupBtn addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
 								<a href="#" class="popupBtn cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
