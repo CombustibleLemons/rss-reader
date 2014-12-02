@@ -117,6 +117,7 @@ angular.module('main.controllers', ['main.services'])
         $(".nav li input[class^='editTopic']").hide();
         $(".nav li a[class^='editTopic']").hide();
         $(".nav li a[class^='editBtn']").hide();
+        $(".removeFeed").hide()
         $(".saveBtn").hide()
 
         $scope.expandedIndex = [];
@@ -128,6 +129,7 @@ angular.module('main.controllers', ['main.services'])
         $(".nav li a[class^='removeTopic']").show();
         $(".nav li a[class^='editBtn']").show();
         $(".saveBtn").show()
+        $(".removeFeed").show()
 
         for (var i = 0; i <= $(".nav li").length; i++) {
           $scope.expandedIndex.push(i);
@@ -280,6 +282,7 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickSettings", function (event, message) {
       $scope.expandedPostIndex = -1;
+      $("#filterUnreadLabel").hide()
     });
     // End Event handlers
 
@@ -452,6 +455,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
         $scope.expandedPostIndex = -1;
+        $("#filterUnreadLabel").show();
     });
     $rootScope.$on("clickQueueFeed", function (event, message) {
         $scope.queuePostsRead = message.queues_posts_read;
