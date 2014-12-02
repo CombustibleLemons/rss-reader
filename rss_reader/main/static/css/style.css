@@ -39,6 +39,14 @@ body {
 .feeds,
 .sidebar ul {
 	list-style-type: none;
+	padding-left: 5%;
+}
+
+.feeds div {
+	width:100%;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
 }
 .dropbox li {
   list-style-type: none;
@@ -87,10 +95,6 @@ body {
 
 	}
 }
-
-/* .feeds {
-	display:none;
-} */
 
 .login-btn {
 	background: #fa5800;
@@ -153,7 +157,8 @@ body {
 .nav li a[class^='editBtn'],
 .nav li a[class^='removeTopic'],
 .nav input[class^='editTopic'],
-.saveBtn {
+.saveBtn
+.removeFeed {
 	display:none;
 }
 .error {
@@ -290,7 +295,29 @@ span.labelLink:hover{
 a.no-decoration{
 	text-decoration: none;
 }
-
 .author {
 	margin: 0px 0px 10px 0px;
+}
+.popupBtn {
+	margin-top: 10px;
+	padding:5px 10px;
+	color:#000;
+	display: inline-block;
+	color: #eee;
+}
+.popupBtn:hover {
+	text-decoration: none;
+	color: #fff;
+}
+.addTopicBtn {
+	background: #428bca;
+}
+.addTopicBtn:hover {
+	background: #3672A6;
+}
+.cancelBtn {
+	background: #B8CAEB;
+}
+.cancelBtn:hover {
+	background: #9AA9C4;
 }

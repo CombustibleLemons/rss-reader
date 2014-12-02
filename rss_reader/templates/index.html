@@ -26,16 +26,22 @@
 
 					      			<a href="#" class="editTopic{{topic.id}}" ng-click="renameTopic(newTopic.name, topic)" style="float:right;">submit</a>
 
-					      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;"><img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12"></a>
-					      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;"><img src="https://cdn2.iconfinder.com/data/icons/windows-8-metro-style/512/edit.png" width="12"></a>
+					      			<a href="#" class="removeTopic{{topic.id}}" ng-click="removeTopic(topic.id)" style="float:right;">
+					      				<img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12">
+					      			</a>
+					      			<a href="#" class="editBtn{{topic.id}}" ng-click="toggleEdit(topic.id)" style="float:right;">
+					      				<img src="https://cdn2.iconfinder.com/data/icons/windows-8-metro-style/512/edit.png" width="12">
+					      			</a>
 					      		</div>
 				      		</div>
 							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
 								<li ng-repeat="feed in feeds" ng-switch="feed.type" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
-										<a href="#" ng-click="removeFeedFromTopic(feed.id)">&#45;</a>
+										<a href="#" class="removeFeed" ng-click="removeFeedFromTopic(feed.id)">
+											<img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12">
+										</a>
 										<a href="#" ng-click="expandFeed(feed.id)" ng-switch-when="feed">{{feed.title}}</a>
-                    <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
+					                    <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
 									</div>
 								</li>
 							</ul>
@@ -113,43 +119,42 @@
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
 								<input class="feedObj" type="hidden" value="">
-								<a href="#" class="addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
-								<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+								<a href="#" class="popupBtn addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
+								<a href="#" class="popupBtn cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
 						</div>
 					</div>
 				</div>
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'" class="row-fluid">
 					<div class="row-fluid post" ng-repeat="post in posts | filterAllUnreadPosts:filterUnread | orderBy:predicate:reverse">
-					<span>
-			<div style="width:100%">
-              <a ng-click="expandPost(post); post.unread = false; updatePostsRead()" name="post-{{post.id}}" class="no-decoration">
-                <div class="mini">
-                  <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
-                  <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
-                </div>
-              </a>
-              <div class="onoffswitch">
-                  <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead(); closeIfExpanded(post)" class="onoffswitch-checkbox" id="readunread{{$index}}">
-                  <label class="onoffswitch-label" for="readunread{{$index}}">
-                      <span class="onoffswitch-inner">
-                          <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
-                          <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
-                      </span>
-                  </label>
-              </div>
-            </div>
-						<div class="full" ng-show="expandedPostIndex == post.id">
-              <h5 ng-show="post.author" class="author">{{post.author}}</h5>
-							<p ng-bind-html="post.content" >{{post.content}}</p>
-              <div ng-repeat="enclosure in post.enclosures">
-                <img ng-src="{{enclosure}}"/>
-              </div>
-							<p><a href="{{post.url}}" target="_blank">View source</a></p>
-							<p style="display:none">{{post.pub}}</p>
-						</div>
+						<span>
+							<div style="width:100%">
+				              <a ng-click="expandPost(post); post.unread = false; updatePostsRead()" name="post-{{post.id}}" class="no-decoration">
+				                <div class="mini">
+				                  <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
+				                  <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
+				                </div>
+				              </a>
+				              <div class="onoffswitch">
+				                  <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead(); closeIfExpanded(post)" class="onoffswitch-checkbox" id="readunread{{$index}}">
+				                  <label class="onoffswitch-label" for="readunread{{$index}}">
+				                      <span class="onoffswitch-inner">
+				                          <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
+				                          <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+				                      </span>
+				                  </label>
+				              </div>
+				            </div>
+							<div class="full" ng-show="expandedPostIndex == post.id">
+								<h5 ng-show="post.author" class="author">{{post.author}}</h5>
+								<p ng-bind-html="post.content" >{{post.content}}</p>
+								<div ng-repeat="enclosure in post.enclosures">
+					                <img ng-src="{{enclosure}}"/>
+								</div>
+								<p><a href="{{post.url}}" target="_blank">View source</a></p>
+								<p style="display:none">{{post.pub}}</p>
+							</div>
 						</span>
-
 					</div>
 				</div>
 
@@ -228,8 +233,8 @@
 						<h3>Add a topic</h3>
 						<hr>
 						<input ng-model="topic.name "name="name" placeholder="Topic Name" type="text"><br/>
-						<a href="#" class="addTopicBtn" ng-click="addTopic(topic.name)">Add Topic</a>
-						<a href="#" class="cancelBtn" ng-click="hidePopup()">Cancel</a>
+						<a href="#" class="popupBtn addTopicBtn" ng-click="addTopic(topic.name)">Add Topic</a>
+						<a href="#" class="popupBtn cancelBtn" ng-click="hidePopup()">Cancel</a>
 					</form>
 				</div>
 			</div>
