@@ -160,6 +160,7 @@ angular.module('main.controllers', ['main.services'])
           $scope.topicIds.push(data.id);
           $scope.topics.push(data);
           $scope.hidePopup();
+          $("#popupTopic input").val('');
           
         }).error(function(data, status, headers, config){
           console.log(status);
