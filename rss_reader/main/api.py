@@ -83,11 +83,11 @@ class TopicList(generics.ListCreateAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED,
                                 headers=headers)
 
+            # We are on DRF 2.4, so we have to manually parse these errors
+            if "Topic with this Name and User already exists." in serializer.errors.get("__all__", None):
+                return Response("Topic with this Name and User already exists.", status=status.HTTP_409_CONFLICT)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        except IntegrityError as e:
-            # Return 409 if the url already exist
-            return Response(status=status.HTTP_409_CONFLICT)
         except Exception as e:
             print e
             # Return bad request if we get a general exception
