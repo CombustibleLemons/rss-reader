@@ -48,15 +48,23 @@ And you've started an instance of the RSS-reader!
 
 ###### Flushing the Database
 
-If the database is mistakenly edited when creating Feed objects, run `./flush_database.sh` to flush the database. The database will have to be reset, using the command `./postgres-setup.sh` (see Step One of the installation).  
+If the database is mistakenly edited when creating Feed objects, you will need to flush the database.
+##Ubuntu:
+1. Navigate to `~/rss-reader/rss_reader/`
+2. Run `./flush_database.sh` to flush the database
+3. Run `./postgres-setup.sh` to reset the database (see Step One of the installation)
 
-If `./flush_database.sh` does not work, the database can be flushed manually with the following commands:
+##Other:
 * ~~`sudo -i -u postgres` (or Mac equivalent)~~
 * `sudo su - postgresql`, and enter the password if prompted
 * `. ./pg_env.sh`
 * `psql`, and enter the postgresql user password if prompted
 * `drop database feeddb;`
 * `drop user combustible;`
+* `sudo -u postgres -H sh -c "createdb feeddb"`
+* `sudo -u postgres -H sh -c "createuser -P combustible"`
+* `sudo -u postgres -H sh -c "psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'"`
+
 
 After remaking the database, do Step Four of installation to make migrations and reinitialize watson.
 

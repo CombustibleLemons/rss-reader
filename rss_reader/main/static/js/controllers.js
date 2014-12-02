@@ -37,7 +37,8 @@ angular.module('main.controllers', ['main.services'])
     $scope.topics = [];
     $scope.topicIds = [];
     $scope.expandedIndex = [-1];
-    $scope.predicate = "";
+    $scope.predicate = "pubDate";
+    $scope.reverse = "true";
 
     $scope.filterUnread = "";
     $scope.activeView = "feedResults"
@@ -53,7 +54,6 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickFeed", function (event, message) {
       $scope.activeView = "feedResults";
-      $scope.predicate = "";
       $scope.filterUnread = "";
     });
 
@@ -658,7 +658,11 @@ angular.module('main.controllers', ['main.services'])
       var navbarHeight = $(".navbar").height() + 50;
       console.log(aTag.offset().top);
       $('html,body').animate({scrollTop: aTag.offset().top - navbarHeight},'slow');
-    }
+    };
+    $scope.printFormattedDateString = function(dateString){
+      var date = new Date(dateString);
+      return date.toDateString();
+    };
 	// End Methods
   })
 
