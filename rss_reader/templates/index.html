@@ -41,7 +41,7 @@
 											<img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12">
 										</a>
 										<a href="#" ng-click="expandFeed(feed.id)" ng-switch-when="feed">{{feed.title}}</a>
-					                    <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
+					          <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
 									</div>
 								</li>
 							</ul>
@@ -73,8 +73,8 @@
 		        		<div class="dropbox">
                   <input type="checkbox" ng-model="filterUnread" id="filterUnread">
                   <label id="filterUnreadLabel" for="filterUnread">
-                    <a href="" class='labelLink' ng-show="!filterUnread">Show Unread Posts</a>
-                    <a href="" class='labelLink' ng-show="filterUnread">Show All Posts</a>
+                    <span class='labelLink' ng-show="!filterUnread">Show Unread Posts</span>
+                    <span class='labelLink' ng-show="filterUnread">Show All Posts</span>
                   </label>
 							<span class="dropdown">
 								<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
@@ -83,7 +83,6 @@
 									<li><a href="" ng-click="predicate = 'pubDate'; reverse=true">Time (newest)</a></li>
 									<li><a href="" ng-click="predicate = 'pubDate'; reverse=false">Time (oldest)</a></li>
 									<li><a href="">Length</a></li>
-									<li><a href="">Rating</a></li>
 									<li><a href="" ng-click="predicate = '[sortByUnread, pubDate, id]'; reverse=true">Unread</a></li>
 								</ul>
 							</span>
@@ -127,34 +126,35 @@
 				</div>
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'" class="row-fluid">
 					<div class="row-fluid post" ng-repeat="post in posts | filterAllUnreadPosts:filterUnread | orderBy:predicate:reverse">
-						<span>
-							<div style="width:100%">
-				              <a ng-click="expandPost(post); post.unread = false; updatePostsRead()" name="post-{{post.id}}" class="no-decoration">
-				                <div class="mini">
-				                  <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
-				                  <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
-				                </div>
-				              </a>
-				              <div class="onoffswitch">
-				                  <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead(); closeIfExpanded(post)" class="onoffswitch-checkbox" id="readunread{{$index}}">
-				                  <label class="onoffswitch-label" for="readunread{{$index}}">
-				                      <span class="onoffswitch-inner">
-				                          <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
-				                          <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
-				                      </span>
-				                  </label>
-				              </div>
-				            </div>
-							<div class="full" ng-show="expandedPostIndex == post.id">
-								<h5 ng-show="post.author" class="author">{{post.author}}</h5>
-								<p ng-bind-html="post.content" >{{post.content}}</p>
-								<div ng-repeat="enclosure in post.enclosures">
-					                <img ng-src="{{enclosure}}"/>
-								</div>
-								<p><a href="{{post.url}}" target="_blank">View source</a></p>
-								<p style="display:none">{{post.pub}}</p>
-							</div>
+					<span>
+			<div style="width:100%">
+              <a ng-click="expandPost(post); post.unread = false; updatePostsRead()" name="post-{{post.id}}" class="no-decoration">
+                <div class="mini">
+                  <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
+                  <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
+                </div>
+              </a>
+              <div class="onoffswitch">
+                  <input type="checkbox" name="onoffswitch" ng-model="post.unread" ng-change="updatePostsRead(); closeIfExpanded(post)" class="onoffswitch-checkbox" id="readunread{{$index}}">
+                  <label class="onoffswitch-label" for="readunread{{$index}}">
+                      <span class="onoffswitch-inner">
+                          <span class="onoffswitch-active"><span class="onoffswitch-switch">Unread</span></span>
+                          <span class="onoffswitch-inactive"><span class="onoffswitch-switch">Read</span></span>
+                      </span>
+                  </label>
+              </div>
+            </div>
+						<div class="full" ng-show="expandedPostIndex == post.id">
+              <h5 ng-show="post.author" class="author">{{post.author}}</h5>
+							<p ng-bind-html="post.content" >{{post.content}}</p>
+              <div ng-repeat="enclosure in post.enclosures">
+                <img ng-src="{{enclosure}}"/>
+              </div>
+							<p><a href="{{post.url}}" target="_blank">View source</a></p>
+							<p style="display:none">{{post.pub}}</p>
+						</div>
 						</span>
+
 					</div>
 				</div>
 

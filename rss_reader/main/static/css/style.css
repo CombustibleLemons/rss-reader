@@ -96,6 +96,10 @@ body {
 	}
 }
 
+/* .feeds {
+	display:none;
+} */
+
 .login-btn {
 	background: #fa5800;
 	font-weight: bold;
@@ -115,6 +119,11 @@ body {
 }
 .navbar-default .navbar-nav>.login-btn>a:hover {
 	color: #fff;
+}
+
+#popupWrapper,
+#popupWrapperResults {
+	display: none;
 }
 
 #popupTopic,
@@ -282,6 +291,11 @@ span.labelLink:hover{
 	color: #2A6496;
 	text-decoration: underline;
 }
+
+#filterUnread
+{
+	display: none;
+}
 #filterUnreadLabel{
 	margin-right:5px;
 	font-weight: normal;
@@ -290,9 +304,11 @@ span.labelLink:hover{
 a.no-decoration{
 	text-decoration: none;
 }
+
 .author {
 	margin: 0px 0px 10px 0px;
 }
+
 .popupBtn {
 	margin-top: 10px;
 	padding:5px 10px;
