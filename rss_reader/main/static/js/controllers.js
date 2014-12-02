@@ -352,6 +352,7 @@ angular.module('main.controllers', ['main.services'])
 
             $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
             $scope.hidePopup();
+            console.log(status);
 
             // fade out the alerue
             window.setTimeout(function() {
