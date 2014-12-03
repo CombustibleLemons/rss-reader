@@ -7,6 +7,7 @@ from rest_framework import status, permissions
 
 # User class from django
 from django.contrib.auth.models import User, UserManager
+from django.contrib.auth import authenticate, login, logout
 
 # For overriding response when a User is requested
 from django.shortcuts import get_object_or_404
@@ -38,6 +39,28 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         obj = get_object_or_404(queryset, **filter)
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        usr = self.get_object_or_none()
+        try:
+            usr.set_password(request.DATA['password'])
+            usr.save()
+            data = UserSerializer(usr).data
+
+            import pdb; pdb.set_trace()
+            # now log the user in
+            user = authenticate(username=usr.username, password=request.DATA['password'])
+            if user is not None:
+                login(request, user)
+                # Send response to server
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return
+                # Return an 'invalid login' error message.
+
+        except ValidationError as e:
+            return Response({"error" : e.message}, status=status.HTTP_409_CONFLICT)
 
 class UserSettingsDetail(generics.RetrieveUpdateAPIView):
     model = UserSettings

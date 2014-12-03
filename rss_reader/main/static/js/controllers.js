@@ -377,12 +377,13 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
-    $scope.changePassword = function() {
+    $scope.changePassword = function  () {
       $(".passwordMessage").html("");
+      $scope.user.password = $scope.query
       APIService.updatePassword($scope.user).success(function(data) {
-            $(".passwordMessage").html(data);
+            $(".passwordMessage").html("Your password has successfully been changed!");
+            $("#chancePasswordInput").val("");
         }).error(function(data, status, headers, config) {
-            console.log(status);
             $(".passwordMessage").html(data);
         });
     };
