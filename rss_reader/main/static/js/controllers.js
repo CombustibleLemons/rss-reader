@@ -392,8 +392,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
-<<<<<<< HEAD
-=======
+
     $scope.changePassword = function  () {
       $(".passwordMessage").html("");
       $scope.user.password = $scope.query
@@ -404,7 +403,6 @@ angular.module('main.controllers', ['main.services'])
             $(".passwordMessage").html(data);
         });
     };
->>>>>>> master
 
     $scope.startTime = function() {
       startTime = new Date();
@@ -521,7 +519,7 @@ angular.module('main.controllers', ['main.services'])
           }
         }
     });
-<<<<<<< HEAD
+
     $rootScope.$on("addQueueFeedByTopicIdNoUpdate", function(event, message){
       if ($scope.topic.id == message.topicId){
         var flag = 0;
@@ -561,9 +559,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.removeFeedFromTopic(message.identifier, message.feedType);
       }
     });
-=======
 
->>>>>>> master
     // End Event handlers
 
     $scope.removeFeedFromTopic = function(feedId, type){
@@ -653,7 +649,7 @@ angular.module('main.controllers', ['main.services'])
 
     // Event handlers
 
-    
+
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
@@ -934,7 +930,7 @@ angular.module('main.controllers', ['main.services'])
       $rootScope.$broadcast("clickFeed", {});
     };
 
-    
+
 
     $scope.Range = function(start, end) {
     var result = [];
