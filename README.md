@@ -185,3 +185,4 @@ The user can change their password in the user settings and can measure their re
 
 1. Adding a non-rss style URL to the search bar and pressing enter will result in a 400 error.
 2. If a post contains no words inside of its content, no read time will show up for it.
+3. Queuing and then dequeuing can sometimes cause the old (queued) feed to remain on the topic's list of feeds. We did not find a consistent pattern for which feeds this fails on, but it seems to generally work.
