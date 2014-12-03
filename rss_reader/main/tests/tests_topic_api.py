@@ -182,7 +182,7 @@ class TopicTests(APITestCase):
     def test_delete_nonexistent_topic(cls):
         """A Topic that does not exist should fail upon attempted deletion"""
         response = cls.client.delete('/topics/%d' % cls.evil_t1_id)
-        cls.assertEqual(response.status_code, 400)
+        cls.assertEqual(response.status_code, 404)
 
     def test_delete_uncategorized(cls):
         """The Uncategorized Topic cannot be removed"""

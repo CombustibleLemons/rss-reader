@@ -68,7 +68,6 @@ class AuthTests(APITestCase):
 
         response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.user.is_authenticated(), True)
 
         response = self.client.get('/user/')
         #print "TEST GET USER"
