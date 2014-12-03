@@ -171,13 +171,6 @@ class Feed(models.Model):
                 cls_dict.update({"logo" : feedData["image"].get("href", "")})
             else:
                 cls_dict.update({"logo" : ""})
-            
-
-
-            if ttr > 1.0:
-                cls_dict.update({"timeToRead" : ""})
-            else:
-                cls_dict.update({"timeToRead" : ""})
 
             # Integer field
             cls_dict.update({
