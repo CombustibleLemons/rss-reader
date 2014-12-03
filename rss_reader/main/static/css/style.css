@@ -348,3 +348,7 @@ a.no-decoration{
 .titleDateString {
 	float: right;
 }
+.readTimeString {
+  padding-right: 5px;
+  float: right;
+}
