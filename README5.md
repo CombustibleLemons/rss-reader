@@ -89,12 +89,12 @@ The user can change their password in the user settings and can measure their re
 
 
 ### Usage Tutorial
-###### Automatic initialization (if you want to start with a user and some topics/feeds already initialized)
+#### Automatic initialization (if you want to start with a user and some topics/feeds already initialized)
 1. Run our intitalization script from `~/rss_reader/rss_reader` with `./manage.py shell < init_script.py`
 2. Access `localhost:8000` via web browser, log in with the credentials Username: **lemon** and Password: **lemon**
 3. You should see several Topics (Comics, Science, and Uncategorized) along with a few feeds in each topic
 
-###### Manual initialization
+#### Manual initialization
 
 ######  Register a user
 1. Access `localhost:8000` via web browser and click on 'Register Here'
