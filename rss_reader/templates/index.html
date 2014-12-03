@@ -78,7 +78,7 @@
                     <span class='labelLink' ng-show="!filterUnread">Show Unread Posts</span>
                     <span class='labelLink' ng-show="filterUnread">Show All Posts</span>
                   </label>
-							<span class="dropdown">
+							<span class="dropdown" ng-show="activeView == 'feedResults'">
 								<a href="/#"  class="dropdown-toggle" data-toggle="dropdown">Sort by&nbsp;<span class="caret"></span></a>
 								<ul class="dropdown-menu" role="menu">
 									<li><a href="" ng-click="predicate = 'title'; reverse=false">Alphabet</a></li>
@@ -145,7 +145,9 @@
 						<span>I want </span>
 						<select id="post-choice" class="form-inline settings-choices" ng-model="amount" ng-options="amount for amount in Range(0, 15)"></select>
 						<span>posts. </span><br><br>
-						<a href="#" class="addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
+						<a href="#" class="popupBtn addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
+						&nbsp;
+						<a href="#" class="popupBtn cancelBtn" ng-click="exitSettings()">Cancel</a>
 						</div>
 						</div>
 
