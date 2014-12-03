@@ -678,6 +678,18 @@ angular.module('main.controllers', ['main.services'])
       var date = new Date(dateString);
       return date.toDateString();
     };
+    $scope.printReadTimeString = function(postLength){
+      var speed = $scope.userSettings["readtime"];
+      var time = Math.ceil(postLength/speed);
+      var finalString;
+      if (time > 1){
+        finalString = time + " minutes";
+      }
+      if (time == 1){
+        finalString = time + " minute";
+      }
+      return finalString;
+    };
 	// End Methods
   })
 

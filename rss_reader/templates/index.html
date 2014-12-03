@@ -162,7 +162,7 @@
                 <div class="mini">
                   <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
                   <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
-                  <p ng-if="post.pubDate" class="titleDateString">{{printFormattedDateString(post.pubDate)}}</p>
+                  <p ng-if="post.pubDate" class="titleDateString">{{printFormattedDateString(post.pubDate)}}<br>{{printReadTimeString(post.Length)}}</p>
                 </div>
               </a>
               <div class="onoffswitch">
