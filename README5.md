@@ -57,13 +57,12 @@ If the database is mistakenly edited when creating Feed objects, you will need t
 ######  Other:
 * ~~`sudo -i -u postgres` (or Mac equivalent)~~
 * `sudo su - postgresql`, and enter the password if prompted
-* `. ./pg_env.sh`
-* `psql`, and enter the postgresql user password if prompted
 * `drop database feeddb;`
 * `drop user combustible;`
-* `sudo -u postgres -H sh -c "createdb feeddb"`
-* `sudo -u postgres -H sh -c "createuser -P combustible"`
-* `sudo -u postgres -H sh -c "psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'"`
+* `createdb feeddb`
+* `createuser -P combustible`
+* `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
+    * If psql does not work, run `../pg_env.sh`
 
 
 After remaking the database, do Step Four of installation to make migrations and reinitialize watson.
