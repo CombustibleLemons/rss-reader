@@ -1,6 +1,6 @@
 'use strict';
 
-/* jasmine specs for controllers go here */
+/* jasmine specs for controller tests */
 describe("User controllers", function() {
     beforeEach(module("main.controllers"));
 
@@ -198,6 +198,24 @@ describe("Navigation controllers", function() {
         navScope.expandTopic(1);
         expect(navScope.expandedIndex).toEqual([1]);
     });
+
+    it("should send active feed  and topic signals", function() {
+        var success = false;
+        navScope.$on("activeFeedIs", function (event, message) {
+            if(message.identifier == 12)
+                success = true;
+        });
+        navScope.activeFeed(12);
+        expect(success).toEqual(true);
+
+        success = false;
+        navScope.$on("activeTopicIs", function (event, message) {
+            if(message.identifier == 12)
+                success = true;
+        });
+        navScope.activeTopic(12);
+        expect(success).toEqual(true);
+    });
 });
 
 describe("Search controllers", function($rootScope) {
@@ -221,7 +239,7 @@ describe("Search controllers", function($rootScope) {
           topicScope.$parent.$index = 0;
           $controller('TopicController', {$scope: topicScope});
           
-          searchScope = $rootScope.$new();
+          searchScope = navScope.$new();
           $controller('SearchController', {$scope: searchScope});
         });
 
@@ -233,16 +251,94 @@ describe("Search controllers", function($rootScope) {
        httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should add URL feeds", function() {
+    it("should search properly", function() {
         // Obviously not an RSS feed, but I control the server responses
         var URL = 'http://www.goodURL.com/rss.xml';
         var foofeed = {"name":"foofeed", "id":12};
+        var results;
         searchScope.query = URL;
         httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(200, foofeed);
+        searchScope.$on("showSearchResults", function (event, message) {
+            results = message.searchResults;
+        });
         searchScope.search();
         httpBackend.flush();
-        // will return once results controller is tested
+        expect(results).toEqual([{"name":"foofeed","id":12}]);
+        
+        // What if its already in the server?
+        foofeed = {"name":"foofeed", "id":15};
+        httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(409, foofeed);
+        searchScope.search();
+        httpBackend.flush();
+        expect(results).toEqual([{"name":"foofeed","id":15}]);
+
+        // What if it's not a feed?
+        httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(400, '');
+        searchScope.search();
+        httpBackend.flush();
+        expect(results).toEqual([{"name":"foofeed","id":15}]);
+
+        // What if it's not even a URL?
+        searchScope.query = 'foobar';
+        foofeed = {"name":"foofeed", "id":19};
+        httpBackend.expectPOST('/search/', {"searchString":'foobar'}).respond(200, [foofeed]);
+        searchScope.search();
+        httpBackend.flush();
+        expect(results).toEqual([foofeed]);
     })
+});
+
+describe("Results controllers", function() {
+    beforeEach(module("main.controllers"));
+    var httpBackend, userScope, navScope, topicScope, searchScope, resultScope;
+
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          topicScope = navScope.$new();
+          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope});
+          
+          searchScope = navScope.$new();
+          $controller('SearchController', {$scope: searchScope});
+
+          resultScope = navScope.$new();
+          $controller('ResultsController', {$scope: resultScope});
+        });
+
+        userScope.$digest();
+    }));
+
+    afterEach(function() {
+       httpBackend.verifyNoOutstandingExpectation();
+       httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it("should update their topic lists before showing topic options", function() {
+        expect(resultScope.topics).toEqual([]);
+        resultScope.showTopicOptions();
+        expect(resultScope.topics).toEqual([{"name":"Uncategorized","id":12,"user":1,"feeds":[]}]);
+    });
+
+    it("should expand the various settings", function() {
+        expect(resultScope.expandedSettingIndex).toEqual(-1);
+        resultScope.expandSettingsUser();
+        expect(resultScope.expandedSettingIndex).toEqual(1);
+        resultScope.expandSettingsFeed();
+        expect(resultScope.expandedSettingIndex).toEqual(2);
+        resultScope.expandSettingsReading();
+        expect(resultScope.expandedSettingIndex).toEqual(3);
+    });
 });
 
 describe("Topic controllers", function() {
@@ -364,9 +460,6 @@ describe("Feed controllers", function() {
         $controller('FeedController', {$scope: feedScope});
 
         userScope.$digest();
-        navScope.$digest();
-        topicScope.$digest();
-        feedScope.$digest();
     }));
 
     afterEach(function() {
@@ -376,8 +469,12 @@ describe("Feed controllers", function() {
 
     it("should expand posts", function() {
         expect(feedScope.expandedPostIndex).toEqual(-1);
-        feedScope.expandPost(12);
+        var post = {"id":12};
+        feedScope.expandPost(post);
         expect(feedScope.expandedPostIndex).toEqual(12);
+        post = {"id":14};
+        feedScope.expandPost(post);
+        expect(feedScope.expandedPostIndex).toEqual(14);
     });
 
     it("should fetch posts", function() {
@@ -392,7 +489,7 @@ describe("Feed controllers", function() {
         httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
         topicScope.expandFeed(12);
         httpBackend.flush();
-        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true},
-           {"bill": "murray", "content":"", "unread":true}]);
+        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true, "sortByUnread":true},
+           {"bill": "murray", "content":"", "unread":true, "sortByUnread":true}]);
     });
 });

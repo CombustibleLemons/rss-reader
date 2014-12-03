@@ -2,17 +2,7 @@
 
 /* Controllers */
 
-angular.module('main.controllers', ['main.services'])/*
-  .directive('scroller', function () {
-    return {
-        restrict: 'A',
-        link: function (scope, elem, attrs) {
-            elem.bind('scroll', function () {
-                alert("I was scrolled");
-            });
-        }
-    };
-  })*/
+angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
     // Methods
     $scope.refreshUser = function(){
@@ -76,6 +66,7 @@ angular.module('main.controllers', ['main.services'])/*
 
     $rootScope.$on("clickQueueSettings", function (event, message) {
         $scope.activeView = "queueSettings";
+        $("#filterUnreadLabel").hide()
     });
     // End Event handlers
 
@@ -241,19 +232,23 @@ angular.module('main.controllers', ['main.services'])/*
         identifier: feedID,
         feedType: type
       });
-    }
+    };
 
     $scope.activeTopic = function(topicID) {
       $rootScope.$broadcast("activeTopicIs", {
         identifier: topicID
       });
-    }
+    };
     //End Methods
 
     // Must be called to populate topics
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, APIService) {
+    // Attributes
+    $scope.query = '';
+    // End Attributes
+
     // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
@@ -627,6 +622,8 @@ angular.module('main.controllers', ['main.services'])/*
   .controller('FeedController', function($scope, $rootScope, $timeout, FeedService, APIService) { //scope is an angular template, from base.html, index.html
     // Attributes
     $scope.expandedPostIndex = -1;
+    $scope.feedID = -1;
+    $scope.posts = [];
     // End Attributes
 
     // Event handlers
@@ -636,11 +633,22 @@ angular.module('main.controllers', ['main.services'])/*
         $scope.expandedPostIndex = -1;
         $("#filterUnreadLabel").show();
     });
+
     $rootScope.$on("clickQueueFeed", function (event, message) {
         $scope.queuePostsRead = message.queues_posts_read;
         $scope.queueFeedID = message.queue_identifier;
         $scope.fetchQueuedPosts();
         $scope.expandedPostIndex = -1;
+    });
+
+    $scope.$watch('expandedPostIndex', function(newValue, oldValue) {
+      if (newValue != -1) {
+          $scope.$evalAsync(function() {
+            $timeout(function() {
+              $scope.scrollToAnchor('post-' + newValue);
+            });
+          });
+      }
     });
     // End Event handlers
 
@@ -751,9 +759,23 @@ angular.module('main.controllers', ['main.services'])/*
       console.log(aTag.offset().top);
       $('html,body').animate({scrollTop: aTag.offset().top - navbarHeight},'slow');
     };
+
     $scope.printFormattedDateString = function(dateString){
       var date = new Date(dateString);
       return date.toDateString();
+    };
+
+    $scope.printReadTimeString = function(postLength){
+      var speed = $scope.userSettings["readtime"];
+      var time = Math.ceil(postLength/speed);
+      var finalString;
+      if (time > 1){
+        finalString = time + " minutes";
+      }
+      if (time == 1){
+        finalString = time + " minute";
+      }
+      return finalString;
     };
 	// End Methods
   })
@@ -793,6 +815,7 @@ angular.module('main.controllers', ['main.services'])/*
 
     return elt.options[elt.selectedIndex].text;
     };
+
 
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
@@ -879,6 +902,12 @@ angular.module('main.controllers', ['main.services'])/*
     $scope.expandSettingsReading = function() {
       $scope.expandedSettingIndex = 3;
     };
+
+    $scope.exitSettings = function() {
+      $rootScope.$broadcast("clickFeed", {});
+    };
+
+    
 
     $scope.Range = function(start, end) {
     var result = [];
