@@ -67,6 +67,10 @@ angular.module('main.controllers', ['main.services'])
         $scope.activeView = "queueSettings";
         $("#filterUnreadLabel").hide()
     });
+
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
+    });
     // End Event handlers
 
     // Methods
@@ -247,6 +251,12 @@ angular.module('main.controllers', ['main.services'])
     $scope.query = '';
     // End Attributes
 
+    // Event handlers
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
+    });
+    // End Event handlers
+
     // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
@@ -311,6 +321,10 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
+    });
+
     $rootScope.$on("showSearchResults", function (event, message) {
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
@@ -439,6 +453,10 @@ angular.module('main.controllers', ['main.services'])
             $scope.feeds.push(message.feed);
           }
         }
+    });
+
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
     });
     // End Event handlers
 
@@ -674,6 +692,10 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("activeTopicIs", function (event, message) {
       $scope.activeTopic = message.identifier;
+    });
+
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
     });
     // End Event handlers
 
