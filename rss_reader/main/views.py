@@ -99,3 +99,22 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect("/accounts/login")
+
+
+def change_password(request):
+    import pdb; pdb.set_trace()
+    abc =34
+    # if request.user.is_authenticated():
+
+        # # If it's a HTTP POST, we're interested in processing form data.
+        # if request.method == 'POST':
+        #     u = User.objects.get(username=request.user.username)
+        #     u.set_password('new password')
+        #     u.save()
+        # else:
+        #     user_form = UserForm()
+        #     # Render the template depending on txhe context.
+        #     return render_to_response(
+        #             'registration/register.html',
+        #             {'user_form': user_form, 'registered': registered},
+        #             context)    

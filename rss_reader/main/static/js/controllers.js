@@ -4,6 +4,8 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
+    // Event handlers
+
     // Methods
     $scope.refreshUser = function(){
       var promise = APIService.getUser().then(function(user){
@@ -62,6 +64,7 @@ angular.module('main.controllers', ['main.services'])
         $scope.activeView = "queueSettings";
         $("#filterUnreadLabel").hide()
     });
+
     // End Event handlers
 
     // Methods
@@ -241,6 +244,9 @@ angular.module('main.controllers', ['main.services'])
     $scope.query = '';
     // End Attributes
 
+    // Event handlers
+    // End Event handlers
+
     // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
@@ -378,6 +384,17 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
+    $scope.changePassword = function  () {
+      $(".passwordMessage").html("");
+      $scope.user.password = $scope.query
+      APIService.updatePassword($scope.user).success(function(data) {
+            $(".passwordMessage").html("Your password has successfully been changed!");
+            $("#chancePasswordInput").val("");
+        }).error(function(data, status, headers, config) {
+            $(".passwordMessage").html(data);
+        });
+    };
+
     $scope.startTime = function() {
       startTime = new Date();
       document.getElementById("testArea").innerHTML = '"Words can be like X-rays, if you use them properly — they’ll go through anything. You read and you’re pierced. That’s one of the things I try to teach my students — how to write piercingly. But what on earth’s the good of being pierced by an article about a Community Sing, or the latest improvement in scent organs? Besides, can you make words really piercing — you know, like the very hardest X-rays — when you’re writing about that sort of thing? Can you say something about nothing? That’s what it finally boils down to. I try and I try …” <br>Hush!” said Bernard suddenly, and lifted a warning finger; they listened. “I believe there’s somebody at the door,” he whispered. Helmholtz got up, tiptoed across the room, and with a sharp quick movement flung the door wide open. There was, of course, nobody there.';
@@ -420,6 +437,7 @@ angular.module('main.controllers', ['main.services'])
           }
         }
     });
+
     // End Event handlers
 
     // Methods
@@ -488,6 +506,8 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
+
+    
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
