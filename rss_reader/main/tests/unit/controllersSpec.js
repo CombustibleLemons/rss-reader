@@ -406,6 +406,7 @@ describe("Feed controllers", function() {
         topicScope.expandFeed(12);
         httpBackend.flush();
         expect(feedScope.posts).toEqual([]);
+        // feed has posts
         var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
         httpBackend.expectGET('/feeds/12/posts/').respond(200, fake_post_array);
         httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
@@ -413,6 +414,20 @@ describe("Feed controllers", function() {
         httpBackend.flush();
         expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true, "sortByUnread":true},
            {"bill": "murray", "content":"", "unread":true, "sortByUnread":true}]);
+    });
+
+    it("should fetch queued posts", function() {
+        // has no posts
+        httpBackend.expectGET('/queue_feeds/12/posts/').respond(200, []);
+        topicScope.expandQueueFeed(12, 12, 14, 15);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([]);
+        // has posts
+        var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
+        httpBackend.expectGET('/queue_feeds/12/posts/').respond(200, fake_post_array);
+        topicScope.expandQueueFeed(12, 12, 14, 15);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([{"steve":"rogers","content":""}, {"bill":"murray","content":""}]);
     });
 
     it("should expand posts", function() {
@@ -423,5 +438,7 @@ describe("Feed controllers", function() {
         post = {"id":14};
         feedScope.expandPost(post);
         expect(feedScope.expandedPostIndex).toEqual(14);
+        feedScope.unexpandPost();
+        expect(feedScope.expandedPostIndex).toEqual(-1);
     });
 });

@@ -483,7 +483,9 @@ angular.module('main.controllers', ['main.services'])
     // Attributes
     $scope.expandedPostIndex = -1;
     $scope.feedID = -1;
+    $scope.queueFeedID = -1;
     $scope.posts = [];
+    $scope.queuePostsRead;
     // End Attributes
 
     // Event handlers
