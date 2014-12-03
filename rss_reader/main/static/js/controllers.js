@@ -64,7 +64,10 @@ angular.module('main.controllers', ['main.services'])/*
 
     $rootScope.$on("clickFeed", function (event, message) {
       $scope.activeView = "feedResults";
-      $scope.filterUnread = "";
+    });
+
+    $rootScope.$on("clickQueueFeed", function(event, message){
+      $scope.activeView = "feedResults";
     });
 
     $rootScope.$on("clickSettings", function (event, message) {
@@ -171,7 +174,7 @@ angular.module('main.controllers', ['main.services'])/*
           $scope.topics.push(data);
           $scope.hidePopup();
           $("#popupTopic input").val('');
-          
+
         }).error(function(data, status, headers, config){
           console.log(status);
           $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;"+data+"</div>");
@@ -410,8 +413,8 @@ angular.module('main.controllers', ['main.services'])/*
         $scope.userSettings["readtime"] = wpm;
         APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config) {
           console.log(status_code)
-        });  
-      };      
+        });
+      };
     };
     // End Methods
   })
@@ -492,34 +495,78 @@ angular.module('main.controllers', ['main.services'])/*
         if ($scope.topic.name == message.topic.name){
           $scope.topic = message.topic;
 
+          // Make sure the feed is not already in this object
           var flag = 0;
           for(var j =0; j<$scope.feeds.length; j++) {
             flag += ($scope.feeds[j].id == message.feed.id)
           }
+          // If the feed is not in thez
           if (!flag) {
             $scope.feeds.push(message.feed);
           }
         }
     });
-    // End Event handlers
-    $rootScope.$on("removeOldFeed", function (event, message) {
-      $scope.removeFeedFromTopic(message.identifier);
-    });
+    $rootScope.$on("addQueueFeedByTopicIdNoUpdate", function(event, message){
+      if ($scope.topic.id == message.topicId){
+        var flag = 0;
+        for(var j =0; j<$scope.feeds.length; j++) {
+          if ($scope.feeds[j].type == message.feed.type){
+            flag += ($scope.feeds[j].id == message.feed.id);
+          }
+        }
+        if (!flag) {
+          // Add QueueFeed id to the Topics list of IDs
+          $scope.topic.queue_feeds.push(message.feed.id);
 
-    $scope.removeFeedFromTopic = function(feedId){
+          // Add the feed to the master list of feeds
+          $scope.feeds.push(message.feed);
+        }
+      }
+    });
+    $rootScope.$on("removeOldFeed", function (event, message) {
+      if ($scope.topic["feeds"].indexOf(message.identifier) != -1){
+        $scope.removeFeedFromTopic(message.identifier, message.feedType);
+      }
+    });
+    // End Event handlers
+
+    $scope.removeFeedFromTopic = function(feedId, type){
       // Remove Feed-Topic relationship from server
-      $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
-        return id != feedId;
-      });
+      console.log($scope.topic["feeds"]);
+      if (type == "feed"){
+        $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
+          return id != feedId;
+        });
+      }
+      else if (type == "queue_feed"){
+        $scope.topic["queue_feeds"] = $scope.topic["queue_feeds"].filter(function(id){
+          return id != feedId;
+        });
+      }
+      else {
+        console.log("removeFeedFromTopic: Not a valid type");
+      }
+      console.log($scope.topic["feeds"]);
+
+      // Update the topic now that we've removed things
       APIService.updateTopic($scope.topic).success(function(data) {
+        // Update was a success, so update the local feeds
         $scope.feeds = $scope.feeds.filter(function(feed) {
-          return feed["id"] != feedId;
+          return feed.type == type ? feed["id"] != feedId : true;
         });
       }).error(function(data, status, headers, config){
           // Log the error
           console.log(status);
           // Add the feed back since there was an error
-          $scope.topic["feeds"].push(feedId);
+          if (type == "feed"){
+            $scope.topic["feeds"].push(feedId);
+          }
+          else if (type == "queue_feed"){
+            $scope.topic["queue_feeds"].push(feedId);
+          }
+          else{
+            console.log("removeFeedFromTopic: Not a valid type");
+          }
       });
     };
 
@@ -732,29 +779,35 @@ angular.module('main.controllers', ['main.services'])/*
 
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
-
       var timeInterval =  $scope.getSelectedText("week-choice") + " weeks, " + $scope.getSelectedText("day-choice") + " days, " +  $scope.getSelectedText("hour-choice") + " hours";
-
       var binSize = $scope.getSelectedText("post-choice");
-      
       APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":$scope.activeTopic}, $scope.activeFeed)
         .success(function(data){
+          var feed = data;
+          feed["type"] = "queue_feed";
           console.log('YO');
-          topic.feeds.push(data.id);
-          APIService.updateTopic($scope.activeTopic).success(function() {
-              $rootScope.$broadcast("addedFeedObject", {
-                topic: $scope.activeTopic,
-                feed: data
-              });
-
+          // Add the feeds to the topic
+          $rootScope.$broadcast("addQueueFeedByTopicIdNoUpdate", {
+            topicId: $scope.activeTopic,
+            feed: feed
+          });
+          // Remove old feed
+          // Remove old feed triggers an update. We do not want to send two updates at the same time
+          // It casues a race condition because of the many-to-many-field hackery
+          // If a future iteration ever happens ONLY GOD CAN SAVE YOU.
+          // Combination race condition and JS async bugs are the worst.
+          $rootScope.$broadcast("removeOldFeed", {
+            identifier: $scope.activeFeed,
+            feedType: "feed"
           });
 
-      $rootScope.$broadcast("removeOldFeed", {
-        identifier: $scope.activeFeed
-      });
-
-    });
-        dump('yo');
+          // Broadcast a clickedQueueFeed
+          $rootScope.$broadcast("clickQueueFeed", {
+                identifier: feed["feed"],
+                queue_identifier: feed.id,
+                queue_posts_read: feed.postsReadInQueue
+            });
+        });
       };
 
 
@@ -778,7 +831,7 @@ angular.module('main.controllers', ['main.services'])/*
     return result;
     };
 
-    
+
 
     // End Methods
   });

@@ -37,7 +37,7 @@
 							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
 								<li ng-repeat="feed in feeds" ng-switch="feed.type" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
-										<a href="#" class="removeFeed" ng-click="removeFeedFromTopic(feed.id)">
+										<a href="#" class="removeFeed" ng-click="removeFeedFromTopic(feed.id, feed.type)">
 											<img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12">
 										</a>
 										<a href="#" ng-click="expandFeed(feed.id); activeFeed(feed.id);" ng-switch-when="feed">{{feed.title}}</a>
@@ -145,10 +145,6 @@
 						<a href="#" class="popupBtn addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
 						</div>
 						</div>
-
-
-
-
 				<div ng-controller="FeedController" ng-show="activeView == 'feedResults'" class="row-fluid">
 					<div class="row-fluid post" ng-repeat="post in posts | filterAllUnreadPosts:filterUnread | orderBy:predicate:reverse">
 					<span>

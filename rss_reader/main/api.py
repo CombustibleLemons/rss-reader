@@ -125,6 +125,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
 
             # Pop off the feeds since feeds are a ManyToManyField and Django treats those differently
             feeds = request.DATA.pop("feeds")
+            queue_feeds = request.DATA.pop("queue_feeds")
             serializer = self.get_serializer(self.object, data=request.DATA,
                                             files=request.FILES, partial=partial)
             if not serializer.is_valid():
@@ -143,7 +144,9 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
             self.post_save(self.object, created=False)
 
             # Add the feeds that we popped off and save
+            # Hack-time, lets just clear the feeds before we proceed
             self.object.feeds = feeds
+            self.object.queue_feeds = QueueFeed.objects.filter(pk__in=queue_feeds)
             self.object.save()
 
             # Send response to server
@@ -460,7 +463,6 @@ class QueueFeedList(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             # Add the user and feed to the data
-            import pdb; pdb.set_trace();
             pk = kwargs.pop("pk")
             data = request.DATA
             user = User.objects.get(username=request.user)
