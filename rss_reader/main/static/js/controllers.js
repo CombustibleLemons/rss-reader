@@ -4,11 +4,6 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
-    // Attributes
-    $scope.user;
-    $scope.userSettings;
-    // End Attributes
-
     // Methods
     $scope.refreshUser = function(){
       var promise = APIService.getUser().then(function(user){
@@ -65,6 +60,7 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickQueueSettings", function (event, message) {
         $scope.activeView = "queueSettings";
+        $("#filterUnreadLabel").hide()
     });
     // End Event handlers
 
@@ -487,7 +483,6 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandedPostIndex = -1;
     $scope.feedID = -1;
     $scope.posts = [];
-
     // End Attributes
 
     // Event handlers
@@ -618,6 +613,19 @@ angular.module('main.controllers', ['main.services'])
       var date = new Date(dateString);
       return date.toDateString();
     };
+
+    $scope.printReadTimeString = function(postLength){
+      var speed = $scope.userSettings["readtime"];
+      var time = Math.ceil(postLength/speed);
+      var finalString;
+      if (time > 1){
+        finalString = time + " minutes";
+      }
+      if (time == 1){
+        finalString = time + " minute";
+      }
+      return finalString;
+    };
 	// End Methods
   })
 
@@ -694,6 +702,10 @@ angular.module('main.controllers', ['main.services'])
 
     $scope.expandSettingsReading = function() {
       $scope.expandedSettingIndex = 3;
+    };
+
+    $scope.exitSettings = function() {
+      $rootScope.$broadcast("clickFeed", {});
     };
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument

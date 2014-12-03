@@ -406,7 +406,6 @@ describe("Feed controllers", function() {
         feedScope = topicScope.$new();
         $controller('FeedController', {$scope: feedScope});
 
-
         userScope.$digest();
     }));
 
