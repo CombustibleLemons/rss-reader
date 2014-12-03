@@ -1,6 +1,6 @@
 'use strict';
 
-/* jasmine specs for controllers go here */
+/* jasmine specs for controller tests */
 describe("User controllers", function() {
     beforeEach(module("main.controllers"));
 
@@ -198,6 +198,24 @@ describe("Navigation controllers", function() {
         navScope.expandTopic(1);
         expect(navScope.expandedIndex).toEqual([1]);
     });
+
+    it("should send active feed  and topic signals", function() {
+        var success = false;
+        navScope.$on("activeFeedIs", function (event, message) {
+            if(message.identifier == 12)
+                success = true;
+        });
+        navScope.activeFeed(12);
+        expect(success).toEqual(true);
+
+        success = false;
+        navScope.$on("activeTopicIs", function (event, message) {
+            if(message.identifier == 12)
+                success = true;
+        });
+        navScope.activeTopic(12);
+        expect(success).toEqual(true);
+    });
 });
 
 describe("Search controllers", function($rootScope) {
@@ -233,15 +251,40 @@ describe("Search controllers", function($rootScope) {
        httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should add URL feeds", function() {
+    it("should search properly", function() {
         // Obviously not an RSS feed, but I control the server responses
         var URL = 'http://www.goodURL.com/rss.xml';
         var foofeed = {"name":"foofeed", "id":12};
+        var results;
         searchScope.query = URL;
         httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(200, foofeed);
+        searchScope.$on("showSearchResults", function (event, message) {
+            results = message.searchResults;
+        });
         searchScope.search();
         httpBackend.flush();
-        // will return once results controller is tested
+        expect(results).toEqual([{"name":"foofeed","id":12}]);
+        
+        // What if its already in the server?
+        foofeed = {"name":"foofeed", "id":15};
+        httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(409, foofeed);
+        searchScope.search();
+        httpBackend.flush();
+        expect(results).toEqual([{"name":"foofeed","id":15}]);
+
+        // What if it's not a feed?
+        httpBackend.expectPOST('/feeds/create/', {'url':URL}).respond(400, '');
+        searchScope.search();
+        httpBackend.flush();
+        expect(results).toEqual([{"name":"foofeed","id":15}]);
+
+        // What if it's not even a URL?
+        searchScope.query = 'foobar';
+        foofeed = {"name":"foofeed", "id":19};
+        httpBackend.expectPOST('/search/', {"searchString":'foobar'}).respond(200, [foofeed]);
+        searchScope.search();
+        httpBackend.flush();
+        expect(results).toEqual([foofeed]);
     })
 });
 
@@ -364,9 +407,6 @@ describe("Feed controllers", function() {
         $controller('FeedController', {$scope: feedScope});
 
         userScope.$digest();
-        navScope.$digest();
-        topicScope.$digest();
-        feedScope.$digest();
     }));
 
     afterEach(function() {
@@ -376,8 +416,12 @@ describe("Feed controllers", function() {
 
     it("should expand posts", function() {
         expect(feedScope.expandedPostIndex).toEqual(-1);
-        feedScope.expandPost(12);
+        var post = {"id":12};
+        feedScope.expandPost(post);
         expect(feedScope.expandedPostIndex).toEqual(12);
+        post = {"id":14};
+        feedScope.expandPost(post);
+        expect(feedScope.expandedPostIndex).toEqual(14);
     });
 
     it("should fetch posts", function() {
@@ -392,7 +436,7 @@ describe("Feed controllers", function() {
         httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
         topicScope.expandFeed(12);
         httpBackend.flush();
-        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true},
-           {"bill": "murray", "content":"", "unread":true}]);
+        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true, "sortByUnread":true},
+           {"bill": "murray", "content":"", "unread":true, "sortByUnread":true}]);
     });
 });
