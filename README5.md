@@ -1,7 +1,7 @@
 # RSS-reader
 ## Milestone 5
 ### Compiling and Installation
-We are primarily using Django and AngularJS, so there is no direct compilation. However, there are several packages that need to be installed in order to get the system up and running. We **heavily recommend** Linux to install the necessary packages.
+We are primarily using Django and AngularJS, so there is no direct compilation. However, there are several packages that need to be installed in order to get the system up and running. We **heavily recommend** Linux (Ubuntu) to install the necessary packages.
 ###### Step Zero: Clone the Repository
 In the terminal, clone our git repository with the command `git clone https://github.com/CombustibleLemons/rss-reader.git`
 
@@ -9,16 +9,26 @@ In the terminal, clone our git repository with the command `git clone https://gi
   1. Install postgresql
     * Run `[your favourite package manager] install postgresql`
   2. Initialize the postgres database and user
+ 
+     ###### Ubuntu
     * The root folder contains the initialization script. Run `./postgres-setup.sh`
-    * If there are problems with initializing with the script, manually initialize the database and user:
-        2.  ~~[For Arch]: run `systemctl start postgresql`. Then run `sudo -i -u postgres` and enter your password when prompted.~~
-        3. [For OSX]: Run `sudo su - postgres` and enter the password for your computer. Access the postgres shell with `. ./pg_env.sh`.
-        4. Run `createdb feeddb;` to make a database named feeddb
-        4. Run `createuser -P combustible;` to make a user named combustible
-        5. Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
-        6. Run `exit` to exit the postgres shell.
+    
+    ######Arch
+    * Run `systemctl start postgresql` and then `sudo -i -u postgres` and enter your password when prompted.
+    * Enter these commands in order: 
+        * `createdb feeddb`
+        * `createuser -P combustible`
+        * `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
+        * `exit`
+        
+    ######OSX or other
+    * Run `sudo su - postgres` and enter the password for your computer. Access the postgres shell with `. ./pg_env.sh`.
+        * Run `createdb feeddb;` to make a database named feeddb
+        * Run `createuser -P combustible;` to make a user named combustible
+        * Run `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
+        * Run `exit` to exit the postgres shell.
 
-        Note: If you would like to change username or password, you can do so in the `~/rss_reader/rss_reader/conf/settings.py` file
+    Note: If you would like to change username or password, you can do so in the `~/rss_reader/rss_reader/conf/settings.py` file
 
 
 ###### Step Two: Install virtualenv and other packages
@@ -52,17 +62,24 @@ If the database is mistakenly edited when creating Feed objects, you will need t
 ######  Ubuntu:
 1. Navigate to `~/rss-reader/rss_reader/`
 2. Run `./flush_database.sh` to flush the database
-3. Run `./postgres-setup.sh` to reset the database (see Step One of the installation)
+3. Run `./postgres-setup.sh` to reset the database (see Step 1.2 of the installation)
 
-######  Other:
-* ~~`sudo -i -u postgres` (or Mac equivalent)~~
+###### Arch:
+1. `sudo -i -u postgres`
+2. `dropdb feeddb`
+3. `dropuser combustible`
+4. `exit`
+5. Follow the intructions of Step 1.2 to reinitialize the database
+
+###### OSX / Other:
 * `sudo su - postgresql`, and enter the password if prompted
-* `drop database feeddb`
-* `drop user combustible`
-* `createdb feeddb`
-* `createuser -P combustible`
-* `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
-    * If psql does not work, run `../pg_env.sh`
+* `. ./pg_env.sh`
+* `psql`, and enter the postgresql user password if prompted
+* `drop database feeddb;`
+* `drop user combustible;`
+* `sudo -u postgres -H sh -c "createdb feeddb"`
+* `sudo -u postgres -H sh -c "createuser -P combustible"`
+* `sudo -u postgres -H sh -c "psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'"`
 
 
 After remaking the database, do Step Four of installation to make migrations and reinitialize watson.
