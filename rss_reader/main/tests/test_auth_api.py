@@ -27,7 +27,7 @@ import traceback
 class AuthTests(APITestCase):
     @classmethod
     def setUpClass(self):
-        self.user = User.objects.create_user(username="shakespeare", password= make_password("shakespeare"))
+        self.user = User.objects.create_user(username="shakespeare", password= make_password("anne"))
         self.user.save()
         self.u_id = self.user.id
         self.u_uncat_id = self.user.topics.get(name="Uncategorized").id
@@ -56,7 +56,7 @@ class AuthTests(APITestCase):
 
     def test_delete_topic_without_login(self):
         """Trying to delete a topic without login creds should fail"""
-        self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
+        self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'anne'})
         response = self.client.delete('/topics/%d' % (self.u_uncat_id, ), format = 'json')
         self.assertEqual(response.status_code, 200)
         self.client.logout()
@@ -65,9 +65,11 @@ class AuthTests(APITestCase):
 
     def test_get_user(self):
         """Trying to get the user with login creds should pass"""
-
-        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
-        self.assertEqual(response.status_code, 200)
+        s = User.objects.get(username = "shakespeare")
+        login = self.client.login(username = s.username, password = s.password)
+        self.assertTrue(login)
+        #response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
+        #self.assertEqual(response.status_code, 200)
 
         response = self.client.get('/user/')
         #print "TEST GET USER"
@@ -78,7 +80,7 @@ class AuthTests(APITestCase):
     def test_get_topics(self):
         """Trying to get topics with login creds should pass"""
         url = '/topics/'
-        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
+        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'anne'})
         self.assertEqual(response.status_code, 200)
 
         response = self.client.get(url, {}, format = 'json')
@@ -88,7 +90,7 @@ class AuthTests(APITestCase):
     def test_create_topic(self):
         """Trying to create a topic with login creds should pass"""
         url = '/topics/'
-        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
+        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'anne'})
         self.assertEqual(response.status_code, 200)
         response = self.client.post(url, {"name":"testTopic"}, format = 'json')
         self.assertEqual(response.status_code, 200)
@@ -97,7 +99,7 @@ class AuthTests(APITestCase):
     def test_delete_topic(self):
         """Trying to delete a topic with login creds should pass"""
         url = '/topics/'
-        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'shakespeare'})
+        response = self.client.post('/accounts/login/', {'username':'shakespeare', 'password':'anne'})
         self.assertEqual(response.status_code, 200)
 
         response = self.client.get(url, {"name":"testTopic"}, format = 'json')

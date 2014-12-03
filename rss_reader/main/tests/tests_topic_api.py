@@ -131,7 +131,13 @@ class TopicTests(APITestCase):
     def test_rename_topic(cls):
         """Tests that Topic can be renamed"""
         url = "/topics/%d" % (cls.t2_id,)
-        response = cls.client.patch(url, {'name':u'comedies'}, format='json')
+        #print cls.t2_m
+        cls.t2_m.name = "comedies"
+        # print cls.t2_m
+        # print "Serializing"
+        # t = TopicSerializer(cls.t2_m)
+        # print "Serialized"
+        response = cls.client.put(url, TopicSerializer(cls.t2_m).data, format='json')
         cls.assertEqual(response.status_code, 200)
         response = cls.client.get(url)
         cls.assertEqual(response.status_code, 200)
@@ -145,19 +151,24 @@ class TopicTests(APITestCase):
     def test_rename_repeat_topic(cls):
         """Tests that Topic renamed with another Topic's name fails"""
         url = '/topics/%d' % (cls.t2_id,)
-        response = cls.client.patch(url, {'name':u'sonnets'}, format='json')
+        cls.t2_m.name = "sonnets"
+        response = cls.client.put(url, TopicSerializer(cls.t2_m).data, format='json')
         cls.assertEqual(response.status_code, 400)
 
     def test_rename_nameless_topic(cls):
         """A Test cannot be renamed without a name"""
         url = '/topics/%d' % (cls.t2_id,)
-        response = cls.client.patch(url, {'name':u''}, format='json')
+        cls.t2_m.name = ""
+        response = cls.client.patch(url, TopicSerializer(cls.t2_m).data, format='json')
         cls.assertEqual(response.status_code, 400)
 
     def test_rename_uncategorized(cls):
         """The Uncategorized Topic cannot be renamed"""
-        response = cls.client.put(("/topics/%d" % cls.user_uncat.id), {'name':u'tragedies'}, format='json')
+
+        cls.user_uncat.name = "tragedies"
+        response = cls.client.put(("/topics/%d" % cls.user_uncat.id), TopicSerializer(cls.user_uncat).data, format='json')
         cls.assertEqual(response.status_code, 400)
+
         response = cls.client.get("/topics/%d" % cls.user_uncat.id)
         cls.assertEqual(response.status_code, 200)
         cls.assertItemsEqual(response.data, {u'id':cls.user_uncat.id, 'name':u'Uncategorized', 'user':cls.u_id,'feeds':[], 'queue_feeds':[]})

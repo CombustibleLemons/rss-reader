@@ -19,7 +19,6 @@ def register(request):
     # Like before, get the request's context.
     context = RequestContext(request)
 
-
     if request.user.is_authenticated():
         return HttpResponseRedirect("/")
     else:
@@ -80,14 +79,17 @@ def user_login(request):
         username = request.POST['username']
         password = request.POST['password']
         #import pdb; pdb.set_trace()
+        #print username
+        #print password
         user = authenticate(username=username, password=password)
+        #print user
 
         if user is not None:
             login(request, user)
             #print "logged in"
             return HttpResponseRedirect("/")
         else:
-            #print "user is None"
+        #    print "user is None"
             return render_to_response('registration/login.html',
             {'form': AuthenticationForm(request.POST), "authenticated":authenticated},
                 context)
