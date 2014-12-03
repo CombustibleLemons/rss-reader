@@ -377,6 +377,15 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
+    $scope.changePassword = function() {
+      $(".passwordMessage").html("");
+      APIService.updatePassword($scope.user).success(function(data) {
+            $(".passwordMessage").html(data);
+        }).error(function(data, status, headers, config) {
+            console.log(status);
+            $(".passwordMessage").html(data);
+        });
+    };
 
     $scope.startTime = function() {
       startTime = new Date();
