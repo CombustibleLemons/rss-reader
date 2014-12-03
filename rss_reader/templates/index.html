@@ -17,7 +17,7 @@
 					<ul class="nav nav-sidebar">
 						<li ng-repeat="topic in topics">
 							<div class="topicHolder" data="{{topic}}">
-								<a class="topicButton" href="#" ng-click="expandTopic($index)">
+								<a class="topicButton" href="#" ng-click="expandTopic($index); activeTopic(topic.id);">
 			        				<div ng-hide="expandedIndex == $index" class="arrow-up">&#9658; {{topic.name}}</div>
 			        				<div ng-show="expandedIndex == $index" class="arrow-down">&#9660; {{topic.name}}</div>
 				      			</a>
@@ -37,12 +37,10 @@
 							<ul ng-controller="TopicController" class="feeds" id="{{$parent.topics[$parent.$index].name}}" ng-show=" expandedIndex.indexOf($parent.$index) != -1" >
 								<li ng-repeat="feed in feeds" ng-switch="feed.type" class="mjs-nestedSortable-leaf">
 									<div id="{{feed.id}}">
-
-                    <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
 										<a href="#" class="removeFeed" ng-click="removeFeedFromTopic(feed.id)">
 											<img src="http://icons.iconarchive.com/icons/visualpharm/must-have/256/Delete-icon.png" width="12">
 										</a>
-										<a href="#" ng-click="expandFeed(feed.id)" ng-switch-when="feed">{{feed.title}}</a>
+										<a href="#" ng-click="expandFeed(feed.id); activeFeed(feed.id);" ng-switch-when="feed">{{feed.title}}</a>
 					          <a href="#" ng-click="expandQueueFeed(feed['feed'], feed.id, feed.postsReadInQueue)" ng-switch-when="queue_feed">{{feed.name}}</a>
 									</div>
 								</li>
@@ -132,19 +130,19 @@
 						<h3>How would you like to queue this feed?</h3><br>
 						<h4>Interval</h4>
 						<span>Every </span>
-						<select id="hour-choice" class="form-inline settings-choices" ng-model="hours" ng-options="hours for hours in Range(0, 24)"></select>
+						<select id="hour-choice" class="form-inline settings-choices" ng-model="hours" ng-options="hours for hours in Range(0, 24)" ng-init="hours=0"></select>
 						<span>hours, </span>
-						<select id="day-choice" class="form-inline settings-choices" ng-model="days" ng-options="days for days in Range(0, 31)"></select>
+						<select id="day-choice" class="form-inline settings-choices" ng-model="days" ng-options="days for days in Range(0, 31)" ng-init="days=0"></select>
 						<span> days, and </span>
-						<select id="month-choice" class="form-inline settings-choices" ng-model="months" ng-options="months for months in Range(0, 12)"></select>
-						<span>months</span>
+						<select id="week-choice" class="form-inline settings-choices" ng-model="weeks" ng-options="weeks for weeks in Range(0, 7)" ng-init="weeks=0"></select>
+						<span>weeks</span>
 						
 						<br><br>
 						<h4>Amount</h4>
 						<span>I want </span>
-						<select id="post-choice" class="form-inline settings-choices" ng-model="amount" ng-options="amount for amount in Range(0, 15)"></select>
+						<select id="post-choice" class="form-inline settings-choices" ng-model="amount" ng-options="amount for amount in Range(0, 15)" ng-init="amount=0"></select>
 						<span>posts. </span><br><br>
-						<a href="#" class="addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
+						<a href="#" class="popupBtn addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
 						</div>
 						</div>
 			

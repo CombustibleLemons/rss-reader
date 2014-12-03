@@ -451,12 +451,16 @@ class QueueFeedList(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             # Add the user and feed to the data
-            pk = kwargs.pop["pk"]
-            user = User.objects.get(username=request.user)
+            import pdb; pdb.set_trace();
+            pk = kwargs.pop("pk")
             data = request.DATA
+            user = User.objects.get(username=request.user)
+            feed = Feed.objects.get(id=pk)
+            topic = Topic.objects.get(id=data["topic"])
             data.update({
-                "user" : user.id,
-                "feed" : pk
+                "user" : user,
+                "feed" : feed,
+                "topic" : topic
             })
             queueFeed = QueueFeed.create(**data)
             queueFeed.save()

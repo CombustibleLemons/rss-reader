@@ -2,7 +2,17 @@
 
 /* Controllers */
 
-angular.module('main.controllers', ['main.services'])
+angular.module('main.controllers', ['main.services'])/*
+  .directive('scroller', function () {
+    return {
+        restrict: 'A',
+        link: function (scope, elem, attrs) {
+            elem.bind('scroll', function () {
+                alert("I was scrolled");
+            });
+        }
+    };
+  })*/
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
     // Methods
     $scope.refreshUser = function(){
@@ -454,6 +464,9 @@ angular.module('main.controllers', ['main.services'])
         }
     });
     // End Event handlers
+    $rootScope.$on("removeOldFeed", function (event, message) {
+      $scope.removeFeedFromTopic(message.identifier);
+    });
 
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
@@ -497,7 +510,7 @@ angular.module('main.controllers', ['main.services'])
         });
     };
 
-    $scope.expandQueueFeed = function(feedID, queueFeedID, queuePostsRead, postsReadInQueue) {
+    $scope.expandQueueFeed = function(feedID, queueFeedID, postsReadInQueue) {
       $rootScope.$broadcast("clickQueueFeed", {
             identifier: feedID,
             queue_identifier: queueFeedID,
@@ -666,43 +679,40 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Methods
+    $scope.getSelectedText = function(elementId) {
+    var elt = document.getElementById(elementId);
+
+    if (elt.selectedIndex == -1)
+        return null;
+
+    return elt.options[elt.selectedIndex].text;
+    };
+
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
 
-      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
+      var timeInterval =  $scope.getSelectedText("week-choice") + " weeks, " + $scope.getSelectedText("day-choice") + " days, " +  $scope.getSelectedText("hour-choice") + " hours";
 
-      var binSize = getSelectedText("post-choice");
-
-      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
-      /*
-      var feed = $.parseJSON($(".feedObj").attr("value"));
-      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feed.id);
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("addedFeedObject", {
-              topic: data,
-              feed: feed
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $scope.hidePopup();
-          $("#topicsForm")[0].reset();
-        }).error(function(data, status, headers, config){
-          //if user already subscribed
-          if (status == 409) {
-
-            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
-            $scope.hidePopup();
-
-            // fade out the alert
-            window.setTimeout(function() {
-              $(".flash").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove();
+      var binSize = $scope.getSelectedText("post-choice");
+      dump('hey there devon');
+      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":$scope.activeTopic}, $scope.activeFeed)
+        .success(function(data){
+          console.log('HEY THERE');
+          topic.feeds.push(data.id);
+          APIService.updateTopic($scope.activeTopic).success(function() {
+              $rootScope.$broadcast("addedFeedObject", {
+                topic: $scope.activeTopic,
+                feed: data
               });
-            }, 3000);
-          }
-        });*/
+
+          });
+
+      $rootScope.$broadcast("removeOldFeed", {
+        identifier: $scope.activeFeed
+      });
+
+    });
+        dump('yo');
       };
 
 
@@ -718,43 +728,6 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
-    $scope.addQueueFeedObject = function() { // formerly passed url as an argument
-      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
-
-      var binSize = getSelectedText("post-choice");
-
-      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
-/*
-      var feed = $.parseJSON($(".feedObj").attr("value"));
-      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feed.id);
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("addedFeedObject", {
-              topic: data,
-              feed: feed
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $scope.hidePopup();
-          $("#topicsForm")[0].reset();
-        }).error(function(data, status, headers, config){
-          //if user already subscribed
-          if (status == 409) {
-
-            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
-            $scope.hidePopup();
-
-            // fade out the alerue
-            window.setTimeout(function() {
-              $(".flash").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove();
-              });
-            }, 3000);
-          }
-        });*/
-      };
-
     $scope.Range = function(start, end) {
     var result = [];
     for (var i = start; i <= end; i++) {
@@ -763,14 +736,7 @@ angular.module('main.controllers', ['main.services'])
     return result;
     };
 
-    $scope.getSelectedText = function(elementId) {
-    var elt = document.getElementById(elementId);
-
-    if (elt.selectedIndex == -1)
-        return null;
-
-    return elt.options[elt.selectedIndex].text;
-    };
+    
 
     // End Methods
   });
