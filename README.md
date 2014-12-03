@@ -25,6 +25,19 @@ It is composed of three main parts:
 * Infinite scrolling would have required way too much rewriting of the controller code that concerns how posts are displayed. The time demands required would have been too great for a purely cosmetic feature.
 * An amazing search. But that's not a feature available anywhere.
 
+### What was implemented but not proposed
+* Nothing. Our original plan was flawless.
+* Except drag and drop. That was a nice feature that we decided to add to make editing Feeds easier.
+
+### What we have learned
+There are no good Javascript frameworks. Django classing makes no sense. Do everything client side. Make your clients do all the work. It is amazing that any website that is not static text is able to function.
+
+We also learned how to use an MVC design pattern with the Django framework. We also learned a lot about how to write unit tests for both Python and Javascript.
+
+Over time we learned how to effectively divide work, as well as communicate our problems in constructive ways. By the end we were better at estimating how long it would take to accomplish tasks.
+
+We also developed much better version control practices. We learned to commit often, keep it simple and only add one thing per branch, and merge conflicts are not as scary as they seem.
+
 ## Milestone 4.B
 ### Compiling and Installation
 We are primarily using Django and AngularJS, so there is no direct compilation. However, there are several packages that need to be installed in order to get the system up and running. We **heavily recommend** Linux or Ubuntu to install the necessary packages.
