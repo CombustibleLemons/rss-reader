@@ -4,6 +4,11 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
+    // Event handlers
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
+    });
+
     // Methods
     $scope.refreshUser = function(){
       var promise = APIService.getUser().then(function(user){
@@ -383,6 +388,9 @@ angular.module('main.controllers', ['main.services'])
       APIService.updatePassword($scope.user).success(function(data) {
             $(".passwordMessage").html("Your password has successfully been changed!");
             $("#chancePasswordInput").val("");
+            $rootScope.$broadcast("updatedUser", {
+              user: data
+            });
         }).error(function(data, status, headers, config) {
             $(".passwordMessage").html(data);
         });
@@ -564,6 +572,10 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
+    $rootScope.$on("updatedUser", function (event, message) {
+      $scope.user = message.user;
+    });
+    
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();

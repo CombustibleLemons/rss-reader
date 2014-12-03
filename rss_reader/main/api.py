@@ -48,7 +48,6 @@ class UserDetail(generics.RetrieveUpdateAPIView):
             usr.save()
             data = UserSerializer(usr).data
 
-            import pdb; pdb.set_trace()
             # now log the user in
             user = authenticate(username=usr.username, password=request.DATA['password'])
             if user is not None:
