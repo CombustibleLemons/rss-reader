@@ -118,6 +118,7 @@
 									<input type="radio" name="selectedTopic" value="{{topic}}">{{topic.name}}<br/>
 								</div>
 								<input class="feedObj" type="hidden" value="">
+								<span class="error"></span>
 								<a href="#" class="popupBtn addTopicBtn" ng-click="addFeedObject()">Subscribe</a>
 								<a href="#" class="popupBtn cancelBtn" ng-click="hidePopup()">Cancel</a>
 							</form>
@@ -136,7 +137,6 @@
 						<span> days, and </span>
 						<select id="week-choice" class="form-inline settings-choices" ng-model="weeks" ng-options="weeks for weeks in Range(0, 7)" ng-init="weeks=0"></select>
 						<span>weeks</span>
-						
 						<br><br>
 						<h4>Amount</h4>
 						<span>I want </span>
@@ -145,7 +145,7 @@
 						<a href="#" class="popupBtn addTopicBtn" ng-click="addQueueFeedObject()">Save Choices</a>
 						</div>
 						</div>
-			
+
 
 
 
@@ -157,6 +157,7 @@
                 <div class="mini">
                   <h3 ng-show="expandedPostIndex == post.id" class="post-header"><span class="read">{{post.title}}</span></h3>
                   <h3 ng-show="expandedPostIndex != post.id" class="post-header">{{post.title}}</h3>
+                  <p ng-if="post.pubDate" class="titleDateString">{{printFormattedDateString(post.pubDate)}}</p>
                 </div>
               </a>
               <div class="onoffswitch">
