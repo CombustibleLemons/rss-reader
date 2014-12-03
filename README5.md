@@ -180,3 +180,6 @@ The user can change their password in the user settings and can measure their re
 2. Click on user settings
 3. Enter your new password in the field and click "Submit"
 
+### Known Issues
+
+1. Adding a non-rss style URL to the search bar and pressing enter will result in a 400 error
