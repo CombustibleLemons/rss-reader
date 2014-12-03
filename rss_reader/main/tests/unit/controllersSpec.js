@@ -239,7 +239,7 @@ describe("Search controllers", function($rootScope) {
           topicScope.$parent.$index = 0;
           $controller('TopicController', {$scope: topicScope});
           
-          searchScope = navScope.$new();
+          searchScope = $rootScope.$new();
           $controller('SearchController', {$scope: searchScope});
         });
 
@@ -288,59 +288,6 @@ describe("Search controllers", function($rootScope) {
     })
 });
 
-describe("Results controllers", function() {
-    beforeEach(module("main.controllers"));
-    var httpBackend, userScope, navScope, topicScope, searchScope, resultScope;
-
-    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
-        httpBackend = $httpBackend;
-
-        userScope = $rootScope.$new();
-        $controller('UserController', {$scope: userScope});
-        navScope = userScope.$new();
-        $.when(function(){
-          var deferred = $q.defer();
-          deferred.resolve($controller('NavigationController', {$scope: navScope}));
-          return deferred.promise;
-        }).then(function(x){
-          topicScope = navScope.$new();
-          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
-          topicScope.$parent.topics = [topic];
-          topicScope.$parent.$index = 0;
-          $controller('TopicController', {$scope: topicScope});
-          
-          searchScope = navScope.$new();
-          $controller('SearchController', {$scope: searchScope});
-
-          resultScope = navScope.$new();
-          $controller('ResultsController', {$scope: resultScope});
-        });
-
-        userScope.$digest();
-    }));
-
-    afterEach(function() {
-       httpBackend.verifyNoOutstandingExpectation();
-       httpBackend.verifyNoOutstandingRequest();
-    });
-
-    it("should update their topic lists before showing topic options", function() {
-        expect(resultScope.topics).toEqual([]);
-        resultScope.showTopicOptions();
-        expect(resultScope.topics).toEqual([{"name":"Uncategorized","id":12,"user":1,"feeds":[]}]);
-    });
-
-    it("should expand the various settings", function() {
-        expect(resultScope.expandedSettingIndex).toEqual(-1);
-        resultScope.expandSettingsUser();
-        expect(resultScope.expandedSettingIndex).toEqual(1);
-        resultScope.expandSettingsFeed();
-        expect(resultScope.expandedSettingIndex).toEqual(2);
-        resultScope.expandSettingsReading();
-        expect(resultScope.expandedSettingIndex).toEqual(3);
-    });
-});
-
 describe("Topic controllers", function() {
     beforeEach(module("main.controllers"));
     var userScope, navScope, topicScope, httpBackend;
@@ -385,37 +332,7 @@ describe("Topic controllers", function() {
         expect(topicScope.topic).toEqual(origTopic);
     });
 
-    // it("should add and remove feeds", function() {
-    //     // add foofeed
-    //     var foofeed = {"name":"foofeed", "id":12};
-    //     topicScope.addFeedToTopic(foofeed);
-    //     expect(topicScope.topic["feeds"][0]).toEqual(12);
-    //     expect(topicScope.feeds[0]).toEqual(foofeed);
-    //     // check fetching feeds when there are feeds
-    //     httpBackend.expectGET('/feeds/12').respond(200, foofeed);
-    //     var origTopic = topicScope.topic;
-    //     topicScope.fetchFeeds();
-    //     httpBackend.flush();
-    //     expect(topicScope.topic).toEqual(origTopic);
-
-    //     // remove nonexistent feed
-    //     httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
-    //     topicScope.removeFeedFromTopic(28);
-    //     httpBackend.flush();
-    //     expect(topicScope.feeds[0]).toEqual(foofeed);
-    //     // remove foofeed unsuccessfully
-    //     httpBackend.expectPUT('/topics/12', topicScope.topic).respond(400, '');
-    //     topicScope.removeFeedFromTopic(12);
-    //     httpBackend.flush();
-    //     expect(topicScope.feeds[0]).toEqual(foofeed);
-    //     // remove foofeed successfully
-    //     httpBackend.expectPUT('/topics/12', topicScope.topic).respond(200, '');
-    //     topicScope.removeFeedFromTopic(12);
-    //     httpBackend.flush();
-    //     expect(topicScope.feeds).toEqual([]);
-    // });
-
-    it("should test that the expand feed signal is properly sent", function() {
+    it("should properly send the expand feed signal", function() {
         var success = false;
         topicScope.$on("clickFeed", function (event, message) {
             if(message.identifier == 12) {
@@ -425,6 +342,21 @@ describe("Topic controllers", function() {
         topicScope.expandFeed(48);
         expect(success).toBe(false);
         topicScope.expandFeed(12);
+        expect(success).toBe(true);
+    });
+
+    it("should properly send the expand queueFeed signal", function() {
+        var success = false;
+        topicScope.$on("clickQueueFeed", function (event, message) {
+            if(message.identifier == 12
+                && message.queue_identifier == 13
+                && message.queue_posts_read == 14) {
+                success = true;
+            }
+        });
+        topicScope.expandQueueFeed(48, 96, 'what', 46);
+        expect(success).toBe(false);
+        topicScope.expandQueueFeed(12, 13, 'what', 14);
         expect(success).toBe(true);
     });
 });
@@ -467,6 +399,37 @@ describe("Feed controllers", function() {
         httpBackend.verifyNoOutstandingRequest();
     });
 
+    it("should fetch posts", function() {
+        // feed has no posts
+        httpBackend.expectGET('/feeds/12/posts/').respond(200, []);
+        httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
+        topicScope.expandFeed(12);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([]);
+        // feed has posts
+        var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
+        httpBackend.expectGET('/feeds/12/posts/').respond(200, fake_post_array);
+        httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
+        topicScope.expandFeed(12);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true, "sortByUnread":true},
+           {"bill": "murray", "content":"", "unread":true, "sortByUnread":true}]);
+    });
+
+    it("should fetch queued posts", function() {
+        // has no posts
+        httpBackend.expectGET('/queue_feeds/12/posts/').respond(200, []);
+        topicScope.expandQueueFeed(12, 12, 14, 15);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([]);
+        // has posts
+        var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
+        httpBackend.expectGET('/queue_feeds/12/posts/').respond(200, fake_post_array);
+        topicScope.expandQueueFeed(12, 12, 14, 15);
+        httpBackend.flush();
+        expect(feedScope.posts).toEqual([{"steve":"rogers","content":""}, {"bill":"murray","content":""}]);
+    });
+
     it("should expand posts", function() {
         expect(feedScope.expandedPostIndex).toEqual(-1);
         var post = {"id":12};
@@ -475,21 +438,7 @@ describe("Feed controllers", function() {
         post = {"id":14};
         feedScope.expandPost(post);
         expect(feedScope.expandedPostIndex).toEqual(14);
-    });
-
-    it("should fetch posts", function() {
-        // feed has no posts
-        httpBackend.expectGET('/feeds/12/posts/').respond(200, []);
-        httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
-        topicScope.expandFeed(12);
-        httpBackend.flush();
-        expect(feedScope.posts).toEqual([]);
-        var fake_post_array = [{"steve": "rogers"}, {"bill": "murray"}];
-        httpBackend.expectGET('/feeds/12/posts/').respond(200, fake_post_array);
-        httpBackend.expectGET('/feeds/12/posts/read').respond(200, {"posts":[]});
-        topicScope.expandFeed(12);
-        httpBackend.flush();
-        expect(feedScope.posts).toEqual([{"steve": "rogers", "content": "", "unread":true, "sortByUnread":true},
-           {"bill": "murray", "content":"", "unread":true, "sortByUnread":true}]);
+        feedScope.unexpandPost();
+        expect(feedScope.expandedPostIndex).toEqual(-1);
     });
 });
