@@ -236,9 +236,10 @@ angular.module('main.controllers', ['main.services'])/*
       $scope.expandedIndex = [index];
     };
 
-    $scope.activeFeed = function(feedID) {
+    $scope.activeFeed = function(feedID, type) {
       $rootScope.$broadcast("activeFeedIs", {
-        identifier: feedID
+        identifier: feedID,
+        feedType: type
       });
     }
 
@@ -523,6 +524,23 @@ angular.module('main.controllers', ['main.services'])/*
         }
       }
     });
+    $rootScope.$on("addFeedByTopicIdNoUpdate", function(event, message){
+      if ($scope.topic.id == message.topicId){
+        var flag = 0;
+        for(var j =0; j<$scope.feeds.length; j++) {
+          if ($scope.feeds[j].type == message.feed.type){
+            flag += ($scope.feeds[j].id == message.feed.id);
+          }
+        }
+        if (!flag) {
+          // Add QueueFeed id to the Topics list of IDs
+          $scope.topic.feeds.push(message.feed.id);
+
+          // Add the feed to the master list of feeds
+          $scope.feeds.push(message.feed);
+        }
+      }
+    });
     $rootScope.$on("removeOldFeed", function (event, message) {
       if ($scope.topic["feeds"].indexOf(message.identifier) != -1){
         $scope.removeFeedFromTopic(message.identifier, message.feedType);
@@ -532,7 +550,6 @@ angular.module('main.controllers', ['main.services'])/*
 
     $scope.removeFeedFromTopic = function(feedId, type){
       // Remove Feed-Topic relationship from server
-      console.log($scope.topic["feeds"]);
       if (type == "feed"){
         $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
           return id != feedId;
@@ -546,13 +563,12 @@ angular.module('main.controllers', ['main.services'])/*
       else {
         console.log("removeFeedFromTopic: Not a valid type");
       }
-      console.log($scope.topic["feeds"]);
 
       // Update the topic now that we've removed things
       APIService.updateTopic($scope.topic).success(function(data) {
         // Update was a success, so update the local feeds
         $scope.feeds = $scope.feeds.filter(function(feed) {
-          return feed.type == type ? feed["id"] != feedId : true;
+          return feed["type"] == type ? feed["id"] != feedId : true;
         });
       }).error(function(data, status, headers, config){
           // Log the error
@@ -760,6 +776,7 @@ angular.module('main.controllers', ['main.services'])/*
 
     $rootScope.$on("activeFeedIs", function (event, message) {
       $scope.activeFeed = message.identifier;
+      $scope.activeFeedType = message.feedType;
     });
 
     $rootScope.$on("activeTopicIs", function (event, message) {
@@ -785,12 +802,12 @@ angular.module('main.controllers', ['main.services'])/*
         .success(function(data){
           var feed = data;
           feed["type"] = "queue_feed";
-          console.log('YO');
-          // Add the feeds to the topic
+                  // Add the feeds to the topic
           $rootScope.$broadcast("addQueueFeedByTopicIdNoUpdate", {
             topicId: $scope.activeTopic,
             feed: feed
           });
+
           // Remove old feed
           // Remove old feed triggers an update. We do not want to send two updates at the same time
           // It casues a race condition because of the many-to-many-field hackery
@@ -806,10 +823,50 @@ angular.module('main.controllers', ['main.services'])/*
                 identifier: feed["feed"],
                 queue_identifier: feed.id,
                 queue_posts_read: feed.postsReadInQueue
-            });
+          });
+
+          // Send the activeFeed signal
+          $scope.activeFeed = feed["id"];
+          $scope.activeFeedType= "queue_feed";
+          // $rootScope.$broadcast("activeFeedIs", {
+          //   identifier: feed["id"],
+          //   feedType: "queue_feed"
+          // });
+
         });
       };
 
+    $scope.dequeueFeed = function(){
+      APIService.getQueueFeed($scope.activeFeed).success(function(queueFeed){
+        APIService.getFeed(queueFeed["feed"]).then(function(data){
+          // Add a feed attribute for internal, clientside type checking
+          var feed = data;
+          feed["type"] = "feed";
+
+          // Add the feed
+          $rootScope.$broadcast("addFeedByTopicIdNoUpdate", {
+            topicId: $scope.activeTopic,
+            feed: feed
+          });
+
+          // Remove the QueueFeed
+          $rootScope.$broadcast("removeOldFeed", {
+            identifier: $scope.activeFeed,
+            feedType: "queue_feed"
+          });
+
+          // Broadcast a clickedFeed
+          $rootScope.$broadcast("clickFeed", {
+              identifier: feed["id"]
+          });
+
+          // Send the activeFeed signal
+          $scope.activeFeed = feed["id"];
+          $scope.activeFeedType= "feed";
+
+        });
+      });
+    };
 
     $scope.expandSettingsUser = function() {
       $scope.expandedSettingIndex = 1;
