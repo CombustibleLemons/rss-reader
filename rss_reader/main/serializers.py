@@ -51,8 +51,8 @@ class PostSerializer(serializers.ModelSerializer):
         except RSS.DoesNotExist:
             return None
     def get_post_length(self, obj):
-        words = obj.content.split()
-        return len(words)
+        words = len(obj.content[0].value.count(' '))
+        return words
 
 class PostsReadSerializer(serializers.ModelSerializer):
     # posts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)

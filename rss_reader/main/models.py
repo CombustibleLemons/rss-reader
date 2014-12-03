@@ -4,6 +4,7 @@
 from django.db import models, transaction
 from django.contrib.auth.models import User, UserManager
 import watson
+import math
 
 ## Exceptions
 from django.db import IntegrityError
@@ -104,6 +105,8 @@ class Feed(models.Model):
     title = models.TextField()
     # - webmaster : string
     webmaster = models.TextField()
+    # - timeToRead : (int, string)
+    timeToRead = models.TextField()
 
     # URL
     # - URL : string
@@ -168,6 +171,13 @@ class Feed(models.Model):
                 cls_dict.update({"logo" : feedData["image"].get("href", "")})
             else:
                 cls_dict.update({"logo" : ""})
+            
+
+
+            if ttr > 1.0:
+                cls_dict.update({"timeToRead" : ""})
+            else:
+                cls_dict.update({"timeToRead" : ""})
 
             # Integer field
             cls_dict.update({
