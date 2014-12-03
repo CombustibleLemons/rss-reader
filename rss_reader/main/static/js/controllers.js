@@ -91,7 +91,6 @@ angular.module('main.controllers', ['main.services'])
 
         topic.feeds = [];
         APIService.updateTopic(topic).error(function(data, status, headers, config){
-          console.log(topic);
           console.log(status);
         });
       });
