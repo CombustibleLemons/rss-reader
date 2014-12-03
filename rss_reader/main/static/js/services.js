@@ -141,11 +141,18 @@ angular.module('main.services', []).
         return promise;
       },
       // End Feed functions
-        createQueueFeed : function(queueFeed, feedID){
-          var promise = $http.post("/queue_feeds/create/" + feedID + "/", queueFeed);
-          return promise;
-        }
+      createQueueFeed : function(queueFeed, feedID){
+        var promise = $http.post("/queue_feeds/create/" + feedID + "/", queueFeed);
+        return promise;
+      },
+      getQueueFeed : function(queueFeedId){
+        var promise = $http.get("/queue_feeds/" + queueFeedId + "/");
+        return promise;
+      },
+      deleteQueueFeed : function(queueFeedId){
+        var promise = $http.delete("/queue_feeds/" + queueFeedId + "/");
+        return promise;
+      }
 
     };
   });
-  

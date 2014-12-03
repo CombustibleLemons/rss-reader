@@ -43,7 +43,10 @@ angular.module('main.controllers', ['main.services'])
     $scope.reverse = "true";
 
     $scope.filterUnread = "";
-    $scope.activeView = "";
+    $scope.activeView = "feedResults"
+
+    $scope.activeView = ""
+
     // End Attributes
 
     // Event handlers
@@ -53,7 +56,10 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickFeed", function (event, message) {
       $scope.activeView = "feedResults";
-      $scope.filterUnread = "";
+    });
+
+    $rootScope.$on("clickQueueFeed", function(event, message){
+      $scope.activeView = "feedResults";
     });
 
     $rootScope.$on("clickSettings", function (event, message) {
@@ -92,6 +98,7 @@ angular.module('main.controllers', ['main.services'])
 
         topic.feeds = [];
         APIService.updateTopic(topic).error(function(data, status, headers, config){
+          console.log(topic);
           console.log(status);
         });
       });
@@ -161,7 +168,7 @@ angular.module('main.controllers', ['main.services'])
           $scope.topics.push(data);
           $scope.hidePopup();
           $("#popupTopic input").val('');
-          
+
         }).error(function(data, status, headers, config){
           console.log(status);
           $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;"+data+"</div>");
@@ -223,9 +230,10 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedIndex = [index];
     };
 
-    $scope.activeFeed = function(feedID) {
+    $scope.activeFeed = function(feedID, type) {
       $rootScope.$broadcast("activeFeedIs", {
-        identifier: feedID
+        identifier: feedID,
+        feedType: type
       });
     };
 
@@ -236,7 +244,7 @@ angular.module('main.controllers', ['main.services'])
     };
     //End Methods
 
-    // Initialization
+    // Must be called to populate topics
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, APIService) {
@@ -384,6 +392,7 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
+
     $scope.changePassword = function  () {
       $(".passwordMessage").html("");
       $scope.user.password = $scope.query
@@ -417,8 +426,79 @@ angular.module('main.controllers', ['main.services'])
         $scope.userSettings["readtime"] = wpm;
         APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config) {
           console.log(status_code)
-        });  
-      };      
+        });
+      };
+    };
+    // End Methods
+  })
+  .controller('SearchController', function($scope, $rootScope, APIService) {
+    // Methods
+    $scope.expandSettings = function() {
+      $rootScope.$broadcast("clickSettings", {});
+    };
+
+    $scope.expandSettingsQueue = function(feedID) {
+      $rootScope.$broadcast("clickQueueSettings", {
+        identifier: feedID
+      });
+    };
+
+
+    $scope.search = function() {
+      var testSuccess = false;
+      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
+      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+      // Is the query a valid URL?
+      testSuccess = regexp.test($scope.query);
+      // Query is a valid URL
+      if(testSuccess == true) {
+        APIService.addFeedByUrl($scope.query).success(function(data) {
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+        }).error(function(data, status, headers, config) {
+          // Feed already exists in the database, add it
+          if(status == 409) {
+            if ($("#searchForm").find(".error")) {
+              $("#searchForm").find(".error").remove();
+            }
+            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
+          }
+          // URL isn't a feed
+          if(status == 400) {
+            testSuccess = false;
+          }
+        });
+      }
+      // Query is not a valid URL
+      if(testSuccess == false) {
+        APIService.search($scope.query).success(function(data) {
+          $rootScope.$broadcast("showSearchResults", {
+            searchResults: data
+          });
+          if ($("#searchForm").find(".error")) {
+            $("#searchForm").find(".error").remove();
+          }
+        }).error(function(data, status, headers, config){
+          if (status == 409) {
+            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
+          }
+        });
+      }
+      // if (numClicks == 2) {
+      //   document.getElementById("testArea").innerHTML = "Most of the members of the convent were old-fashioned Satanists, like their parents and grandparents before them. They’d been brought up to it and weren’t, when you got right down to it, particularly evil. Human beings mostly aren’t. They just get carried away by new ideas, like dressing up in jackboots and shooting people, or dressing up in white sheets and lynching people, or dressing up in tie-dye jeans and playing guitars at people. Offer people a new creed with a costume and their hearts and minds will follow. Anyway, being brought up as a Satanist tended to take the edge off it. It was something you did on Saturday nights. And the rest of the time you simply got on with life as best you could, just like everyone else. Besides, Sister Mary was a nurse and nurses, whatever their creed, are primarily nurses, which had a lot to do with wearing your watch upside down, keeping calm in emergencies, and dying for a cup of tea. She hoped someone would come soon; she’d done the important bit, now she wanted her tea.<br>It may help to understand human affairs to be clear that most of the great triumphs and tragedies of history are caused, not by people being fundamentally good or fundamentally bad, but by people being fundamentally people.";
+      // }
+      // if (numClicks == 3) {
+      //   endTime = new Date();
+      //   var elapsed = (endTime - startTime) / 1000;
+      //   wpm = Math.round(wordCount / elapsed * 60);
+      //   document.getElementById("testArea").innerHTML = "You read at " + wpm + " words per minute";
+      //   $scope.userSettings["readtime"] = wpm;
+      //   APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config){
+      //     console.log(status_code);
+      //   });
+      // };
     };
     // End Methods
   })
@@ -428,33 +508,95 @@ angular.module('main.controllers', ['main.services'])
         if ($scope.topic.name == message.topic.name){
           $scope.topic = message.topic;
 
+          // Make sure the feed is not already in this object
           var flag = 0;
           for(var j =0; j<$scope.feeds.length; j++) {
             flag += ($scope.feeds[j].id == message.feed.id)
           }
+          // If the feed is not in thez
           if (!flag) {
             $scope.feeds.push(message.feed);
           }
         }
     });
 
+    $rootScope.$on("addQueueFeedByTopicIdNoUpdate", function(event, message){
+      if ($scope.topic.id == message.topicId){
+        var flag = 0;
+        for(var j =0; j<$scope.feeds.length; j++) {
+          if ($scope.feeds[j].type == message.feed.type){
+            flag += ($scope.feeds[j].id == message.feed.id);
+          }
+        }
+        if (!flag) {
+          // Add QueueFeed id to the Topics list of IDs
+          $scope.topic.queue_feeds.push(message.feed.id);
+
+          // Add the feed to the master list of feeds
+          $scope.feeds.push(message.feed);
+        }
+      }
+    });
+    $rootScope.$on("addFeedByTopicIdNoUpdate", function(event, message){
+      if ($scope.topic.id == message.topicId){
+        var flag = 0;
+        for(var j =0; j<$scope.feeds.length; j++) {
+          if ($scope.feeds[j].type == message.feed.type){
+            flag += ($scope.feeds[j].id == message.feed.id);
+          }
+        }
+        if (!flag) {
+          // Add QueueFeed id to the Topics list of IDs
+          $scope.topic.feeds.push(message.feed.id);
+
+          // Add the feed to the master list of feeds
+          $scope.feeds.push(message.feed);
+        }
+      }
+    });
+    $rootScope.$on("removeOldFeed", function (event, message) {
+      if ($scope.topic["feeds"].indexOf(message.identifier) != -1){
+        $scope.removeFeedFromTopic(message.identifier, message.feedType);
+      }
+    });
+
     // End Event handlers
 
-    // Methods
-    $scope.removeFeedFromTopic = function(feedId){
+    $scope.removeFeedFromTopic = function(feedId, type){
       // Remove Feed-Topic relationship from server
-      $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
-        return id != feedId;
-      });
+      if (type == "feed"){
+        $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
+          return id != feedId;
+        });
+      }
+      else if (type == "queue_feed"){
+        $scope.topic["queue_feeds"] = $scope.topic["queue_feeds"].filter(function(id){
+          return id != feedId;
+        });
+      }
+      else {
+        console.log("removeFeedFromTopic: Not a valid type");
+      }
+
+      // Update the topic now that we've removed things
       APIService.updateTopic($scope.topic).success(function(data) {
+        // Update was a success, so update the local feeds
         $scope.feeds = $scope.feeds.filter(function(feed) {
-          return feed["id"] != feedId;
+          return feed["type"] == type ? feed["id"] != feedId : true;
         });
       }).error(function(data, status, headers, config){
           // Log the error
           console.log(status);
           // Add the feed back since there was an error
-          $scope.topic["feeds"].push(feedId);
+          if (type == "feed"){
+            $scope.topic["feeds"].push(feedId);
+          }
+          else if (type == "queue_feed"){
+            $scope.topic["queue_feeds"].push(feedId);
+          }
+          else{
+            console.log("removeFeedFromTopic: Not a valid type");
+          }
       });
     };
 
@@ -483,7 +625,7 @@ angular.module('main.controllers', ['main.services'])
         });
     };
 
-    $scope.expandQueueFeed = function(feedID, queueFeedID, queuePostsRead, postsReadInQueue) {
+    $scope.expandQueueFeed = function(feedID, queueFeedID, postsReadInQueue) {
       $rootScope.$broadcast("clickQueueFeed", {
             identifier: feedID,
             queue_identifier: queueFeedID,
@@ -507,7 +649,7 @@ angular.module('main.controllers', ['main.services'])
 
     // Event handlers
 
-    
+
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
         $scope.fetchPosts();
@@ -534,6 +676,7 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Methods
+
     $scope.cleanPostsContent = function(data){
       // This for loop removes unnecessary line breaks
       for(var i=0; i<data.length; i++){
@@ -624,6 +767,15 @@ angular.module('main.controllers', ['main.services'])
       });
     };
 
+    $scope.$watch('expandedPostIndex', function(newValue, oldValue) {
+      if (newValue != -1) {
+          $scope.$evalAsync(function() {
+            $timeout(function() {
+              $scope.scrollToAnchor('post-' + newValue);
+            });
+          });
+      }
+    });
     $scope.scrollToAnchor = function(aid){
       var aTag = $("a[name='"+ aid +"']");
       var navbarHeight = $(".navbar").height() + 50;
@@ -657,6 +809,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.numResults = 0;
     $scope.topics = [];
     $scope.expandedSettingIndex = -1;
+
     $scope.activeFeed = 0;
     $scope.activeTopic = 0;
     // End Attributes
@@ -668,6 +821,7 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("activeFeedIs", function (event, message) {
       $scope.activeFeed = message.identifier;
+      $scope.activeFeedType = message.feedType;
     });
 
     $rootScope.$on("activeTopicIs", function (event, message) {
@@ -676,42 +830,88 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Methods
+    $scope.getSelectedText = function(elementId) {
+    var elt = document.getElementById(elementId);
+
+    if (elt.selectedIndex == -1)
+        return null;
+
+    return elt.options[elt.selectedIndex].text;
+    };
+
+
+
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
-
-      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
-
-      var binSize = getSelectedText("post-choice");
-
-      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
-      /*
-      var feed = $.parseJSON($(".feedObj").attr("value"));
-      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feed.id);
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("addedFeedObject", {
-              topic: data,
-              feed: feed
+      var timeInterval =  $scope.getSelectedText("week-choice") + " weeks, " + $scope.getSelectedText("day-choice") + " days, " +  $scope.getSelectedText("hour-choice") + " hours";
+      var binSize = $scope.getSelectedText("post-choice");
+      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":$scope.activeTopic}, $scope.activeFeed)
+        .success(function(data){
+          var feed = data;
+          feed["type"] = "queue_feed";
+                  // Add the feeds to the topic
+          $rootScope.$broadcast("addQueueFeedByTopicIdNoUpdate", {
+            topicId: $scope.activeTopic,
+            feed: feed
           });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $scope.hidePopup();
-          $("#topicsForm")[0].reset();
-        }).error(function(data, status, headers, config){
-          //if user already subscribed
-          if (status == 409) {
 
-            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
-            $scope.hidePopup();
+          // Remove old feed
+          // Remove old feed triggers an update. We do not want to send two updates at the same time
+          // It casues a race condition because of the many-to-many-field hackery
+          // If a future iteration ever happens ONLY GOD CAN SAVE YOU.
+          // Combination race condition and JS async bugs are the worst.
+          $rootScope.$broadcast("removeOldFeed", {
+            identifier: $scope.activeFeed,
+            feedType: "feed"
+          });
 
-            // fade out the alert
-            window.setTimeout(function() {
-              $(".flash").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove();
-              });
-            }, 3000);
-          }
-        });*/
+          // Broadcast a clickedQueueFeed
+          $rootScope.$broadcast("clickQueueFeed", {
+                identifier: feed["feed"],
+                queue_identifier: feed.id,
+                queue_posts_read: feed.postsReadInQueue
+          });
+
+          // Send the activeFeed signal
+          $scope.activeFeed = feed["id"];
+          $scope.activeFeedType= "queue_feed";
+          // $rootScope.$broadcast("activeFeedIs", {
+          //   identifier: feed["id"],
+          //   feedType: "queue_feed"
+          // });
+
+        });
+      };
+
+    $scope.dequeueFeed = function(){
+      APIService.getQueueFeed($scope.activeFeed).success(function(queueFeed){
+        APIService.getFeed(queueFeed["feed"]).then(function(data){
+          // Add a feed attribute for internal, clientside type checking
+          var feed = data;
+          feed["type"] = "feed";
+
+          // Add the feed
+          $rootScope.$broadcast("addFeedByTopicIdNoUpdate", {
+            topicId: $scope.activeTopic,
+            feed: feed
+          });
+
+          // Remove the QueueFeed
+          $rootScope.$broadcast("removeOldFeed", {
+            identifier: $scope.activeFeed,
+            feedType: "queue_feed"
+          });
+
+          // Broadcast a clickedFeed
+          $rootScope.$broadcast("clickFeed", {
+              identifier: feed["id"]
+          });
+
+          // Send the activeFeed signal
+          $scope.activeFeed = feed["id"];
+          $scope.activeFeedType= "feed";
+
+        });
+      });
     };
 
     $scope.expandSettingsUser = function() {
@@ -730,59 +930,18 @@ angular.module('main.controllers', ['main.services'])
       $rootScope.$broadcast("clickFeed", {});
     };
 
-    $scope.addQueueFeedObject = function() { // formerly passed url as an argument
-      var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
 
-      var binSize = getSelectedText("post-choice");
-
-      APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":ActiveTopic}, activeFeed);
-/*
-      var feed = $.parseJSON($(".feedObj").attr("value"));
-      var topic = $.parseJSON($('input[name=selectedTopic]:checked', '#topicsForm').val());
-      topic.feeds.push(feed.id);
-      APIService.updateTopic(topic).success(function(data) {
-          $rootScope.$broadcast("addedFeedObject", {
-              topic: data,
-              feed: feed
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $scope.hidePopup();
-          $("#topicsForm")[0].reset();
-        }).error(function(data, status, headers, config){
-          //if user already subscribed
-          if (status == 409) {
-
-            $(".main-content").prepend("<div class='alert flash fade-in alert-danger' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;You are already subscribed to that feed.</div>");
-            $scope.hidePopup();
-
-            // fade out the alerue
-            window.setTimeout(function() {
-              $(".flash").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove();
-              });
-            }, 3000);
-          }
-        });*/
-    };
 
     $scope.Range = function(start, end) {
-      var result = [];
-      for (var i = start; i <= end; i++) {
+    var result = [];
+    for (var i = start; i <= end; i++) {
         result.push(i);
-      }
-      return result;
+    }
+    return result;
     };
 
-    $scope.getSelectedText = function(elementId) {
-      var elt = document.getElementById(elementId);
 
-      if (elt.selectedIndex == -1)
-        return null;
 
-      return elt.options[elt.selectedIndex].text;
-    };
     // End Methods
   });
 //*/
