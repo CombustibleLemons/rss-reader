@@ -49,12 +49,12 @@ And you've started an instance of the RSS-reader!
 ###### Flushing the Database
 
 If the database is mistakenly edited when creating Feed objects, you will need to flush the database.
-##Ubuntu:
+####### Ubuntu:
 1. Navigate to `~/rss-reader/rss_reader/`
 2. Run `./flush_database.sh` to flush the database
 3. Run `./postgres-setup.sh` to reset the database (see Step One of the installation)
 
-##Other:
+####### Other:
 * ~~`sudo -i -u postgres` (or Mac equivalent)~~
 * `sudo su - postgresql`, and enter the password if prompted
 * `. ./pg_env.sh`
