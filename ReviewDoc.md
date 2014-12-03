@@ -32,9 +32,7 @@ It is composed of three main parts:
 * Except drag and drop. That was a nice feature that we decided to add to make editing Feeds easier.
 
 ### What we have learned
-There are no good Javascript frameworks. Michelle really dislikes AngularJS in particular. "It is Hell," said she. Django classing makes no sense. Do everything client side. Make your clients do all the work. It is amazing that any website that is not static text is able to function.
-
-We also learned how to use an MVC design pattern with the Django framework. We also learned a lot about how to write unit tests for both Python and Javascript.
+We learned how to use an MVC design pattern with the Django framework. We also learned a lot about how to write unit tests for both Python and Javascript.
 
 Over time we learned how to effectively divide work, as well as communicate our problems in constructive ways. By the end we were better at estimating how long it would take to accomplish tasks.
 

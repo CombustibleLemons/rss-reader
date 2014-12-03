@@ -196,8 +196,10 @@
 							<h3>User Settings</h3><br>
 							<h5>Enter a new password to change your current password:</h5>
 							<form id="chancePasswordForm">
-								<input type="text" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
+								<input type="password" id="chancePasswordInput" placeholder="New password" ng-model="query" ng-keyup="$event.keyCode == 13 && changePassword()">
+								<!--<input type="Submit" class="popupBtn addTopicBtn" ng-click="changePassword()">-->
 							</form>
+							<span class="passwordMessage"></span>
 						</div>
 					</div>
 					<div class="row-fluid post">
