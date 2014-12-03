@@ -41,7 +41,6 @@ angular.module('main.controllers', ['main.services'])
     $scope.reverse = "true";
 
     $scope.filterUnread = "";
-    $scope.activeView = "feedResults"
 
     $scope.activeView = ""
 
@@ -63,6 +62,7 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickQueueSettings", function (event, message) {
         $scope.activeView = "queueSettings";
+        $("#filterUnreadLabel").hide()
     });
     // End Event handlers
 
@@ -758,6 +758,10 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandSettingsReading = function() {
       $scope.expandedSettingIndex = 3;
     };
+
+    $scope.exitSettings = function() {
+      $rootScope.$broadcast("clickFeed", {});
+    }
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
       var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
