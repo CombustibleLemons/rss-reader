@@ -182,4 +182,5 @@ The user can change their password in the user settings and can measure their re
 
 ### Known Issues
 
-1. Adding a non-rss style URL to the search bar and pressing enter will result in a 400 error
+1. Adding a non-rss style URL to the search bar and pressing enter will result in a 400 error.
+2. If a post contains no words inside of its content, no read time will show up for it.
