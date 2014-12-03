@@ -75,7 +75,9 @@ Curatr basically allows you to subscribe to feeds and group them within particul
 Regarding posts in one feed, the user can sort the posts alphabetically, by date, by length, and by read/unread status. The user can expand posts to read them as well as mark them as read or unread. The user can also filter the posts to only view unread posts.
 
 The user has the ability to queue feeds at their pleasure, which releases a certain number of posts to the user in a specified time interval. 
+
 Scenario 1: Say that the user wants to read 1 post per week of the comic **xkcd**. The user would be able to set the **xkcd** feed to be a queue and could choose the time interval of 1 week for which he or she receives 1 post. Every week, then, the user would receive one **xkcd** post rather than the daily post that a normal, unqueued **xkcd** feed would give. 
+
 Scenario 2: Conversely, if the user chose to get 5 posts of **xkcd** per day, old posts that are stored in the database will be pulled to give the user these additional posts, starting from the oldest and converging to the newest. 
 
 This gives the user several functionalities:
