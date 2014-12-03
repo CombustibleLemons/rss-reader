@@ -75,6 +75,7 @@ def user_login(request):
     if authenticated:
         return HttpResponseRedirect("/")
 
+    #import pdb; pdb.set_trace()
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
