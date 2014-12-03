@@ -4,6 +4,11 @@
 
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
+    // Attributes
+    $scope.user;
+    $scope.userSettings;
+    // End Attributes
+
     // Methods
     $scope.refreshUser = function(){
       var promise = APIService.getUser().then(function(user){
@@ -41,9 +46,7 @@ angular.module('main.controllers', ['main.services'])
     $scope.reverse = "true";
 
     $scope.filterUnread = "";
-
-    $scope.activeView = ""
-
+    $scope.activeView = "";
     // End Attributes
 
     // Event handlers
@@ -62,7 +65,6 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("clickQueueSettings", function (event, message) {
         $scope.activeView = "queueSettings";
-        $("#filterUnreadLabel").hide()
     });
     // End Event handlers
 
@@ -227,19 +229,23 @@ angular.module('main.controllers', ['main.services'])
       $rootScope.$broadcast("activeFeedIs", {
         identifier: feedID
       });
-    }
+    };
 
     $scope.activeTopic = function(topicID) {
       $rootScope.$broadcast("activeTopicIs", {
         identifier: topicID
       });
-    }
+    };
     //End Methods
 
-    // Must be called to populate topics
+    // Initialization
     $scope.fetchTopics();
   })
   .controller('SearchController', function($scope, $rootScope, APIService) {
+    // Attributes
+    $scope.query = '';
+    // End Attributes
+
     // Methods
     $scope.expandSettings = function() {
       $rootScope.$broadcast("clickSettings", {});
@@ -377,7 +383,6 @@ angular.module('main.controllers', ['main.services'])
       $scope.expandedSettingIndex = 3;
     };
 
-
     $scope.startTime = function() {
       startTime = new Date();
       document.getElementById("testArea").innerHTML = '"Words can be like X-rays, if you use them properly — they’ll go through anything. You read and you’re pierced. That’s one of the things I try to teach my students — how to write piercingly. But what on earth’s the good of being pierced by an article about a Community Sing, or the latest improvement in scent organs? Besides, can you make words really piercing — you know, like the very hardest X-rays — when you’re writing about that sort of thing? Can you say something about nothing? That’s what it finally boils down to. I try and I try …” <br>Hush!” said Bernard suddenly, and lifted a warning finger; they listened. “I believe there’s somebody at the door,” he whispered. Helmholtz got up, tiptoed across the room, and with a sharp quick movement flung the door wide open. There was, of course, nobody there.';
@@ -405,77 +410,6 @@ angular.module('main.controllers', ['main.services'])
     };
     // End Methods
   })
-  .controller('SearchController', function($scope, $rootScope, APIService) {
-    // Methods
-    $scope.expandSettings = function() {
-      $rootScope.$broadcast("clickSettings", {});
-    };
-
-    $scope.expandSettingsQueue = function(feedID) {
-      $rootScope.$broadcast("clickQueueSettings", {
-        identifier: feedID
-      });
-    };
-
-
-    $scope.search = function() {
-      var testSuccess = false;
-      // URL Testing (aggresively borrowed from http://stackoverflow.com/questions/17726427/check-if-url-is-valid-or-not)
-      var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-      // Is the query a valid URL?
-      testSuccess = regexp.test($scope.query);
-      // Query is a valid URL
-      if(testSuccess == true) {
-        APIService.addFeedByUrl($scope.query).success(function(data) {
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-          $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
-        }).error(function(data, status, headers, config) {
-          // Feed already exists in the database, add it
-          if(status == 409) {
-            if ($("#searchForm").find(".error")) {
-              $("#searchForm").find(".error").remove();
-            }
-            $rootScope.$broadcast("showSearchResults", {searchResults: [data]});
-          }
-          // URL isn't a feed
-          if(status == 400) {
-            testSuccess = false;
-          }
-        });
-      }
-      // Query is not a valid URL
-      if(testSuccess == false) {
-        APIService.search($scope.query).success(function(data) {
-          $rootScope.$broadcast("showSearchResults", {
-            searchResults: data
-          });
-          if ($("#searchForm").find(".error")) {
-            $("#searchForm").find(".error").remove();
-          }
-        }).error(function(data, status, headers, config){
-          if (status == 409) {
-            $("#searchForm").append("<div class='error'>Search failed. Please check your inputs or yell at Jawwad or Justyn</div>");
-          }
-        });
-      }
-      // if (numClicks == 2) {
-      //   document.getElementById("testArea").innerHTML = "Most of the members of the convent were old-fashioned Satanists, like their parents and grandparents before them. They’d been brought up to it and weren’t, when you got right down to it, particularly evil. Human beings mostly aren’t. They just get carried away by new ideas, like dressing up in jackboots and shooting people, or dressing up in white sheets and lynching people, or dressing up in tie-dye jeans and playing guitars at people. Offer people a new creed with a costume and their hearts and minds will follow. Anyway, being brought up as a Satanist tended to take the edge off it. It was something you did on Saturday nights. And the rest of the time you simply got on with life as best you could, just like everyone else. Besides, Sister Mary was a nurse and nurses, whatever their creed, are primarily nurses, which had a lot to do with wearing your watch upside down, keeping calm in emergencies, and dying for a cup of tea. She hoped someone would come soon; she’d done the important bit, now she wanted her tea.<br>It may help to understand human affairs to be clear that most of the great triumphs and tragedies of history are caused, not by people being fundamentally good or fundamentally bad, but by people being fundamentally people.";
-      // }
-      // if (numClicks == 3) {
-      //   endTime = new Date();
-      //   var elapsed = (endTime - startTime) / 1000;
-      //   wpm = Math.round(wordCount / elapsed * 60);
-      //   document.getElementById("testArea").innerHTML = "You read at " + wpm + " words per minute";
-      //   $scope.userSettings["readtime"] = wpm;
-      //   APIService.updateUserSettings($scope.userSettings).error(function(data, status, headers, config){
-      //     console.log(status_code);
-      //   });
-      // };
-    };
-    // End Methods
-  })
   .controller('TopicController', function($scope, $timeout, $rootScope, APIService, FeedService) {
     // Event handlers
     $rootScope.$on("addedFeedObject", function (event, message) {
@@ -493,6 +427,7 @@ angular.module('main.controllers', ['main.services'])
     });
     // End Event handlers
 
+    // Methods
     $scope.removeFeedFromTopic = function(feedId){
       // Remove Feed-Topic relationship from server
       $scope.topic["feeds"] = $scope.topic["feeds"].filter(function(id){
@@ -551,6 +486,9 @@ angular.module('main.controllers', ['main.services'])
   .controller('FeedController', function($scope, $rootScope, $timeout, FeedService, APIService) { //scope is an angular template, from base.html, index.html
     // Attributes
     $scope.expandedPostIndex = -1;
+    $scope.feedID = -1;
+    $scope.posts = [];
+
     // End Attributes
 
     // Event handlers
@@ -560,16 +498,26 @@ angular.module('main.controllers', ['main.services'])
         $scope.expandedPostIndex = -1;
         $("#filterUnreadLabel").show();
     });
+
     $rootScope.$on("clickQueueFeed", function (event, message) {
         $scope.queuePostsRead = message.queues_posts_read;
         $scope.queueFeedID = message.queue_identifier;
         $scope.fetchQueuedPosts();
         $scope.expandedPostIndex = -1;
     });
+
+    $scope.$watch('expandedPostIndex', function(newValue, oldValue) {
+      if (newValue != -1) {
+          $scope.$evalAsync(function() {
+            $timeout(function() {
+              $scope.scrollToAnchor('post-' + newValue);
+            });
+          });
+      }
+    });
     // End Event handlers
 
     // Methods
-
     $scope.cleanPostsContent = function(data){
       // This for loop removes unnecessary line breaks
       for(var i=0; i<data.length; i++){
@@ -660,36 +608,16 @@ angular.module('main.controllers', ['main.services'])
       });
     };
 
-    $scope.$watch('expandedPostIndex', function(newValue, oldValue) {
-      if (newValue != -1) {
-          $scope.$evalAsync(function() {
-            $timeout(function() {
-              $scope.scrollToAnchor('post-' + newValue);
-            });
-          });
-      }
-    });
     $scope.scrollToAnchor = function(aid){
       var aTag = $("a[name='"+ aid +"']");
       var navbarHeight = $(".navbar").height() + 50;
       console.log(aTag.offset().top);
       $('html,body').animate({scrollTop: aTag.offset().top - navbarHeight},'slow');
     };
+
     $scope.printFormattedDateString = function(dateString){
       var date = new Date(dateString);
       return date.toDateString();
-    };
-    $scope.printReadTimeString = function(postLength){
-      var speed = $scope.userSettings["readtime"];
-      var time = Math.ceil(postLength/speed);
-      var finalString;
-      if (time > 1){
-        finalString = time + " minutes";
-      }
-      if (time == 1){
-        finalString = time + " minute";
-      }
-      return finalString;
     };
 	// End Methods
   })
@@ -700,7 +628,6 @@ angular.module('main.controllers', ['main.services'])
     $scope.numResults = 0;
     $scope.topics = [];
     $scope.expandedSettingIndex = -1;
-
     $scope.activeFeed = 0;
     $scope.activeTopic = 0;
     // End Attributes
@@ -720,7 +647,6 @@ angular.module('main.controllers', ['main.services'])
     // End Event handlers
 
     // Methods
-
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
 
       var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
@@ -757,8 +683,7 @@ angular.module('main.controllers', ['main.services'])
             }, 3000);
           }
         });*/
-      };
-
+    };
 
     $scope.expandSettingsUser = function() {
       $scope.expandedSettingIndex = 1;
@@ -771,10 +696,6 @@ angular.module('main.controllers', ['main.services'])
     $scope.expandSettingsReading = function() {
       $scope.expandedSettingIndex = 3;
     };
-
-    $scope.exitSettings = function() {
-      $rootScope.$broadcast("clickFeed", {});
-    }
 
     $scope.addQueueFeedObject = function() { // formerly passed url as an argument
       var timeInterval = getSelectedText("hour-choice") + " hours, " + getSelectedText("day-choice") + " days, " + getSelectedText("month-choice") + " months ";
@@ -811,25 +732,24 @@ angular.module('main.controllers', ['main.services'])
             }, 3000);
           }
         });*/
-      };
+    };
 
     $scope.Range = function(start, end) {
-    var result = [];
-    for (var i = start; i <= end; i++) {
+      var result = [];
+      for (var i = start; i <= end; i++) {
         result.push(i);
-    }
-    return result;
+      }
+      return result;
     };
 
     $scope.getSelectedText = function(elementId) {
-    var elt = document.getElementById(elementId);
+      var elt = document.getElementById(elementId);
 
-    if (elt.selectedIndex == -1)
+      if (elt.selectedIndex == -1)
         return null;
 
-    return elt.options[elt.selectedIndex].text;
+      return elt.options[elt.selectedIndex].text;
     };
-
     // End Methods
   });
 //*/
