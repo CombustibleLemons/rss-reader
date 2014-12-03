@@ -1,4 +1,30 @@
 # RSS-reader
+## Review Document
+### What is implemented
+We have now implemented a full version of Curatr.
+
+It is composed of three main parts:
+
+1) The views, which are dispersed among the template files and rely on the CSS files in `rss_reader/rss_reader/main/static/css`
+
+2) The controllers, which are in `rss_reader/rss_reader/main/static/js/controllers.js`
+
+3) The API and models, which are (of course) in `rss_reader/rss_reader/main/api.py` and `rss_reader/rss_reader/main/models.py`
+
+* Registering and logging in have separate html files in the templates folder and use Django's default User model. They rely on the forms present in Django's default files to create and authenticate users. Then they signal the UserController to load the posts and topics for a specified user.
+* Topics, Feeds, and Posts all have separate models in models.py. They are looped through in the index.html file to be displayed and call the TopicController and FeedController for different functions. A PostController is unnecessary because the FeedController can handle all of the details.
+* The searching function uses a third-party search application for Django called Watson. The SearchController controls how the User can look up both links and keywords while the ResultsController just determines the displaying of the search results.
+* Settings are controlled from the ResultsController as well, and there is a separate view for it. You should be be able to change the password for your user.
+* Queue feeds is another model in `models.py`. It functions similarly to a feed, but it updates at set intervals and will only pull so many posts at a time.
+* There is a reading speed test implemented in `controllers.js`. You can access it from Settings, and the results are used to provide estimates for how long it will take to read each post.
+* You can add and delete posts and topics. In addition to this, you can actually move feeds between topics by dragging and dropping them with the Edit module on the Navigation bar. This module also allows you to edit topic names.
+
+### What is not implemented
+* Autodelete exists, but the user cannot change the interval at which Curatr deletes old posts. This is due to having to access `postsRead` with the Feed Settings module, and it's mommy didn't raise it right so it doesn't play nicely with other modules, and there was not time to refactor and fix this.
+* The ability to minimize posts and topics. We didn't feel this functionality was necessary.
+* Infinite scrolling would have required way too much rewriting of the controller code that concerns how posts are displayed. The time demands required would have been too great for a purely cosmetic feature.
+* An amazing search. But that's not a feature available anywhere.
+
 ## Milestone 4.B
 ### Compiling and Installation
 We are primarily using Django and AngularJS, so there is no direct compilation. However, there are several packages that need to be installed in order to get the system up and running. We **heavily recommend** Linux or Ubuntu to install the necessary packages.
