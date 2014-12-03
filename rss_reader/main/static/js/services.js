@@ -92,6 +92,10 @@ angular.module('main.services', []).
         var promise = $http.put("/user/settings/", userSetttings);
         return promise;
       },
+      updatePassword : function(user) {
+        var promise = $http.put("/user/", user);
+        return promise;
+      },
       // End User functions
 
       // Topic functions
