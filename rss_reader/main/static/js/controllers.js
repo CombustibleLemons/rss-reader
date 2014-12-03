@@ -722,10 +722,10 @@ angular.module('main.controllers', ['main.services'])/*
       var timeInterval =  $scope.getSelectedText("week-choice") + " weeks, " + $scope.getSelectedText("day-choice") + " days, " +  $scope.getSelectedText("hour-choice") + " hours";
 
       var binSize = $scope.getSelectedText("post-choice");
-      dump('hey there devon');
+      
       APIService.createQueueFeed({"postnum":binSize, "interval":timeInterval, "topic":$scope.activeTopic}, $scope.activeFeed)
         .success(function(data){
-          console.log('HEY THERE');
+          console.log('YO');
           topic.feeds.push(data.id);
           APIService.updateTopic($scope.activeTopic).success(function() {
               $rootScope.$broadcast("addedFeedObject", {
