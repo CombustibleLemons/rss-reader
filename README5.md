@@ -1,7 +1,7 @@
 # RSS-reader
 ## Milestone 5
 ### Compiling and Installation
-We are primarily using Django and AngularJS, so there is no direct compilation. However, there are several packages that need to be installed in order to get the system up and running. We **heavily recommend** Linux or Ubuntu to install the necessary packages.
+We are primarily using Django and AngularJS, so there is no direct compilation. However, there are several packages that need to be installed in order to get the system up and running. We **heavily recommend** Linux to install the necessary packages.
 ###### Step Zero: Clone the Repository
 In the terminal, clone our git repository with the command `git clone https://github.com/CombustibleLemons/rss-reader.git`
 
@@ -49,12 +49,12 @@ And you've started an instance of the RSS-reader!
 ###### Flushing the Database
 
 If the database is mistakenly edited when creating Feed objects, you will need to flush the database.
-######## Ubuntu:
+######  Ubuntu:
 1. Navigate to `~/rss-reader/rss_reader/`
 2. Run `./flush_database.sh` to flush the database
 3. Run `./postgres-setup.sh` to reset the database (see Step One of the installation)
 
-######## Other:
+######  Other:
 * ~~`sudo -i -u postgres` (or Mac equivalent)~~
 * `sudo su - postgresql`, and enter the password if prompted
 * `. ./pg_env.sh`
@@ -70,7 +70,7 @@ After remaking the database, do Step Four of installation to make migrations and
 
 ### Functionality
 
-######## Main functionality
+######  Main functionality
 Curatr basically allows you to subscribe to feeds and group them within particular topic categories. The user can add and remove topics to put feeds in. The user can search for feeds, using either an rss url or a string. Once subscribed to a feed, the user selects a topic to add the feed to, with a default Uncategorized topic. Each feed can only belong under one topic, but feeds can be moved from one topic to another. The user can also unsubscribe from feeds. 
 
 Regarding posts in one feed, the user can sort the posts alphabetically, by date, by length, and by read/unread status. The user can expand posts to read them as well as mark them as read or unread. The user can also filter the posts to only view unread posts.
@@ -85,7 +85,7 @@ This gives the user several functionalities:
 * read old posts that are stored in the database
 * set a convenient time interval for receiving new posts
 
-######## Settings functionality
+######  Settings functionality
 The user can change their password in the user settings and can measure their reading speed in the Reading Test section.
 
 
@@ -97,61 +97,61 @@ The user can change their password in the user settings and can measure their re
 
 ###### Manual initialization
 
-######## Register a user
+######  Register a user
 1. Access `localhost:8000` via web browser and click on 'Register Here'
 2. Enter a username and password
 3. You're done!
 
-######## Add a Topic
+######  Add a Topic
 1. Click on "Add a topic" in the sidebar
 2. You should see a popup. Enter the name of your topic in the field and click on "Add Topic"
 
-######## Search for a feed
+######  Search for a feed
 1. Enter keywords or an rss url in the searchbar
 2. If you enter keywords, the results shown will be the search results from our database of feeds (and therefore it is possible that the feed you expect may not show up). If you entered a url, Curatr will fetch the feed for you
 
-######## Subscribe to feeds
+######  Subscribe to feeds
 1. Search for a feed (as above)
 2. Click on the add icon to the right of your desired feed
 3. A popup should open asking you to choose a topic
 4. Choose your desired topic and click "Subscribe"
 
-######## View a feed
+######  View a feed
 1. Expand one of your topics in the sidebar
 2. Click on the feed you wish to view
 
-######## Unsubscribe from a feed
+######  Unsubscribe from a feed
 1. Click on "Edit" in the sidebar
 2. Click the "X" next to the feed you wish to unsubscribe from
 3. Click on "Save changes"
 
-######## Rename a topic
+######  Rename a topic
 1. Click on "Edit" in the sidebar
 2. Click on the edit icon to the right of the topic. The icon is a diagonal pencil
 3. Enter the new name of the topic in the field that appears
 4. Click on "Submit"
 5. If you wish to not rename the topic after you click the icon, just leave the field blank and click "submit" 
 
-######## Rearrange feeds within topics
+######  Rearrange feeds within topics
 1. Click on "Edit" in the sidebar
 2. Drag and drop the feeds as you please
 3. You can drag and drop the feeds among different topics
 4. Click on "Save changes"
 
-######## Delete a topic
+######  Delete a topic
 1. Click on "Edit" in the sidebar
 2. Click on the "X" to the right of the topic you wish to delete
 3. Click on "Save changes"
 
-######## Expand a post
+######  Expand a post
 1. View a feed (instructions above)
 2. Click on a post to expand it
 
-######## Mark a post as read/unread
+######  Mark a post as read/unread
 1. View a feed (instructions above)
 2. Click on the read/unread switch to the right of the post you wish to mark
 
-######## Sort posts 
+######  Sort posts 
 1. View a feed (instructions above)
 2. Click on "Sort by" in the top-right corner
 3. Choose to sort by alphabet, time, length or unread status
@@ -161,7 +161,7 @@ The user can change their password in the user settings and can measure their re
 2. Click on "View only unread" at the top-right
 3. You can reverse this by clicking on "View all posts"
 
-######## Change password
+######  Change password
 1. Click on the gear icon to the right of the searchbar
 2. Click on user settings
 3. Enter your new password in the field and click "Submit"
