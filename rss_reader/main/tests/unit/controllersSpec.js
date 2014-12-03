@@ -239,7 +239,7 @@ describe("Search controllers", function($rootScope) {
           topicScope.$parent.$index = 0;
           $controller('TopicController', {$scope: topicScope});
           
-          searchScope = $rootScope.$new();
+          searchScope = navScope.$new();
           $controller('SearchController', {$scope: searchScope});
         });
 
@@ -286,6 +286,59 @@ describe("Search controllers", function($rootScope) {
         httpBackend.flush();
         expect(results).toEqual([foofeed]);
     })
+});
+
+describe("Results controllers", function() {
+    beforeEach(module("main.controllers"));
+    var httpBackend, userScope, navScope, topicScope, searchScope, resultScope;
+
+    beforeEach(inject(function($controller, $rootScope, $httpBackend, $timeout, $q, APIService) {
+        httpBackend = $httpBackend;
+
+        userScope = $rootScope.$new();
+        $controller('UserController', {$scope: userScope});
+        navScope = userScope.$new();
+        $.when(function(){
+          var deferred = $q.defer();
+          deferred.resolve($controller('NavigationController', {$scope: navScope}));
+          return deferred.promise;
+        }).then(function(x){
+          topicScope = navScope.$new();
+          var topic = {"name":"Uncategorized", "id":12, "user":1, "feeds": []};
+          topicScope.$parent.topics = [topic];
+          topicScope.$parent.$index = 0;
+          $controller('TopicController', {$scope: topicScope});
+          
+          searchScope = navScope.$new();
+          $controller('SearchController', {$scope: searchScope});
+
+          resultScope = navScope.$new();
+          $controller('ResultsController', {$scope: resultScope});
+        });
+
+        userScope.$digest();
+    }));
+
+    afterEach(function() {
+       httpBackend.verifyNoOutstandingExpectation();
+       httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it("should update their topic lists before showing topic options", function() {
+        expect(resultScope.topics).toEqual([]);
+        resultScope.showTopicOptions();
+        expect(resultScope.topics).toEqual([{"name":"Uncategorized","id":12,"user":1,"feeds":[]}]);
+    });
+
+    it("should expand the various settings", function() {
+        expect(resultScope.expandedSettingIndex).toEqual(-1);
+        resultScope.expandSettingsUser();
+        expect(resultScope.expandedSettingIndex).toEqual(1);
+        resultScope.expandSettingsFeed();
+        expect(resultScope.expandedSettingIndex).toEqual(2);
+        resultScope.expandSettingsReading();
+        expect(resultScope.expandedSettingIndex).toEqual(3);
+    });
 });
 
 describe("Topic controllers", function() {
