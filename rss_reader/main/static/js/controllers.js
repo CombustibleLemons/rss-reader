@@ -5,9 +5,6 @@
 angular.module('main.controllers', ['main.services'])
   .controller('UserController', function($scope, $rootScope, $timeout, $q, APIService) {
     // Event handlers
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
-    });
 
     // Methods
     $scope.refreshUser = function(){
@@ -68,9 +65,6 @@ angular.module('main.controllers', ['main.services'])
         $("#filterUnreadLabel").hide()
     });
 
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
-    });
     // End Event handlers
 
     // Methods
@@ -251,9 +245,6 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
-    });
     // End Event handlers
 
     // Methods
@@ -320,10 +311,6 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
-    });
-
     $rootScope.$on("showSearchResults", function (event, message) {
         $scope.searchResults = message.searchResults;
         $scope.numResults = message.searchResults.length;
@@ -403,9 +390,6 @@ angular.module('main.controllers', ['main.services'])
       APIService.updatePassword($scope.user).success(function(data) {
             $(".passwordMessage").html("Your password has successfully been changed!");
             $("#chancePasswordInput").val("");
-            $rootScope.$broadcast("updatedUser", {
-              user: data
-            });
         }).error(function(data, status, headers, config) {
             $(".passwordMessage").html(data);
         });
@@ -454,9 +438,6 @@ angular.module('main.controllers', ['main.services'])
         }
     });
 
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
-    });
     // End Event handlers
 
     // Methods
@@ -523,9 +504,7 @@ angular.module('main.controllers', ['main.services'])
     // End Attributes
 
     // Event handlers
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
-    });
+
     
     $rootScope.$on("clickFeed", function (event, message) {
         $scope.feedID = message.identifier;
@@ -691,10 +670,6 @@ angular.module('main.controllers', ['main.services'])
 
     $rootScope.$on("activeTopicIs", function (event, message) {
       $scope.activeTopic = message.identifier;
-    });
-
-    $rootScope.$on("updatedUser", function (event, message) {
-      $scope.user = message.user;
     });
     // End Event handlers
 
