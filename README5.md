@@ -57,8 +57,8 @@ If the database is mistakenly edited when creating Feed objects, you will need t
 ######  Other:
 * ~~`sudo -i -u postgres` (or Mac equivalent)~~
 * `sudo su - postgresql`, and enter the password if prompted
-* `drop database feeddb;`
-* `drop user combustible;`
+* `drop database feeddb`
+* `drop user combustible`
 * `createdb feeddb`
 * `createuser -P combustible`
 * `psql -c 'GRANT ALL PRIVILEGES ON DATABASE feeddb TO combustible;'`
